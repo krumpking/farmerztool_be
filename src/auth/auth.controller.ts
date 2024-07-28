@@ -6,12 +6,10 @@ import {
   HttpStatus,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserDto } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
-import { AuthGuard } from './auth.guard';
 import { Public } from './decorators/public.decator';
 import { ResponseDto } from 'src/common/response.dto';
 

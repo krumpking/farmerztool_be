@@ -11,6 +11,9 @@ export const userProviders = [
       connection.model('Users', UserSchema),
     inject: [DATABASE_CONNECTION],
   },
+];
+
+export const otpProviders = [
   {
     provide: OTP_MODEL,
     useFactory: (connection: Connection) => connection.model('Otp', OtpSchema),

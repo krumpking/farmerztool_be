@@ -4,16 +4,17 @@ import { User } from './interfaces/user.interface';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { USER_MODEL } from './constants/auth.constants';
+import { OTP_MODEL, USER_MODEL } from './constants/auth.constants';
 import * as nodemailer from 'nodemailer';
+import { Otp } from './interfaces/otp.interface';
 import { generatorRandomString } from 'src/common/utils';
-import { Otp } from './dto/otp.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject(USER_MODEL)
     private userModel: Model<User>,
+    @Inject(OTP_MODEL)
     private otpModel: Model<Otp>,
     private jwtService: JwtService,
   ) {}
