@@ -63,6 +63,8 @@ export class AuthService {
       const employeeExists = await this.employeeModel.findOne({
         email: user.email,
       });
+
+      
       
       const match = await bcrypt.compare(
         user.password,

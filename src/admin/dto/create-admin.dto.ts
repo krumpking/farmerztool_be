@@ -10,5 +10,5 @@ export class CreateFarmDto {
   areaSize: string;
   animals: string[];
   crops: string[];
-  dateEstablished: Date;
+  dateEstablished: String;
 }
