@@ -33,8 +33,8 @@ export class PaymentsController {
     }
   }
 
-  @Post('/check/subscription')
-  async checkSub(@Body('admin') admin: string) {
+  @Get('/check/subscription')
+  async checkSub(@Param('admin') admin: string) {
     const _addSub = await this.paymentsService.findAll(admin);
     // Check the date of the last subscription and compare it with the current date
     // If the subscription has expired, return a message to the user to renew subscription
@@ -70,9 +70,9 @@ export class PaymentsController {
     }
   }
 
-  @Post('/subs')
-  async getSub(@Body('adminId') admin: string) {
-    const _getSubs = await this.paymentsService.findAll(admin);
+  @Get('/subs/:adminId')
+  async getSub(@Param('adminId') adminId: string) {
+    const _getSubs = await this.paymentsService.findAll(adminId);
 
     if (_getSubs == null) {
       return {

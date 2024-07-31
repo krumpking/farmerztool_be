@@ -2,9 +2,11 @@ import { Document } from 'mongoose';
 
 export interface Farm extends Document {
   readonly id: string;
-  readonly location: string;
+  readonly locationCity: string;
+  readonly locationStateProvince: string;
+  readonly locationCountry: string;
   readonly numberOfEmployees: number;
-  readonly logo: string;
+  readonly uploadLogo: string;
   readonly areaSize: string;
   readonly animals: string[];
   readonly crops: string[];

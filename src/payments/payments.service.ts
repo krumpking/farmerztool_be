@@ -24,9 +24,9 @@ export class PaymentsService {
   }
 
   async findAll(adminId: string): Promise<Payment[]> {
+    console.log(adminId);
     return this.paymentModel
       .find({ adminId: adminId })
-      .sort({ createdAt: -1 })
       .exec();
   }
 }

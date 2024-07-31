@@ -2,9 +2,11 @@ export class CreateFarmDto {
   //add farm name string
   adminId: string;
   farmName: string;
-  location: string;
+  locationCity: string;
+  locationStateProvince: string;
+  locationCountry: string;
   numberOfEmployees: number;
-  logo: string;
+  uploadLogo: string;
   areaSize: string;
   animals: string[];
   crops: string[];
