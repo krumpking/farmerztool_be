@@ -22,8 +22,10 @@ export class AdminController {
   async addFarm(
     @Body('farm') createFarmDto: CreateFarmDto,
   ): Promise<ResponseDto> {
-    const farm = await this.adminService.addFarm(createFarmDto);
 
+    // add or edit
+    const farm = await this.adminService.addFarm(createFarmDto);
+    
     if (farm == null) {
       return {
         data: null,
