@@ -1,6 +1,6 @@
 export class Payment {
   adminId: string;
   amount: number;
-  date: Date;
+  createdAt: Date;
   description: string;
 }

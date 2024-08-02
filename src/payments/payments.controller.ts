@@ -33,7 +33,7 @@ export class PaymentsController {
     }
   }
 
-  @Get('/check/subscription')
+  @Get('/check/subscription/:admin')
   async checkSub(@Param('admin') admin: string) {
     const _addSub = await this.paymentsService.findAll(admin);
     // Check the date of the last subscription and compare it with the current date
@@ -43,16 +43,19 @@ export class PaymentsController {
     if (_addSub == null) {
       return {
         data: null,
-        message: 'There was an error retrieving subscription data',
+        message: 'Not yet to subscription',
         success: false,
       };
     }
 
-    const lastPaymentDate = new Date(_addSub[0].date); // Assuming _addSub has a lastPaymentDate field
+    const lastPaymentDate = new Date(_addSub[0].createdAt); // Assuming _addSub has a lastPaymentDate field
+ 
     const currentDate = new Date();
     const diffTime = Math.abs(
       currentDate.getTime() - lastPaymentDate.getTime(),
     );
+
+  
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 30) {
