@@ -1,8 +1,13 @@
 import { Connection } from 'mongoose';
 import { DATABASE_CONNECTION } from 'src/common/constants';
 import { AnimalSchema } from './schema/animal.schema';
-import { ANIMAL_MODEL, BREEDING_MODEL } from './constants/animal.constants';
+import {
+  ANIMAL_MODEL,
+  BREEDING_MODEL,
+  FEED_MODEL,
+} from './constants/animal.constants';
 import { BreedingInfoSchema } from './schema/breeding.schema';
+import { FeedSchema } from './schema/feed.schema';
 
 export const animalProviders = [
   {
@@ -13,11 +18,20 @@ export const animalProviders = [
   },
 ];
 
-export const feedProviders = [
+export const breedingProviders = [
   {
     provide: BREEDING_MODEL,
     useFactory: (connection: Connection) =>
       connection.model('Breeding', BreedingInfoSchema),
+    inject: [DATABASE_CONNECTION],
+  },
+];
+
+export const feedProviders = [
+  {
+    provide: FEED_MODEL,
+    useFactory: (connection: Connection) =>
+      connection.model('Feed', FeedSchema),
     inject: [DATABASE_CONNECTION],
   },
 ];

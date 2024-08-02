@@ -10,6 +10,7 @@ import {
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { CreateBreedingDto } from './dto/breeding.dto';
+import { CreateFeedDto } from './dto/feed.dto';
 
 @Controller('animals')
 export class AnimalsController {
@@ -126,6 +127,25 @@ export class AnimalsController {
       return {
         data: allAnimals,
         message: 'Got animal breeding info successfully',
+        success: true,
+      };
+    }
+  }
+
+  @Post('add/feeding/info')
+  async addFeed(@Body('feed') feedInfo: CreateFeedDto) {
+    const _addFeed = await this.animalsService.addFeed(feedInfo);
+
+    if (_addFeed == null) {
+      return {
+        data: null,
+        message: 'There was an error adding feed info',
+        success: false,
+      };
+    } else {
+      return {
+        data: _addFeed,
+        message: 'Feed added successfully',
         success: true,
       };
     }

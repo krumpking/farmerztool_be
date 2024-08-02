@@ -1,6 +1,6 @@
 export class CreatePaymentDto {
   adminId: string;
   amount: number;
-  createAt: Date;
+  createdAt: Date;
   description: string;
 }

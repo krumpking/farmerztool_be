@@ -1,11 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ANIMAL_MODEL, BREEDING_MODEL } from './constants/animal.constants';
+import {
+  ANIMAL_MODEL,
+  BREEDING_MODEL,
+  FEED_MODEL,
+} from './constants/animal.constants';
 import { Model } from 'mongoose';
 
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { Animal } from './interfaces/animal.interface';
 import { BreedingInfo } from './interfaces/breeding.info.inferface';
 import { CreateBreedingDto } from './dto/breeding.dto';
+import { CreateFeedDto } from './dto/feed.dto';
+import { Feed } from './interfaces/feed.interface';
 
 @Injectable()
 export class AnimalsService {
@@ -14,6 +20,8 @@ export class AnimalsService {
     private animalModel: Model<Animal>,
     @Inject(BREEDING_MODEL)
     private breedingModel: Model<BreedingInfo>,
+    @Inject(FEED_MODEL)
+    private feedingModel: Model<Feed>,
   ) {}
 
   async addAnimal(createAnimalDto: CreateAnimalDto): Promise<any> {
@@ -112,6 +120,18 @@ export class AnimalsService {
       });
 
       return animalExists;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async addFeed(feedInfo: CreateFeedDto): Promise<any> {
+    try {
+      // Check if email is already taken before adding user
+      const feed = new this.feedingModel(feedInfo);
+
+      var newBreedingInfo = await feed.save();
+      return newBreedingInfo;
     } catch (error) {
       return null;
     }

@@ -5,5 +5,5 @@ export interface Payment extends Document {
   readonly adminId: string;
   readonly description: string;
   readonly amount: number;
-  readonly createAt: Date;
+  readonly createdAt: Date;
 }
