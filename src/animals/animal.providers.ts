@@ -8,6 +8,8 @@ import {
 } from './constants/animal.constants';
 import { BreedingInfoSchema } from './schema/breeding.schema';
 import { FeedSchema } from './schema/feed.schema';
+import { VaccinationSchema } from './schema/vaccination.schema';
+
 
 export const animalProviders = [
   {
@@ -32,6 +34,14 @@ export const feedProviders = [
     provide: FEED_MODEL,
     useFactory: (connection: Connection) =>
       connection.model('Feed', FeedSchema),
+    inject: [DATABASE_CONNECTION],
+  },
+
+  export const vaccinationProviders = [
+  {
+    provide: FEED_MODEL,
+    useFactory: (connection: Connection) =>
+      connection.model('Vaccination', VaccinationSchema),
     inject: [DATABASE_CONNECTION],
   },
 ];

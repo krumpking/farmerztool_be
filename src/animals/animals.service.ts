@@ -12,6 +12,7 @@ import { BreedingInfo } from './interfaces/breeding.info.inferface';
 import { CreateBreedingDto } from './dto/breeding.dto';
 import { CreateFeedDto } from './dto/feed.dto';
 import { Feed } from './interfaces/feed.interface';
+import { Vaccination } from './interfaces/vaccination.interface';
 
 @Injectable()
 export class AnimalsService {
@@ -22,6 +23,8 @@ export class AnimalsService {
     private breedingModel: Model<BreedingInfo>,
     @Inject(FEED_MODEL)
     private feedingModel: Model<Feed>,
+    @Inject(VACCINATION_MODEL)
+    private vaccinationModel: Model<Vaccination>,
   ) {}
 
   async addAnimal(createAnimalDto: CreateAnimalDto): Promise<any> {
@@ -132,6 +135,19 @@ export class AnimalsService {
 
       var newBreedingInfo = await feed.save();
       return newBreedingInfo;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getAnimalFeedingInfo(animalId: String): Promise<any> {
+    try {
+      // Check if email is already taken before adding user
+      const animalExists = await this.feedingModel.find({
+        animalId: animalId,
+      });
+
+      return animalExists;
     } catch (error) {
       return null;
     }

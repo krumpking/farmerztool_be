@@ -150,4 +150,42 @@ export class AnimalsController {
       };
     }
   }
+
+  @Get('feeding/:animal')
+  async getAnimalFeedingInfo(@Param('animal') animal: String) {
+    const _getAnimal = await this.animalsService.getAnimalFeedingInfo(animal);
+
+    if (_getAnimal == null) {
+      return {
+        data: null,
+        message: 'There was an error getting animal feeding info',
+        success: false,
+      };
+    } else {
+      return {
+        data: _getAnimal,
+        message: 'Got animal feed info successfully',
+        success: true,
+      };
+    }
+  }
+
+   @Post('add/vaccination/info')
+  async addVaccination(@Body('vaccination') vaccination: CreateVaccinationDto) {
+    const _addVac = await this.animalsService.addVaccination(vaccination);
+
+    if (_addVac == null) {
+      return {
+        data: null,
+        message: 'There was an error adding vaccination info',
+        success: false,
+      };
+    } else {
+      return {
+        data: _addVac,
+        message: 'Vaccination added successfully',
+        success: true,
+      };
+    }
+  }
 }
