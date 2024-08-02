@@ -1,14 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ANIMAL_MODEL } from './constants/animal.constants';
+import { ANIMAL_MODEL, BREEDING_MODEL } from './constants/animal.constants';
 import { Model } from 'mongoose';
-import { Animal } from './entities/animal.entity';
+
 import { CreateAnimalDto } from './dto/create-animal.dto';
+import { Animal } from './interfaces/animal.interface';
+import { BreedingInfo } from './interfaces/breeding.info.inferface';
+import { CreateBreedingDto } from './dto/breeding.dto';
 
 @Injectable()
 export class AnimalsService {
   constructor(
     @Inject(ANIMAL_MODEL)
     private animalModel: Model<Animal>,
+    @Inject(BREEDING_MODEL)
+    private breedingModel: Model<BreedingInfo>,
   ) {}
 
   async addAnimal(createAnimalDto: CreateAnimalDto): Promise<any> {
@@ -20,7 +25,12 @@ export class AnimalsService {
 
       // If email exists, return email already exists message and success false, else create user
       if (animalExists.length > 0) {
-        return null;
+        // if farm exists upadate the farm
+        return this.animalModel.findOneAndUpdate(
+          { adminId: createAnimalDto.adminId },
+          createAnimalDto,
+          { new: true },
+        );
       }
       const createdAnimal = new this.animalModel(createAnimalDto);
 
@@ -48,6 +58,56 @@ export class AnimalsService {
     try {
       // Check if email is already taken before adding user
       const animalExists = await this.animalModel.find({
+        adminId: adminId,
+      });
+
+      return animalExists;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async addBreedingInfo(breedingInfo: CreateBreedingDto): Promise<any> {
+    try {
+      // Check if email is already taken before adding user
+      const breedingInfoExists = await this.breedingModel.find({
+        animalId: breedingInfo.animalId,
+      });
+
+      // If email exists, return email already exists message and success false, else create user
+      if (breedingInfoExists.length > 0) {
+        return this.animalModel.findOneAndUpdate(
+          { adminId: breedingInfo.adminId },
+          breedingInfo,
+          { new: true },
+        );
+      }
+      const addedBreedingInfo = new this.breedingModel(breedingInfo);
+
+      var newBreedingInfo = await addedBreedingInfo.save();
+      return newBreedingInfo;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getAnimalBreedingInfo(animalId: String): Promise<any> {
+    try {
+      // Check if email is already taken before adding user
+      const animalExists = await this.breedingModel.find({
+        animalId: animalId,
+      });
+
+      return animalExists;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async getAllBreedingInfo(adminId: String): Promise<any> {
+    try {
+      // Check if email is already taken before adding user
+      const animalExists = await this.breedingModel.find({
         adminId: adminId,
       });
 

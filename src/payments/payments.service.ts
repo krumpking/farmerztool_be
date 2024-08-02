@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { Payment } from './entities/payment.entity';
 import { Model } from 'mongoose';
 import { PAYMENT_MODEL } from './constants/payment.contact';
+import { Payment } from './interfaces/payment.interface';
 
 @Injectable()
 export class PaymentsService {
