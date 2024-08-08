@@ -62,7 +62,7 @@ pay.add("subscription", payment.amount);
     pay, 
 
     // The phone number making payment
-    '0773333333',
+    payment.phoneNumber,
     
     // The mobile money method to use. 
     'ecocash' 
@@ -90,10 +90,9 @@ pay.add("subscription", payment.amount);
 
 
  try {
-  console.log(payment);
+  
   var results = await axios.get(payment.pollUrl);
-  console.log(results.data);
-console.log(results.data.includes("status=Paid"));
+ 
   if(results != null){
 if(results.data.includes("status=Paid")){
       var newPayment = {
