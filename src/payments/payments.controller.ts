@@ -9,13 +9,59 @@ import {
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { CreateMobilePaymentDto } from './dto/mobile-payment.dto';
+
 
 @Controller('/api/v1')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
+
+  @Post('/initiate/mobile')
+  async create(@Body('payment') payment: CreateMobilePaymentDto) {
+    const _addSub = await this.paymentsService.initiateMobilePayment(payment);
+
+    if (_addSub == null) {
+      return {
+        data: null,
+        message: 'There was an error initialising payment',
+        success: false,
+      };
+    } else {
+      return {
+        data: _addSub,
+        message: 'Payment initiated successfully',
+        success: true,
+      };
+    }
+  }
+
+
+  @Post('/confirm/mobile')
+  async confirmPayment(@Body('payment') payment: CreateMobilePaymentDto) {
+
+    const _addSub = await this.paymentsService.confirmPayment(payment);
+    console.log(_addSub);
+
+    if (_addSub) {
+      return {
+        data: null,
+        message: 'Payment confirmed successfully ',
+        success: true,
+      };
+    } else {
+      return {
+        data: _addSub,
+        message: 'There was an error confirming payment',
+        success: false,
+      };
+    }
+  }
+
+
+
   @Post('/add/subscription')
-  async create(@Body('payment') createPaymentDto: CreatePaymentDto) {
+  async createSub(@Body('payment') createPaymentDto: CreatePaymentDto) {
     const _addSub = await this.paymentsService.addSub(createPaymentDto);
 
     if (_addSub == null) {

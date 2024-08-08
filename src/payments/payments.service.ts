@@ -1,8 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { CreateMobilePaymentDto } from './dto/mobile-payment.dto';
 import { Model } from 'mongoose';
-import { PAYMENT_MODEL } from './constants/payment.contact';
+import { PAYMENT_MODEL,PAYMENT_ID ,PAYNOW_KEY } from './constants/payment.contact';
 import { Payment } from './interfaces/payment.interface';
+import { Paynow } from "paynow";
+import axios from "axios";
+
+const paynow = new Paynow(PAYMENT_ID, PAYNOW_KEY);
+
 
 @Injectable()
 export class PaymentsService {
@@ -24,9 +30,97 @@ export class PaymentsService {
   }
 
   async findAll(adminId: string): Promise<Payment[]> {
+    try {
     return this.paymentModel
       .find({ adminId: adminId })
       .sort({ _id: -1 })
       .exec();
+      } catch (error) {
+      return null;
+    }
   }
+
+
+  async initiateMobilePayment(payment :CreateMobilePaymentDto): Promise<any> {
+
+
+    try {
+paynow.returnUrl = "http://example.com/return?gateway=paynow&merchantReference=1234";
+     paynow.resultUrl = "http://example.com/gateways/paynow/update"; 
+    
+
+      let pay = paynow.createPayment("Invoice 1", "tafaraushe97@gmail.com");
+
+      
+pay.add("subscription", payment.amount);
+
+
+
+            var res = await paynow.sendMobile(
+    
+    // The payment to send to Paynow
+    pay, 
+
+    // The phone number making payment
+    '0773333333',
+    
+    // The mobile money method to use. 
+    'ecocash' 
+
+);
+           
+
+      if(res.success){
+      
+        return res.pollUrl;
+      } else {
+        return null;
+      }
+
+    }catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+
+  async confirmPayment (payment :CreateMobilePaymentDto): Promise<any> {
+
+
+
+
+ try {
+  console.log(payment);
+  var results = await axios.get(payment.pollUrl);
+  console.log(results.data);
+console.log(results.data.includes("status=Paid"));
+  if(results != null){
+if(results.data.includes("status=Paid")){
+      var newPayment = {
+      adminId: payment.adminId,
+  amount: payment.amount,
+  
+  description: payment.description
+    };
+      const createdPayment = new this.paymentModel(newPayment);
+
+      var confirmedPayment = await createdPayment.save();
+
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+
+    
+
+    
+    } catch (error) {
+      return false;
+    }
+
+
+}
 }

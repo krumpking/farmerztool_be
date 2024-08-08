@@ -3,9 +3,10 @@ import {
   ANIMAL_MODEL,
   BREEDING_MODEL,
   FEED_MODEL,
+  VACCINATION_MODEL
 } from './constants/animal.constants';
 import { Model } from 'mongoose';
-
+import { CreateVaccinationDto } from './dto/vaccination.dto';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { Animal } from './interfaces/animal.interface';
 import { BreedingInfo } from './interfaces/breeding.info.inferface';
@@ -148,6 +149,18 @@ export class AnimalsService {
       });
 
       return animalExists;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async addVaccination(vaccinationInfo: CreateVaccinationDto): Promise<any> {
+    try {
+      // Check if email is already taken before adding user
+      const vaccine = new this.vaccinationModel(vaccinationInfo);
+
+      var newVaccinationInfo = await vaccine.save();
+      return newVaccinationInfo;
     } catch (error) {
       return null;
     }

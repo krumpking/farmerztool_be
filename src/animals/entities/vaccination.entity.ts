@@ -1,4 +1,3 @@
-vaccination.entity.ts
 export class Vaccination {
  	adminId: string;
   animalId: string;

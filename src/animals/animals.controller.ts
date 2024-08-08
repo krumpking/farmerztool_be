@@ -11,6 +11,8 @@ import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { CreateBreedingDto } from './dto/breeding.dto';
 import { CreateFeedDto } from './dto/feed.dto';
+import { CreateVaccinationDto } from './dto/vaccination.dto';
+
 
 @Controller('animals')
 export class AnimalsController {
