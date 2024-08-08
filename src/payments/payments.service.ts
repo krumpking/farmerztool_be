@@ -45,8 +45,8 @@ export class PaymentsService {
 
 
     try {
-      paynow.returnUrl = "http://example.com/return?gateway=paynow&merchantReference=1234";
-     paynow.resultUrl = "http://example.com/gateways/paynow/update"; 
+      paynow.returnUrl = "http://farmerztool.com/return?gateway=paynow&merchantReference=1234";
+      paynow.resultUrl = "http://farmerztool.com/gateways/paynow/update"; 
     
 
       let pay = paynow.createPayment("Invoice 1", "tafaraushe97@gmail.com");
