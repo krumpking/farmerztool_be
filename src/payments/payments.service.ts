@@ -45,7 +45,7 @@ export class PaymentsService {
 
 
     try {
-paynow.returnUrl = "http://example.com/return?gateway=paynow&merchantReference=1234";
+      paynow.returnUrl = "http://example.com/return?gateway=paynow&merchantReference=1234";
      paynow.resultUrl = "http://example.com/gateways/paynow/update"; 
     
 
