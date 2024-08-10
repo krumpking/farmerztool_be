@@ -23,10 +23,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async addUser(@Body('user') user: UserDto): Promise<ResponseDto> {
     const saltOrRounds = 10;
-    
+
     const hash = await bcrypt.hash(user.password, saltOrRounds);
 
-    let newUser: UserDto = { email: user.email, password: hash, adminId: '' };
+    let newUser: UserDto = {
+      email: user.email,
+      password: hash,
+      adminId: '',
+      otp: user.otp,
+    };
 
     const _user = await this.authService.addUser(newUser);
 
@@ -74,7 +79,6 @@ export class AuthController {
   @Public()
   @Patch('update/password')
   async updatePassword(@Body('update') info: UpdateOtp): Promise<ResponseDto> {
-
     const _user = await this.authService.updatePassword(
       info.email,
       info.password,
@@ -108,6 +112,7 @@ export class AuthController {
       email: user.email,
       password: hash,
       adminId: user.adminId,
+      otp: '',
     };
 
     const _user = await this.authService.addUser(newUser);

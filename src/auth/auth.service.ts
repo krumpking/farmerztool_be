@@ -26,14 +26,13 @@ export class AuthService {
   ) {}
 
   async addUser(user: UserDto): Promise<any> {
-    try {
-      // Check if email is already taken before adding user
-      const emailExists = await this.userModel.find({ email: user.email });
+    const otpExists = await this.otpModel.findOne({ otp: user.otp });
 
-      // If email exists, return email already exists message and success false, else create user
-      if (emailExists.length > 0) {
-        return null;
-      }
+    if (otpExists == null) {
+      return null;
+    }
+
+    if (otpExists.otp == user.otp) {
       const createdUser = new this.userModel(user);
 
       var newUser = await createdUser.save();
@@ -48,7 +47,7 @@ export class AuthService {
         password: newUser.password,
         adminId: newUser._id,
       };
-    } catch (error) {
+    } else {
       return null;
     }
   }
@@ -57,15 +56,12 @@ export class AuthService {
     // Check if email already exists before logging in and then use bycrypt to compare password if both pass login successfully if not return exact message
     // Check if email is already taken before adding user
     const emailExists = await this.userModel.findOne({ email: user.email });
-  
 
     if (emailExists == null) {
       const employeeExists = await this.employeeModel.findOne({
         email: user.email,
       });
 
-      
-      
       const match = await bcrypt.compare(
         user.password,
         employeeExists.password,
@@ -105,7 +101,7 @@ export class AuthService {
           adminId: emailExists._id,
           email: emailExists.email,
           password: emailExists.password,
-          perms: []
+          perms: [],
         };
       } else {
         return null;
@@ -116,7 +112,7 @@ export class AuthService {
   async sendOtp(email: string): Promise<any> {
     const emailExists = await this.userModel.findOne({ email: email });
     console.log(emailExists);
-    if (emailExists == null) {
+    if (emailExists != null) {
       return null;
     }
 
