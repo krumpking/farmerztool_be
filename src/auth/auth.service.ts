@@ -12,6 +12,7 @@ import { dirname } from 'path';
 import handlebars from 'handlebars';
 import { EMPLOYEE_MODEL } from 'src/admin/constants/admin.constants';
 import { Employee } from 'src/admin/interfaces/employee.interface';
+import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 
 @Injectable()
 export class AuthService {
@@ -26,29 +27,37 @@ export class AuthService {
   ) {}
 
   async addUser(user: UserDto): Promise<any> {
-    const otpExists = await this.otpModel.findOne({ otp: user.otp });
+    const emailExists = await this.employeeModel.findOne({
+      email: user.email,
+    });
 
-    if (otpExists == null) {
+    if (emailExists != null) {
       return null;
-    }
-
-    if (otpExists.otp == user.otp) {
-      const createdUser = new this.userModel(user);
-
-      var newUser = await createdUser.save();
-      const payload = {
-        adminId: newUser._id,
-        email: newUser.email,
-        password: newUser.password,
-      };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        email: newUser.email,
-        password: newUser.password,
-        adminId: newUser._id,
-      };
     } else {
-      return null;
+      const otpExists = await this.otpModel.findOne({ otp: user.otp });
+
+      if (otpExists == null) {
+        return null;
+      }
+
+      if (otpExists.otp == user.otp) {
+        const createdUser = new this.userModel(user);
+
+        var newUser = await createdUser.save();
+        const payload = {
+          adminId: newUser._id,
+          email: newUser.email,
+          password: newUser.password,
+        };
+        return {
+          access_token: await this.jwtService.signAsync(payload),
+          email: newUser.email,
+          password: newUser.password,
+          adminId: newUser._id,
+        };
+      } else {
+        return null;
+      }
     }
   }
 
@@ -110,12 +119,6 @@ export class AuthService {
   }
 
   async sendOtp(email: string): Promise<any> {
-    const emailExists = await this.userModel.findOne({ email: email });
-    console.log(emailExists);
-    if (emailExists != null) {
-      return null;
-    }
-
     const appDir = dirname(require.main.path);
 
     readHTMLFile(
@@ -144,46 +147,35 @@ export class AuthService {
 
         const htmlToSend = template(replacements);
 
-        // const transporter = nodemailer.createTransport({
-        //   host: 'smtp-mail.outlook.com',
-        //   secure: false,
-        //   port: 587,
-        //   auth: {
-        //     user: 'support@famerztool.com',
-        //     pass: 'BusinessSupp101$',
-        //   },
-        //   tls: {
-        //     ciphers: 'SSLv3',
-        //   },
-        // });
-        const transporter = nodemailer.createTransport({
-          service: 'Gmail',
-          host: 'smtp.gmail.com',
-          port: 465,
-          secure: true,
-          auth: {
-            user: 'adaismartfarming@gmail.com',
-            pass: 'iftk uobi ttsy feos',
-          },
-        });
+        const connectionString =
+          'endpoint=https://farmerztoolcommsservice.unitedstates.communication.azure.com/;accesskey=8keRIH8BsaK0RqbSEuNO9PWRFlcRljH987qWBpcpjQcMvW55NwvGJQQJ99AHACULyCpB7fcQAAAAAZCSuwZw';
+        const client = new EmailClient(connectionString);
 
-        const mailOptions = {
-          from: 'support@farmerztool.com',
-          to: email,
-          subject: `One Time Password`,
-          html: htmlToSend,
+        const emailMessage = {
+          senderAddress:
+            'DoNotReply@ecbfcf1d-9676-45a9-9a59-84b5c339b606.azurecomm.net',
+          content: {
+            subject: 'One Time Password',
+            html: htmlToSend,
+          },
+          recipients: {
+            to: [{ address: email }],
+          },
         };
 
-        transporter.sendMail(
-          mailOptions,
-          (error: any, info: { response: any }) => {
-            if (error) {
-              console.error(error);
-            } else {
-              console.log(info.response);
-            }
-          },
-        );
+        const poller = await client.beginSend(emailMessage);
+
+        const status = poller.getResult();
+
+        if (status != null && typeof status === 'string') {
+          if (status === KnownEmailSendStatus.Succeeded) {
+            return true;
+          } else {
+            return null;
+          }
+        } else {
+          return null;
+        }
       },
     );
   }

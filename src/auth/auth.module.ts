@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { DatabaseModule } from 'src/database/database.module';
-import { otpProviders, userProviders,employeeProviders } from './auth.providers';
+import {
+  otpProviders,
+  userProviders,
+  employeeProviders,
+} from './auth.providers';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from 'src/common/constants';
 import { APP_GUARD } from '@nestjs/core';
@@ -22,6 +26,7 @@ import { AuthGuard } from './auth.guard';
     ...userProviders,
     ...otpProviders,
     ...employeeProviders,
+
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
