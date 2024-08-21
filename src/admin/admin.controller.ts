@@ -2,7 +2,6 @@ import {
   Controller,
   Post,
   Body,
-  Patch,
   Param,
   Get,
   Delete,
@@ -10,7 +9,7 @@ import {
 import { AdminService } from './admin.service';
 import { CreateFarmDto } from './dto/create-admin.dto';
 import { ResponseDto } from 'src/common/response.dto';
-import { permission } from 'process';
+// import { permission } from 'process';
 import { EmployeeDto } from './dto/employee.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -42,7 +41,7 @@ export class AdminController {
   }
 
   @Get('farm/:adminId')
-  async getFarm(@Param('adminId') adminId: String): Promise<ResponseDto> {
+  async getFarm(@Param('adminId') adminId: string): Promise<ResponseDto> {
     const employee = await this.adminService.getFarm(adminId);
 
     if (employee == null) {
@@ -61,7 +60,7 @@ export class AdminController {
   }
 
   @Get('users/:adminId')
-  async getEmployees(@Param('adminId') adminId: String): Promise<ResponseDto> {
+  async getEmployees(@Param('adminId') adminId: string): Promise<ResponseDto> {
     const employee = await this.adminService.getEmployees(adminId);
 
     if (employee == null) {
@@ -87,7 +86,7 @@ export class AdminController {
 
     const hash = await bcrypt.hash(employeeDto.password, saltOrRounds);
 
-    let newUser: EmployeeDto = {
+    const newUser: EmployeeDto = {
       email: employeeDto.email,
       password: hash,
       adminId: employeeDto.adminId,
