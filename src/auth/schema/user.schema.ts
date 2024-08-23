@@ -1,8 +1,15 @@
 import * as mongoose from 'mongoose';
-import { Admin } from 'typeorm';
 
 export const UserSchema = new mongoose.Schema({
-  email: String,
-  password: String,
-  adminId: String,
+  fullName: {type: String, required: false},
+  phoneNumber: {type: String, required: false},
+  position: {type: String, required: false},
+  dateJoined: {type: String, required: false},
+  role: {type: String, enum: ["Admin", "Manager", "Finance", "Animal Manger", "Crop Management"], required: false},
+  permissions: {type: [String], default: []},
+  email: {type: String  , required: true},
+  password: {type: String, required: true},
+  farmArea: {type: String, required: false},
+  otp: {type: String, required: false},
+  otpCreatedAt: {type: Date, required: false}
 });

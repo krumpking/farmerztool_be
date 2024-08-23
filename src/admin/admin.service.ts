@@ -44,7 +44,7 @@ export class AdminService {
     }
   }
 
-  async getFarm(adminId: String): Promise<any> {
+  async getFarm(adminId: string): Promise<any> {
     try {
       // Check if farm name is already taken before adding farm
       const farmExists = await this.farmModel.find({
@@ -62,7 +62,7 @@ export class AdminService {
     }
   }
 
-  async getEmployees(adminId: String): Promise<any> {
+  async getEmployees(adminId: string): Promise<any> {
     try {
       // Check if farm name is already taken before adding farm
       const employeesExists = await this.employeeModel.find({
