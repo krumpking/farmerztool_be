@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsString } from "class-validator";
+import { IsDate, IsEmail, IsString } from "class-validator";
 
 export class Otp {
   @ApiProperty({
@@ -17,4 +17,12 @@ export class Otp {
   })
   @IsString()
   otp: string;
+
+  @ApiProperty({
+    description: "OTP expiring time",
+    example: "2024-08-23-T14:00:00Z",
+    required: true
+  })
+  @IsDate()
+  expiresAt: Date;
 }

@@ -72,4 +72,13 @@ export class UpdateOtp {
   @IsString()
   @IsOptional()
   farmArea?: string;
+
+  @ApiProperty({
+    description: "otp",
+    example: "123456",
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  otp?: string;
 }

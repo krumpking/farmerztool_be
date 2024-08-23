@@ -10,4 +10,6 @@ export const UserSchema = new mongoose.Schema({
   email: {type: String  , required: true},
   password: {type: String, required: true},
   farmArea: {type: String, required: false},
+  otp: {type: String, required: false},
+  otpCreatedAt: {type: Date, required: false}
 });

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEmail, IsEnum, IsArray, ArrayContains } from 'class-validator';
+import { IsString, IsOptional, IsEmail, IsEnum, IsArray, ArrayContains} from 'class-validator';
 
 export class UserDto {
   @ApiProperty({
@@ -79,4 +79,21 @@ export class UserDto {
   @IsString()
   @IsOptional()
   farmArea?: string;
+
+  @ApiProperty({
+    description: "otp",
+    example: "123456",
+    required: false
+  })
+  @IsString()
+  @IsOptional()
+  otp?: string;
+
+  @ApiProperty({
+    description: "OTP expiring time",
+    example: "2024-08-23-T14:00:00Z",
+    required: false
+  })
+  @IsOptional()
+  otpCreatedAt?: Date;
 }

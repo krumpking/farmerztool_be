@@ -1,4 +1,4 @@
-import {  Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
 import { User } from './interfaces/user.interface';
 import { Model } from 'mongoose';
@@ -26,24 +26,33 @@ export class AuthService {
     private jwtService: JwtService,
     @Inject(EMPLOYEE_MODEL)
     private employeeModel: Model<Employee>,
-  ) {}
+  ) { }
 
 
-  async addUser(userDto: UserDto): Promise<ResponseDto>{
+  async addUser(userDto: UserDto): Promise<ResponseDto> {
     const response = new ResponseDto();
-    const userExist = await this.userModel.findOne({email: userDto.email});
+    const userExist = await this.userModel.findOne({ email: userDto.email });
 
-    if(userExist){
+    if (userExist) {
       response.success = false;
       response.message = "User already exist";
       response.data = null;
       return response;
     }
 
+    //password must be 6 characters long
+
+    if (userDto.password.split("").length < 6) {
+      response.success = false;
+      response.message = "Password must be 6 characters long";
+      return response;
+    }
+
+
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
 
-    const newUser = new this.userModel({...userDto, password: hashedPassword});
+    const newUser = new this.userModel({ ...userDto, password: hashedPassword });
 
     const savedUser = await newUser.save();
 
@@ -112,7 +121,8 @@ export class AuthService {
     }
   }
 
-  async sendOtp(email: string): Promise<any> {
+  async sendOtp(email: string): Promise<ResponseDto> {
+    const response = new ResponseDto();
     const appDir = dirname(require.main.path);
 
     readHTMLFile(
@@ -125,18 +135,41 @@ export class AuthService {
 
         const randomString = generatorRandomString(6);
 
+        //OTP should be one hour after that delete it from db
+
+        const otpExpiryTime = new Date(Date.now() + 60 * 60 * 1000);
+
         // Create Otp model and save to database
         const otpModel = {
           email: email,
           otp: randomString,
+          expiresAt: otpExpiryTime
         };
 
         const otpM = new this.otpModel(otpModel);
         await otpM.save();
 
+        //save the otp to user model
+        const userUpdateOnOTP = await this.userModel.findOneAndUpdate({ email: email },
+          {
+            $set: {
+              otp: randomString,
+              otpCreatedAt: new Date()
+            }
+          },
+          { new: true });
+
+        if (!userUpdateOnOTP) {
+          response.success = false;
+          response.message = "Invalid email";
+          response.data = null;
+          return response;
+        }
+
         const template = handlebars.compile(html);
         const replacements = {
           otp: randomString,
+          validity: "1 hour",
         };
 
         const htmlToSend = template(replacements);
@@ -172,46 +205,64 @@ export class AuthService {
         }
       },
     );
+
+    response.success = true,
+      response.message = "OTP sent successfully",
+      response.data = null;
+    return response;
   }
 
   async updatePassword(
     email: string,
-    oldPassword: string,
+    otp: string,
     newPassowrd: string,
   ): Promise<ResponseDto> {
 
     const response = new ResponseDto();
 
-    const user = await this.userModel.findOne({email}).exec();
+    const user = await this.userModel.findOne({ email });
 
-    if(!user){
+    if (!user) {
       response.success = false;
       response.message = 'User not found';
       response.data = null;
       return response;
     }
 
-    const isOldPasswordValid = await bcrypt.compare(oldPassword, user.password);
-    if (!isOldPasswordValid) {
+    if (newPassowrd.split("").length < 6) {
       response.success = false;
-      response.message = 'Old password is not valid';
-      response.data = null;
+      response.message = 'Password should be 6 characters long';
       return response;
     }
 
-    const isNewPasswordSameAsOld = await bcrypt.compare(newPassowrd, user.password);
-    if (isNewPasswordSameAsOld) {
+    if (user.otp !== otp) {
       response.success = false;
-      response.message = 'New password is same as old password';
-      response.data = null;
+        response.message = "Invalid OTP";
+        response.data = null;
+      return response;
+    }
+
+    // now lets check if otp hasnt expired
+
+    const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
+    if (user.otpCreatedAt < oneHourAgo) {
+      response.success = false;
+        response.message = "OTP has expired";
+        response.data = null;
       return response;
     }
 
     const salt = await bcrypt.genSalt(10);
-
     const hashedPassword = await bcrypt.hash(newPassowrd, salt);
-    user.password = hashedPassword;
-    await user.save();
+
+    const updatePassword = await this.userModel.findOneAndUpdate({ email: email }, { $set: { password: hashedPassword } }, { new: true });
+
+    if (!updatePassword) {
+      response.success = false;
+      response.message = "Failed to update password";
+      response.data = null;
+      return response;
+    }
 
     response.success = true;
     response.message = 'Password updated successfully';
@@ -222,10 +273,10 @@ export class AuthService {
 
 
   async updateUser(updateDto: UpdateOtp): Promise<ResponseDto> {
-    const newUser = await this.userModel.findOneAndUpdate({email: updateDto.email}, updateDto, {new: true});
+    const newUser = await this.userModel.findOneAndUpdate({ email: updateDto.email }, updateDto, { new: true });
     const response = new ResponseDto();
     if (!newUser) {
-      response.success = false; 
+      response.success = false;
       response.message = 'User not found';
       response.data = null;
       return response;

@@ -30,13 +30,8 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  async login(@Body('user') userDto: UserDto): Promise<ResponseDto> {
-    const _user = await this.authService.login(userDto);
-    if (_user !== null) {
-      return { data: _user, message: 'Login successful', success: true };
-    } else {
-      return { data: null, message: 'Login unsuccessful', success: false };
-    }
+  async login(@Body() userDto: UserDto): Promise<ResponseDto> {
+    return this.authService.login(userDto);
   }
 
   @Public()
@@ -59,9 +54,9 @@ export class AuthController {
   async updatePassword(
     @Body('email') email: string,
     @Body('newPassword') newPassword: string,
-    @Body('oldPassword') oldPassword: string
+    @Body('otp') otp: string
   ): Promise<ResponseDto> {
-    return this.authService.updatePassword(email, oldPassword, newPassword);
+    return this.authService.updatePassword(email, otp, newPassword);
   }
 
   
