@@ -64,62 +64,87 @@ export class AuthService {
   }
 
 
-  async login(user: UserDto): Promise<any> {
-    // Check if email already exists before logging in and then use bycrypt to compare password if both pass login successfully if not return exact message
-    // Check if email is already taken before adding user
+  async login(user: UserDto): Promise<ResponseDto> {
+    const response = new ResponseDto();
+
     const emailExists = await this.userModel.findOne({ email: user.email });
+    if (!emailExists) {
+      const employeeExists = await this.employeeModel.findOne({ email: user.email });
 
-    if (emailExists == null) {
-      const employeeExists = await this.employeeModel.findOne({
-        email: user.email,
-      });
+      if (!employeeExists) {
+        response.success = false;
+        response.message = "User not found";
+        return response;
+      }
 
-      const match = await bcrypt.compare(
-        user.password,
-        employeeExists.password,
-      );
+      if (!employeeExists.password) {
+        response.success = false;
+        response.message = "Password not found";
+        return response;
+      }
 
-      const payload = {
-        id: employeeExists._id,
-        email: employeeExists.email,
-        password: employeeExists.password,
-      };
+      const match = await bcrypt.compare(user.password, employeeExists.password);
 
       if (match) {
-        console.log(employeeExists);
-        return {
+        const payload = {
+          id: employeeExists._id,
+          email: employeeExists.email,
+          password: employeeExists.password,
+        };
+
+        const userData = {
           access_token: await this.jwtService.signAsync(payload),
           adminId: employeeExists._id,
           email: employeeExists.email,
           password: employeeExists.password,
           perms: employeeExists.perms,
         };
+
+        response.success = true;
+        response.message = "Login successful";
+        response.data = userData;
+        return response;
       } else {
-        console.log(null);
-        return null;
+        response.success = false;
+        response.message = "Invalid password";
+        return response;
       }
     } else {
+      if (!emailExists.password) {
+        response.success = false;
+        response.message = "Password not found";
+        return response;
+      }
+
       const match = await bcrypt.compare(user.password, emailExists.password);
 
-      const payload = {
-        id: emailExists._id,
-        email: emailExists.email,
-        password: emailExists.password,
-      };
-
       if (match) {
-        return {
+        const payload = {
+          id: emailExists._id,
+          email: emailExists.email,
+          password: emailExists.password,
+        };
+
+        const userData = {
           access_token: await this.jwtService.signAsync(payload),
           adminId: emailExists._id,
           email: emailExists.email,
           password: emailExists.password,
           perms: [],
         };
+
+        response.success = true;
+        response.message = "Login successful";
+        response.data = userData;
+        return response;
       } else {
-        return null;
+        response.success = false;
+        response.message = "Invalid password";
+        return response;
       }
     }
   }
+ 
 
   async sendOtp(email: string): Promise<ResponseDto> {
     const response = new ResponseDto();
@@ -237,8 +262,8 @@ export class AuthService {
 
     if (user.otp !== otp) {
       response.success = false;
-        response.message = "Invalid OTP";
-        response.data = null;
+      response.message = "Invalid OTP";
+      response.data = null;
       return response;
     }
 
@@ -247,8 +272,8 @@ export class AuthService {
     const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
     if (user.otpCreatedAt < oneHourAgo) {
       response.success = false;
-        response.message = "OTP has expired";
-        response.data = null;
+      response.message = "OTP has expired";
+      response.data = null;
       return response;
     }
 

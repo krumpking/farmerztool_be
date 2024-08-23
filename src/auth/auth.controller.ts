@@ -30,7 +30,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  async login(@Body() userDto: UserDto): Promise<ResponseDto> {
+  async login(@Body() userDto: UserDto): Promise<any> {
     return this.authService.login(userDto);
   }
 
