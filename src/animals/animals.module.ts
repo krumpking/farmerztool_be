@@ -8,6 +8,7 @@ import {
   vaccinationProviders
 } from './animal.providers';
 import { DatabaseModule } from 'src/database/database.module';
+import { userProviders } from 'src/auth/auth.providers';
 
 @Module({
   imports: [DatabaseModule],
@@ -18,6 +19,7 @@ import { DatabaseModule } from 'src/database/database.module';
     ...breedingProviders,
     ...feedProviders,
     ...vaccinationProviders,
+    ...userProviders,
   ],
 })
 export class AnimalsModule {}

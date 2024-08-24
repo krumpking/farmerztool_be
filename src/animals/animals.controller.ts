@@ -2,78 +2,78 @@ import {
   Controller,
   Get,
   Post,
-  Body,
-  Patch,
-  Param,
   Delete,
+  Body,
+  Param,
+  Request,
+  HttpException,
+  Patch,
 } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { CreateBreedingDto } from './dto/breeding.dto';
 import { CreateFeedDto } from './dto/feed.dto';
 import { CreateVaccinationDto } from './dto/vaccination.dto';
+import { ApiTags } from '@nestjs/swagger';
+import { UpdateAnimalDto } from './dto/update-animal.dto';
 
 
-@Controller('animals')
+
+@ApiTags("ANIMALS")
+@Controller('/api/v1/animals')
 export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}
 
-  @Post('add')
-  async create(@Body('animal') createAnimalDto: CreateAnimalDto) {
-    const _addAnimal = await this.animalsService.addAnimal(createAnimalDto);
+  /////////////////////// ANIMALS //////////////////////////////////////////////////////
 
-    if (_addAnimal == null) {
-      return {
-        data: null,
-        message: 'There was an error adding animal',
-        success: false,
-      };
+  @Post('add')
+  async create(@Body() createAnimalDto: CreateAnimalDto, @Request() req) {
+
+    const check = req.user.roles === "Admin";
+    if (check) {
+      return this.animalsService.addAnimal(createAnimalDto);
     } else {
-      return {
-        data: _addAnimal,
-        message: 'Animal added successfully',
-        success: true,
-      };
+      throw new HttpException("Unauthorised", 401);
     }
   }
 
-  @Get(':animal')
-  async getAnimal(@Param('animal') animal: String) {
-    const _addAnimal = await this.animalsService.getAnimal(animal);
-
-    if (_addAnimal == null) {
-      return {
-        data: null,
-        message: 'There was an error getting animal',
-        success: false,
-      };
+  @Get(':animalId')
+  async getAnimal(@Param('animalId') animalId: string, @Request() req) {
+    if(req.user.roles === "Admin"){
+      return this.animalsService.getAnimal(animalId);
     } else {
-      return {
-        data: _addAnimal,
-        message: 'Got animal successfully',
-        success: true,
-      };
+      throw new HttpException("Unauthorised", 401);
     }
   }
 
   @Get('all/:adminId')
-  async getAllAnimals(@Param('adminId') adminId: String) {
-    const allAnimals = await this.animalsService.getAllMyAnimals(adminId);
-
-    if (allAnimals == null) {
-      return {
-        data: null,
-        message: 'There was an error getting animals',
-        success: false,
-      };
+  async getAllAnimals(@Param('adminId') adminId: string , @Request() req) {
+    if(req.user.roles === "Admin"){
+      return this.animalsService.getAllMyAnimals(adminId);
     } else {
-      return {
-        data: allAnimals,
-        message: 'Got animal successfully',
-        success: true,
-      };
+      throw new HttpException("Unauthorised", 401);
     }
   }
+
+  @Patch(':animalId')
+  async updateAnimal(@Param('animalId') animalId: string, @Request() req, @Body() updateAnimalDto: UpdateAnimalDto){
+    if(req.user.roles === "Admin"){
+      return this.animalsService.updateAnimal(animalId, updateAnimalDto);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+  }
+
+  @Delete(':animalId')
+  async deleteAnimal(@Param('animalId') animalId: string, @Request() req){
+    if(req.user.roles === "Admin"){
+      return this.animalsService.deleteAnimal(animalId);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+  }
+
+  ///////////////////////////////////////////// BREEDING ///////////////////////////////////////////////////  
 
   @Post('add/breeding/info')
   async addBreed(@Body('breed') breedingInfo: CreateBreedingDto) {
@@ -96,7 +96,7 @@ export class AnimalsController {
   }
 
   @Get('breeding/:animal')
-  async getAnimalBreedingInfo(@Param('animal') animal: String) {
+  async getAnimalBreedingInfo(@Param('animal') animal: string) {
     const _getAnimal = await this.animalsService.getAnimalBreedingInfo(animal);
 
     if (_getAnimal == null) {
@@ -116,7 +116,7 @@ export class AnimalsController {
 
   // Get one breeding info
   @Get('breeding/:adminId')
-  async getAllBreedingInfo(@Param('adminId') adminId: String) {
+  async getAllBreedingInfo(@Param('adminId') adminId: string) {
     const allAnimals = await this.animalsService.getAllBreedingInfo(adminId);
 
     if (allAnimals == null) {
@@ -154,7 +154,7 @@ export class AnimalsController {
   }
 
   @Get('feeding/:animal')
-  async getAnimalFeedingInfo(@Param('animal') animal: String) {
+  async getAnimalFeedingInfo(@Param('animal') animal: string) {
     const _getAnimal = await this.animalsService.getAnimalFeedingInfo(animal);
 
     if (_getAnimal == null) {

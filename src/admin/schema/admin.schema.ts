@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 export const FarmSchema = new mongoose.Schema({
   adminId: { type: String, required: true },
   farmName: { type: String, required: true },
-   farmerName:{ type: String, required: true },
+  farmerName:{ type: String, required: true },
   farmerAge:{ type: String, required: true },
   farmerPhoneNumber: { type: String, required: true },
   locationCity: { type: String, required: true },

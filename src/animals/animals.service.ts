@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import {
   ANIMAL_MODEL,
   BREEDING_MODEL,
@@ -14,6 +14,10 @@ import { CreateBreedingDto } from './dto/breeding.dto';
 import { CreateFeedDto } from './dto/feed.dto';
 import { Feed } from './interfaces/feed.interface';
 import { Vaccination } from './interfaces/vaccination.interface';
+import { ResponseDto } from 'src/common/response.dto';
+import { USER_MODEL } from 'src/auth/constants/auth.constants';
+import { UserDto } from 'src/auth/dto/user.dto';
+import { UpdateAnimalDto } from './dto/update-animal.dto';
 
 @Injectable()
 export class AnimalsService {
@@ -26,58 +30,102 @@ export class AnimalsService {
     private feedingModel: Model<Feed>,
     @Inject(VACCINATION_MODEL)
     private vaccinationModel: Model<Vaccination>,
-  ) {}
+    @Inject(USER_MODEL)
+    private userModel: Model<UserDto>
+  ) { }
 
-  async addAnimal(createAnimalDto: CreateAnimalDto): Promise<any> {
+
+  ////////////////////////// ANIMALS //////////////////////////////////////////////
+  async addAnimal(createAnimalDto: CreateAnimalDto): Promise<ResponseDto> {
     try {
-      // Check if email is already taken before adding user
-      const animalExists = await this.animalModel.find({
-        animalId: createAnimalDto.animalId,
-      });
+      //check if animal exist
 
-      // If email exists, return email already exists message and success false, else create user
-      if (animalExists.length > 0) {
-        // if farm exists upadate the farm
-        return this.animalModel.findOneAndUpdate(
-          { adminId: createAnimalDto.adminId },
-          createAnimalDto,
-          { new: true },
-        );
+      const animalExists = await this.animalModel.findOne({animalId: createAnimalDto.animalId});
+      
+
+      if (animalExists) {
+        return ResponseDto.errorResponse("Animal already exists");
       }
-      const createdAnimal = new this.animalModel(createAnimalDto);
+      const newAnimalInstance = new this.animalModel(createAnimalDto);
 
-      var newAnimal = await createdAnimal.save();
-      return newAnimal;
+      if (!newAnimalInstance) {
+        return ResponseDto.errorResponse("Failed to create animal record");
+      };
+
+
+      const createdAnimal = await newAnimalInstance.save();
+
+      return ResponseDto.successResponse("Animal record created successfully", createdAnimal);
+  
     } catch (error) {
-      return null;
+      console.log(error);
+      return ResponseDto.errorResponse("Somethinng went wrong. Failed to create animal record");
     }
   }
 
-  async getAnimal(animalId: String): Promise<any> {
+  async getAnimal(animalId: string): Promise<ResponseDto> {
     try {
-      // Check if email is already taken before adding user
-      const animalExists = await this.animalModel.find({
+      //check if annimal exist
+      const animalExists = await this.animalModel.findOne({
         animalId: animalId,
       });
 
-      return animalExists;
-    } catch (error) {
-      return null;
+      if(!animalExists){
+          return ResponseDto.errorResponse("Failed to fetch animal");
+        }
+        
+        return ResponseDto.successResponse("Animal found", animalExists);
+      } catch (error) {
+        return ResponseDto.errorResponse("Something went wrong while fetching the animal");
     }
   }
 
-  async getAllMyAnimals(adminId: String): Promise<any> {
+  async getAllMyAnimals(adminId: string): Promise<ResponseDto> {
     try {
       // Check if email is already taken before adding user
       const animalExists = await this.animalModel.find({
         adminId: adminId,
       });
 
-      return animalExists;
+      if(!animalExists || animalExists.length <= 0){
+        return ResponseDto.errorResponse("Failed to fetch animals");
+      }
+
+      return ResponseDto.successResponse("Animals fetched successfully", animalExists);
     } catch (error) {
-      return null;
+      return ResponseDto.errorResponse("Something went wrong. Failed to fetch animal");
     }
   }
+
+  async updateAnimal(animalId: string, updateAnimalDto: UpdateAnimalDto): Promise<ResponseDto>{
+    try {
+      const animalExist = await this.animalModel.findOneAndUpdate({animalId}, updateAnimalDto, {new: true}).exec();
+
+      if(!animalExist){
+        throw new HttpException("Animal not found", 404);
+      }
+
+      return ResponseDto.successResponse("Animal updated successfully", animalExist);
+    } catch (error) {
+      return ResponseDto.errorResponse('Something went wrong updating animal')
+    }
+  }
+
+  async deleteAnimal(animalId: string): Promise<ResponseDto>{
+    try {
+      const animal = await this.animalModel.findOneAndDelete({animalId});
+      if(!animal){
+        return ResponseDto.errorResponse("Failed to delete animal");
+      }
+      return ResponseDto.successResponse("Animal deteted successfully", "")
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong deleting animal")
+    }
+  }
+
+
+
+  ////////////////////////////////////// BREEDING //////////////////////////////////////////////
 
   async addBreedingInfo(breedingInfo: CreateBreedingDto): Promise<any> {
     try {
@@ -96,14 +144,14 @@ export class AnimalsService {
       }
       const addedBreedingInfo = new this.breedingModel(breedingInfo);
 
-      var newBreedingInfo = await addedBreedingInfo.save();
+      const newBreedingInfo = await addedBreedingInfo.save();
       return newBreedingInfo;
     } catch (error) {
       return null;
     }
   }
 
-  async getAnimalBreedingInfo(animalId: String): Promise<any> {
+  async getAnimalBreedingInfo(animalId: string): Promise<any> {
     try {
       // Check if email is already taken before adding user
       const animalExists = await this.breedingModel.find({
@@ -116,7 +164,7 @@ export class AnimalsService {
     }
   }
 
-  async getAllBreedingInfo(adminId: String): Promise<any> {
+  async getAllBreedingInfo(adminId: string): Promise<any> {
     try {
       // Check if email is already taken before adding user
       const animalExists = await this.breedingModel.find({
@@ -134,14 +182,14 @@ export class AnimalsService {
       // Check if email is already taken before adding user
       const feed = new this.feedingModel(feedInfo);
 
-      var newBreedingInfo = await feed.save();
+      const newBreedingInfo = await feed.save();
       return newBreedingInfo;
     } catch (error) {
       return null;
     }
   }
 
-  async getAnimalFeedingInfo(animalId: String): Promise<any> {
+  async getAnimalFeedingInfo(animalId: string): Promise<any> {
     try {
       // Check if email is already taken before adding user
       const animalExists = await this.feedingModel.find({
@@ -159,7 +207,7 @@ export class AnimalsService {
       // Check if email is already taken before adding user
       const vaccine = new this.vaccinationModel(vaccinationInfo);
 
-      var newVaccinationInfo = await vaccine.save();
+      const newVaccinationInfo = await vaccine.save();
       return newVaccinationInfo;
     } catch (error) {
       return null;

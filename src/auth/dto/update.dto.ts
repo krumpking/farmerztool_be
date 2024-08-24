@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsEmail, IsOptional, IsString } from "class-validator";
+import { IsArray, IsEmail, IsEnum, IsOptional, IsString } from "class-validator";
 
 export class UpdateOtp {
   @ApiProperty({
@@ -51,9 +51,9 @@ export class UpdateOtp {
     example: "Admin",
     required: false
   })
-  @IsString()
+  @IsEnum(['Admin', 'Manager', 'Finance', 'Animal Manger', 'Crop Management'])
   @IsOptional()
-  role?: "Admin" | "Manager" | "Finance" | "Animal Manger" | "Crop Management";
+  role?: 'Admin' | 'Manager' | 'Finance' | 'Animal Manger' | 'Crop Management';
 
   @ApiProperty({
     description: "Permissions of the user",
