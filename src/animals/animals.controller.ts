@@ -17,6 +17,7 @@ import { CreateVaccinationDto } from './dto/vaccination.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { UpdateBreedingDto } from './dto/updateBreeding.dto';
+import { UpdateFeedDto } from './dto/updateFeed.dto';
 
 
 
@@ -76,7 +77,7 @@ export class AnimalsController {
 
   ////////////////////////// BREEDING //////////////////////////////////////////////
 
-@Post('add')
+@Post('breeding/add')
 async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Request() req) {
   if (req.user.roles === "Admin") {
     return this.animalsService.addBreedingInfo(createBreedingDto);
@@ -85,7 +86,7 @@ async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Request() re
   }
 }
 
-@Get(':animalId')
+@Get('breeding/:animalId')
 async getBreedingInfo(@Param('animalId') animalId: string, @Request() req) {
   if (req.user.roles === "Admin") {
     return this.animalsService.getAnimalBreedingInfo(animalId);
@@ -94,7 +95,7 @@ async getBreedingInfo(@Param('animalId') animalId: string, @Request() req) {
   }
 }
 
-@Get('all/:adminId')
+@Get('breeding/all/:adminId')
 async getAllBreedingInfo(@Param('adminId') adminId: string, @Request() req) {
   if (req.user.roles === "Admin") {
     return this.animalsService.getAllBreedingInfo(adminId);
@@ -103,7 +104,7 @@ async getAllBreedingInfo(@Param('adminId') adminId: string, @Request() req) {
   }
 }
 
-@Patch(':animalId')
+@Patch('breeding/:animalId')
 async updateBreeding(@Param('animalId') animalId: string, @Request() req, @Body() updateBreedingDto: UpdateBreedingDto) {
   if (req.user.roles === "Admin") {
     return this.animalsService.updateBreedingInfo(updateBreedingDto);
@@ -112,7 +113,7 @@ async updateBreeding(@Param('animalId') animalId: string, @Request() req, @Body(
   }
 }
 
-@Delete(':animalId')
+@Delete('breeding/:animalId')
 async deleteBreeding(@Param('animalId') animalId: string, @Request() req) {
   if (req.user.roles === "Admin") {
     return this.animalsService.deleteBreedingInfo(animalId);
@@ -123,43 +124,53 @@ async deleteBreeding(@Param('animalId') animalId: string, @Request() req) {
 
  ////////////////// FEEDING /////////////////////////////////////////////////////////
 
-  @Post('add/feeding/info')
-  async addFeed(@Body('feed') feedInfo: CreateFeedDto) {
-    const _addFeed = await this.animalsService.addFeed(feedInfo);
+ @Post('feeding/add/info')
+ async createFeeding(@Body() createFeedingDto: CreateFeedDto, @Request() req) {
+   if (req.user.roles === "Admin") {
+     return this.animalsService.addFeed(createFeedingDto);
+   } else {
+     throw new HttpException("Unauthorised", 401);
+   }
+ }
 
-    if (_addFeed == null) {
-      return {
-        data: null,
-        message: 'There was an error adding feed info',
-        success: false,
-      };
-    } else {
-      return {
-        data: _addFeed,
-        message: 'Feed added successfully',
-        success: true,
-      };
-    }
-  }
+ @Get('feeding/:feedId')
+ async getFeedingInfo(@Param('feedId') feedId: string, @Request() req) {
+   if (req.user.roles === "Admin") {
+     return this.animalsService.getFeedingInfo(feedId);
+   } else {
+     throw new HttpException("Unauthorised", 401);
+   }
+ }
 
-  @Get('feeding/:animal')
-  async getAnimalFeedingInfo(@Param('animal') animal: string) {
-    const _getAnimal = await this.animalsService.getAnimalFeedingInfo(animal);
+ @Get('feeding/all/:adminId')
+ async getAllFeedingInfo(@Param('adminId') adminId: string, @Request() req) {
+   if (req.user.roles === "Admin") {
+     return this.animalsService.getAllAnimalFeedingInfo(adminId);
+   } else {
+     throw new HttpException("Unauthorised", 401);
+   }
+ }
 
-    if (_getAnimal == null) {
-      return {
-        data: null,
-        message: 'There was an error getting animal feeding info',
-        success: false,
-      };
-    } else {
-      return {
-        data: _getAnimal,
-        message: 'Got animal feed info successfully',
-        success: true,
-      };
-    }
-  }
+ @Patch('feeding/:feedId')
+ async updateFeeding(@Param('feedId') feedId: string, @Request() req, @Body() updateFeedingDto: UpdateFeedDto) {
+   if (req.user.roles === "Admin") {
+     return this.animalsService.updateFeed(feedId, updateFeedingDto);
+   } else {
+     throw new HttpException("Unauthorised", 401);
+   }
+ }
+
+ @Delete('feeding/:feedId')
+ async deleteFeeding(@Param('feedId') feedId: string, @Request() req) {
+   if (req.user.roles === "Admin") {
+     return this.animalsService.deleteFeed(feedId);
+   } else {
+     throw new HttpException("Unauthorised", 401);
+   }
+ }
+
+
+ /////////////////////////VACCINATION/////////////////////////////////////////////
 
    @Post('add/vaccination/info')
   async addVaccination(@Body('vaccination') vaccination: CreateVaccinationDto) {

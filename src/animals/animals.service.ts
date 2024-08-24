@@ -19,6 +19,7 @@ import { USER_MODEL } from 'src/auth/constants/auth.constants';
 import { UserDto } from 'src/auth/dto/user.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { UpdateBreedingDto } from './dto/updateBreeding.dto';
+import { UpdateFeedDto } from './dto/updateFeed.dto';
 
 @Injectable()
 export class AnimalsService {
@@ -215,30 +216,101 @@ export class AnimalsService {
   }
 
 
-  async addFeed(feedInfo: CreateFeedDto): Promise<any> {
-    try {
-      // Check if email is already taken before adding user
-      const feed = new this.feedingModel(feedInfo);
+  ////////////////////////////////////FEEDING////////////////////////////////////////////////////////////
 
-      const newBreedingInfo = await feed.save();
-      return newBreedingInfo;
+  async addFeed(feedInfo: CreateFeedDto): Promise<ResponseDto> {
+    try {
+      // check feed is exist
+      const feedingInstance = new this.feedingModel(feedInfo);
+
+      if(!feedingInstance){
+        return ResponseDto.errorResponse("Failed to create feed");
+      }
+
+      const feed = await feedingInstance.save();
+
+      return ResponseDto.successResponse("Feed added successfully", feed);
     } catch (error) {
-      return null;
+      return ResponseDto.errorResponse("Something went wrong. Failed to create feed")
     }
   }
 
-  async getAnimalFeedingInfo(animalId: string): Promise<any> {
+  async getFeedingInfo(id: string): Promise<ResponseDto>{
     try {
-      // Check if email is already taken before adding user
+      const feed = await this.feedingModel.findById(id);
+      if(!feed){
+        return ResponseDto.errorResponse("Failed to fetch feed")
+      }
+
+      return ResponseDto.successResponse("Feed fetched", feed);
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong. Failed to fetch feed")
+    }
+  }
+
+  async getAllAnimalFeedingInfo(animalId: string): Promise<any> {
+    try {
+      // CHECK ANIMAL
+      const animal = await this.animalModel.findOne({animalId});
+
+      if(!animal){
+        throw new HttpException("Animal not found", 404);
+      }
+
       const animalExists = await this.feedingModel.find({
         animalId: animalId,
       });
 
-      return animalExists;
+      if(!animalExists || animalExists.length === 0){
+        return ResponseDto.errorResponse("No feeding found")
+      }
+
+      return ResponseDto.successResponse("Feeding fetched", animalExists);
     } catch (error) {
-      return null;
+      return ResponseDto.errorResponse("Something went wrong. Failed to fetch feeds")
     }
   }
+
+  async updateFeed(id: string, updateFeedDto: UpdateFeedDto): Promise<ResponseDto>{
+    try {
+      const updateFeed = await this.feedingModel.findByIdAndUpdate(id, {
+        adminId: updateFeedDto.adminId,
+        addedBy: updateFeedDto.addedBy,
+        animalId: updateFeedDto.animalId,
+        description: updateFeedDto.description,
+        feedType: updateFeedDto.feedType,
+        source: updateFeedDto.source,
+        nutritionalValue: updateFeedDto.nutritionalValue,
+        $push: {barcode: updateFeedDto.barcode}
+      });
+      if(!updateFeed){
+        return ResponseDto.errorResponse("Failed to update feed")
+      }
+      return ResponseDto.successResponse("Feed Updated", updateFeed);
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong. Failed to update feed")
+    }
+  }
+
+  async deleteFeed(id: string): Promise<ResponseDto> {
+    try {
+      const feed = await this.feedingModel.findByIdAndDelete(id);
+      if (!feed) {
+        return ResponseDto.errorResponse("Feed not found");
+      }
+      return ResponseDto.successResponse("Feed deleted successfully", "");
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong. Failed to delete feed");
+    }
+  }
+
+
+
+
+
+
+
+  ////////////////////VACINATION/////////////////////////////////////////////////////////
 
   async addVaccination(vaccinationInfo: CreateVaccinationDto): Promise<any> {
     try {
