@@ -18,6 +18,7 @@ import { ResponseDto } from 'src/common/response.dto';
 import { USER_MODEL } from 'src/auth/constants/auth.constants';
 import { UserDto } from 'src/auth/dto/user.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
+import { UpdateBreedingDto } from './dto/updateBreeding.dto';
 
 @Injectable()
 export class AnimalsService {
@@ -127,55 +128,92 @@ export class AnimalsService {
 
   ////////////////////////////////////// BREEDING //////////////////////////////////////////////
 
-  async addBreedingInfo(breedingInfo: CreateBreedingDto): Promise<any> {
+  async addBreedingInfo(breedingInfo: CreateBreedingDto): Promise<ResponseDto> {
     try {
-      // Check if email is already taken before adding user
-      const breedingInfoExists = await this.breedingModel.find({
-        animalId: breedingInfo.animalId,
-      });
-
-      // If email exists, return email already exists message and success false, else create user
-      if (breedingInfoExists.length > 0) {
-        return this.animalModel.findOneAndUpdate(
-          { adminId: breedingInfo.adminId },
-          breedingInfo,
-          { new: true },
-        );
+      if(breedingInfo.animalId === null){
+        return ResponseDto.errorResponse("null animal id")
       }
-      const addedBreedingInfo = new this.breedingModel(breedingInfo);
+      const animalExist = await this.animalModel.findOne({animalId: breedingInfo.animalId}); 
+      if(!animalExist){
+        return ResponseDto.errorResponse("Animal does not exist");
+      }
 
-      const newBreedingInfo = await addedBreedingInfo.save();
-      return newBreedingInfo;
+      const existingBreedingInfo = await this.breedingModel.findOne({animalId: breedingInfo.animalId});
+
+      if(existingBreedingInfo){
+        return ResponseDto.errorResponse("Breeding information already exist please navigate to the breeding update")
+      }
+
+      const breedingInstance = new this.breedingModel(breedingInfo);
+
+      if(!breedingInstance){
+        return ResponseDto.errorResponse("Failed to add breeding")
+      }
+
+      const createdBreed = await breedingInstance.save();
+
+      return ResponseDto.successResponse("Breed created", createdBreed);
     } catch (error) {
-      return null;
+      return ResponseDto.errorResponse("Something went wrong. Failed to add breeding")
     }
   }
 
-  async getAnimalBreedingInfo(animalId: string): Promise<any> {
+  async getAnimalBreedingInfo(animalId: string): Promise<ResponseDto> {
     try {
-      // Check if email is already taken before adding user
-      const animalExists = await this.breedingModel.find({
+      // check animal brreding info
+      const animalExists = await this.breedingModel.findOne({
         animalId: animalId,
       });
 
-      return animalExists;
+      if(!animalExists){
+        return ResponseDto.errorResponse("Breeding information not found");
+      }
+
+      return ResponseDto.successResponse("Breeding information fetched", animalExists)
     } catch (error) {
-      return null;
+      return ResponseDto.errorResponse("Something went wrong. Breeding information not found");
     }
   }
 
-  async getAllBreedingInfo(adminId: string): Promise<any> {
+  async getAllBreedingInfo(adminId: string): Promise<ResponseDto> {
     try {
-      // Check if email is already taken before adding user
-      const animalExists = await this.breedingModel.find({
-        adminId: adminId,
-      });
-
-      return animalExists;
+      const allBreedingInfo = await this.breedingModel.find({adminId}).exec();
+      if (!allBreedingInfo || allBreedingInfo.length === 0) {
+        return ResponseDto.errorResponse("No breeding information found");
+      }
+      return ResponseDto.successResponse("All breeding information fetched", allBreedingInfo);
     } catch (error) {
-      return null;
+      return ResponseDto.errorResponse("Something went wrong. Failed to fetch all breeding information");
     }
   }
+  
+  async updateBreedingInfo(breedingInfo: UpdateBreedingDto): Promise<ResponseDto> {
+    try {
+      if (breedingInfo.animalId === null) {
+        return ResponseDto.errorResponse("null animal id");
+      }
+      const existingBreedingInfo = await this.breedingModel.findOneAndUpdate({ animalId: breedingInfo.animalId }, breedingInfo, {new: true}).exec();
+      if (!existingBreedingInfo) {
+        return ResponseDto.errorResponse("Breeding information not found");
+      }
+      return ResponseDto.successResponse("Breeding information updated", existingBreedingInfo);
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong. Failed to update breeding information");
+    }
+  }
+  
+  async deleteBreedingInfo(animalId: string): Promise<ResponseDto> {
+    try {
+      const existingBreedingInfo = await this.breedingModel.findOneAndDelete({ animalId: animalId });
+      if (!existingBreedingInfo) {
+        return ResponseDto.errorResponse("Breeding information not found");
+      }
+      return ResponseDto.successResponse("Breeding information deleted", " ");
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong. Failed to delete breeding information");
+    }
+  }
+
 
   async addFeed(feedInfo: CreateFeedDto): Promise<any> {
     try {
