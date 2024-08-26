@@ -11,6 +11,7 @@ async function bootstrap() {
     .setDescription('This is an API Documentation of our FarmersTool application server side APIs')
     .setVersion('1.0')
     .addTag('farmerztool')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

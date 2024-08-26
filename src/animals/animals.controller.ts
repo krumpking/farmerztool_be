@@ -14,14 +14,16 @@ import { CreateAnimalDto } from './dto/create-animal.dto';
 import { CreateBreedingDto } from './dto/breeding.dto';
 import { CreateFeedDto } from './dto/feed.dto';
 import { CreateVaccinationDto } from './dto/vaccination.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { UpdateBreedingDto } from './dto/updateBreeding.dto';
 import { UpdateFeedDto } from './dto/updateFeed.dto';
+import { UpdateVaccinationDto } from './dto/updateVaccination.dto';
 
 
 
 @ApiTags("ANIMALS")
+@ApiBearerAuth()
 @Controller('/api/v1/animals')
 export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}
@@ -172,22 +174,36 @@ async deleteBreeding(@Param('animalId') animalId: string, @Request() req) {
 
  /////////////////////////VACCINATION/////////////////////////////////////////////
 
-   @Post('add/vaccination/info')
-  async addVaccination(@Body('vaccination') vaccination: CreateVaccinationDto) {
-    const _addVac = await this.animalsService.addVaccination(vaccination);
+ @Post('vaccination/add')
+ async addVaccination(@Body() createVaccinationDto: CreateVaccinationDto){
+  return this.animalsService.addVaccination(createVaccinationDto)
+ }
 
-    if (_addVac == null) {
-      return {
-        data: null,
-        message: 'There was an error adding vaccination info',
-        success: false,
-      };
-    } else {
-      return {
-        data: _addVac,
-        message: 'Vaccination added successfully',
-        success: true,
-      };
-    }
-  }
+ @Get('vaccination/all/farm/:adminId')
+ async getAllVaccinesInFarm(@Param('adminId') adminId: string){
+  return this.animalsService.getAllVaccinesInFarm(adminId);
+ }
+
+ @Get('vaccination/all/animal/:animalId')
+ async getAllVaccinesPerAnimal(@Param('animalId') animalId: string){
+  return this.animalsService.getAllVaccinesPerAnimal(animalId);
+ }
+
+ @Get('vaccination/:animalId')
+ async getSpecificVaccine(@Param('animalId') animalId: string){
+  return this.animalsService.getSpecificVaccine(animalId);
+ }
+
+ @Patch('vaccination/:animalId')
+ async updateVaccine(@Param('animalId') animalId: string, @Body() updateVaccinationDto: UpdateVaccinationDto){
+  return this.animalsService.updateVaccine(animalId, updateVaccinationDto);
+ }
+
+ @Delete('vaccination/:animalId')
+ async deleteVaccine(@Param('animalId') animalId: string){
+  return this.animalsService.deleteAnimal(animalId);
+ }
+
+/////////////////////////PRODUCTION//////////////////////////////////////
+
 }

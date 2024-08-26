@@ -13,10 +13,11 @@ import { UserDto } from './dto/user.dto';
 import { Public } from './decorators/public.decator';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 
 @ApiTags("Auth Controllers")
+@ApiBearerAuth()
 @Controller('/api/v1')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

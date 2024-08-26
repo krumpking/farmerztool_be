@@ -20,6 +20,7 @@ import { UserDto } from 'src/auth/dto/user.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { UpdateBreedingDto } from './dto/updateBreeding.dto';
 import { UpdateFeedDto } from './dto/updateFeed.dto';
+import { UpdateVaccinationDto } from './dto/updateVaccination.dto';
 
 @Injectable()
 export class AnimalsService {
@@ -42,8 +43,8 @@ export class AnimalsService {
     try {
       //check if animal exist
 
-      const animalExists = await this.animalModel.findOne({animalId: createAnimalDto.animalId});
-      
+      const animalExists = await this.animalModel.findOne({ animalId: createAnimalDto.animalId });
+
 
       if (animalExists) {
         return ResponseDto.errorResponse("Animal already exists");
@@ -58,7 +59,7 @@ export class AnimalsService {
       const createdAnimal = await newAnimalInstance.save();
 
       return ResponseDto.successResponse("Animal record created successfully", createdAnimal);
-  
+
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Somethinng went wrong. Failed to create animal record");
@@ -72,13 +73,13 @@ export class AnimalsService {
         animalId: animalId,
       });
 
-      if(!animalExists){
-          return ResponseDto.errorResponse("Failed to fetch animal");
-        }
-        
-        return ResponseDto.successResponse("Animal found", animalExists);
-      } catch (error) {
-        return ResponseDto.errorResponse("Something went wrong while fetching the animal");
+      if (!animalExists) {
+        return ResponseDto.errorResponse("Failed to fetch animal");
+      }
+
+      return ResponseDto.successResponse("Animal found", animalExists);
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong while fetching the animal");
     }
   }
 
@@ -89,7 +90,7 @@ export class AnimalsService {
         adminId: adminId,
       });
 
-      if(!animalExists || animalExists.length <= 0){
+      if (!animalExists || animalExists.length <= 0) {
         return ResponseDto.errorResponse("Failed to fetch animals");
       }
 
@@ -99,11 +100,11 @@ export class AnimalsService {
     }
   }
 
-  async updateAnimal(animalId: string, updateAnimalDto: UpdateAnimalDto): Promise<ResponseDto>{
+  async updateAnimal(animalId: string, updateAnimalDto: UpdateAnimalDto): Promise<ResponseDto> {
     try {
-      const animalExist = await this.animalModel.findOneAndUpdate({animalId}, updateAnimalDto, {new: true}).exec();
+      const animalExist = await this.animalModel.findOneAndUpdate({ animalId }, updateAnimalDto, { new: true }).exec();
 
-      if(!animalExist){
+      if (!animalExist) {
         throw new HttpException("Animal not found", 404);
       }
 
@@ -113,10 +114,10 @@ export class AnimalsService {
     }
   }
 
-  async deleteAnimal(animalId: string): Promise<ResponseDto>{
+  async deleteAnimal(animalId: string): Promise<ResponseDto> {
     try {
-      const animal = await this.animalModel.findOneAndDelete({animalId});
-      if(!animal){
+      const animal = await this.animalModel.findOneAndDelete({ animalId });
+      if (!animal) {
         return ResponseDto.errorResponse("Failed to delete animal");
       }
       return ResponseDto.successResponse("Animal deteted successfully", "")
@@ -131,23 +132,23 @@ export class AnimalsService {
 
   async addBreedingInfo(breedingInfo: CreateBreedingDto): Promise<ResponseDto> {
     try {
-      if(breedingInfo.animalId === null){
+      if (breedingInfo.animalId === null) {
         return ResponseDto.errorResponse("null animal id")
       }
-      const animalExist = await this.animalModel.findOne({animalId: breedingInfo.animalId}); 
-      if(!animalExist){
+      const animalExist = await this.animalModel.findOne({ animalId: breedingInfo.animalId });
+      if (!animalExist) {
         return ResponseDto.errorResponse("Animal does not exist");
       }
 
-      const existingBreedingInfo = await this.breedingModel.findOne({animalId: breedingInfo.animalId});
+      const existingBreedingInfo = await this.breedingModel.findOne({ animalId: breedingInfo.animalId });
 
-      if(existingBreedingInfo){
+      if (existingBreedingInfo) {
         return ResponseDto.errorResponse("Breeding information already exist please navigate to the breeding update")
       }
 
       const breedingInstance = new this.breedingModel(breedingInfo);
 
-      if(!breedingInstance){
+      if (!breedingInstance) {
         return ResponseDto.errorResponse("Failed to add breeding")
       }
 
@@ -166,7 +167,7 @@ export class AnimalsService {
         animalId: animalId,
       });
 
-      if(!animalExists){
+      if (!animalExists) {
         return ResponseDto.errorResponse("Breeding information not found");
       }
 
@@ -178,7 +179,7 @@ export class AnimalsService {
 
   async getAllBreedingInfo(adminId: string): Promise<ResponseDto> {
     try {
-      const allBreedingInfo = await this.breedingModel.find({adminId}).exec();
+      const allBreedingInfo = await this.breedingModel.find({ adminId }).exec();
       if (!allBreedingInfo || allBreedingInfo.length === 0) {
         return ResponseDto.errorResponse("No breeding information found");
       }
@@ -187,13 +188,13 @@ export class AnimalsService {
       return ResponseDto.errorResponse("Something went wrong. Failed to fetch all breeding information");
     }
   }
-  
+
   async updateBreedingInfo(breedingInfo: UpdateBreedingDto): Promise<ResponseDto> {
     try {
       if (breedingInfo.animalId === null) {
         return ResponseDto.errorResponse("null animal id");
       }
-      const existingBreedingInfo = await this.breedingModel.findOneAndUpdate({ animalId: breedingInfo.animalId }, breedingInfo, {new: true}).exec();
+      const existingBreedingInfo = await this.breedingModel.findOneAndUpdate({ animalId: breedingInfo.animalId }, breedingInfo, { new: true }).exec();
       if (!existingBreedingInfo) {
         return ResponseDto.errorResponse("Breeding information not found");
       }
@@ -202,7 +203,7 @@ export class AnimalsService {
       return ResponseDto.errorResponse("Something went wrong. Failed to update breeding information");
     }
   }
-  
+
   async deleteBreedingInfo(animalId: string): Promise<ResponseDto> {
     try {
       const existingBreedingInfo = await this.breedingModel.findOneAndDelete({ animalId: animalId });
@@ -223,7 +224,7 @@ export class AnimalsService {
       // check feed is exist
       const feedingInstance = new this.feedingModel(feedInfo);
 
-      if(!feedingInstance){
+      if (!feedingInstance) {
         return ResponseDto.errorResponse("Failed to create feed");
       }
 
@@ -235,10 +236,10 @@ export class AnimalsService {
     }
   }
 
-  async getFeedingInfo(id: string): Promise<ResponseDto>{
+  async getFeedingInfo(id: string): Promise<ResponseDto> {
     try {
       const feed = await this.feedingModel.findById(id);
-      if(!feed){
+      if (!feed) {
         return ResponseDto.errorResponse("Failed to fetch feed")
       }
 
@@ -248,20 +249,12 @@ export class AnimalsService {
     }
   }
 
-  async getAllAnimalFeedingInfo(animalId: string): Promise<any> {
+  async getAllAnimalFeedingInfo(adminId: string): Promise<any> {
     try {
-      // CHECK ANIMAL
-      const animal = await this.animalModel.findOne({animalId});
 
-      if(!animal){
-        throw new HttpException("Animal not found", 404);
-      }
+      const animalExists = await this.feedingModel.find({adminId});
 
-      const animalExists = await this.feedingModel.find({
-        animalId: animalId,
-      });
-
-      if(!animalExists || animalExists.length === 0){
+      if (!animalExists || animalExists.length === 0) {
         return ResponseDto.errorResponse("No feeding found")
       }
 
@@ -271,7 +264,7 @@ export class AnimalsService {
     }
   }
 
-  async updateFeed(id: string, updateFeedDto: UpdateFeedDto): Promise<ResponseDto>{
+  async updateFeed(id: string, updateFeedDto: UpdateFeedDto): Promise<ResponseDto> {
     try {
       const updateFeed = await this.feedingModel.findByIdAndUpdate(id, {
         adminId: updateFeedDto.adminId,
@@ -281,9 +274,9 @@ export class AnimalsService {
         feedType: updateFeedDto.feedType,
         source: updateFeedDto.source,
         nutritionalValue: updateFeedDto.nutritionalValue,
-        $push: {barcode: updateFeedDto.barcode}
-      });
-      if(!updateFeed){
+        $push: { barcode: updateFeedDto.barcode }
+      }, {new: true});
+      if (!updateFeed) {
         return ResponseDto.errorResponse("Failed to update feed")
       }
       return ResponseDto.successResponse("Feed Updated", updateFeed);
@@ -312,15 +305,91 @@ export class AnimalsService {
 
   ////////////////////VACINATION/////////////////////////////////////////////////////////
 
-  async addVaccination(vaccinationInfo: CreateVaccinationDto): Promise<any> {
+  async addVaccination(createVaccinationDto: CreateVaccinationDto): Promise<ResponseDto> {
     try {
-      // Check if email is already taken before adding user
-      const vaccine = new this.vaccinationModel(vaccinationInfo);
-
-      const newVaccinationInfo = await vaccine.save();
-      return newVaccinationInfo;
+      const animal = await this.animalModel.findOne({ animalId: createVaccinationDto.animalId });
+      if (!animal) {
+        return ResponseDto.errorResponse("Animal not found");
+      }
+      const vaccineInstance = new this.vaccinationModel(createVaccinationDto);
+      if (!vaccineInstance) {
+        return ResponseDto.errorResponse("Failed to add vaccine");
+      }
+      const vaccine = await vaccineInstance.save();
+      return ResponseDto.successResponse("Vaccine added", vaccine);
     } catch (error) {
-      return null;
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to add vaccine");
+    }
+  }
+
+  async getAllVaccinesInFarm(adminId: string): Promise<ResponseDto> {
+    try {
+      const vaccines = await this.vaccinationModel.find({ adminId }).exec();
+      if (!vaccines || vaccines.length === 0) {
+        return ResponseDto.errorResponse("No available vaccine");
+      }
+      return ResponseDto.successResponse("Vaccines fetched", vaccines);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch vaccines");
+    }
+  }
+
+  async getAllVaccinesPerAnimal(animalId: string): Promise<ResponseDto> {
+    try {
+      const vaccines = await this.vaccinationModel.find({ animalId });
+      if (!vaccines || vaccines.length === 0) {
+        return ResponseDto.errorResponse("No available vaccine");
+      }
+      return ResponseDto.successResponse("Vaccines fetched", vaccines);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch vaccines");
+    }
+  }
+
+  async getSpecificVaccine(animalId: string): Promise<ResponseDto> {
+    try {
+      const vaccine = await this.vaccinationModel.findOne({ animalId });
+      if (!vaccine) {
+        return ResponseDto.errorResponse("Failed to fetch vaccine");
+      }
+      return ResponseDto.successResponse("Vaccine fetched", vaccine);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch vaccine");
+    }
+  }
+
+  async updateVaccine(animalId: string, updateVaccinationDto: UpdateVaccinationDto): Promise<ResponseDto> {
+    try {
+      const updatedVaccine = await this.vaccinationModel.findOneAndUpdate(
+        { animalId },
+        updateVaccinationDto,
+        { new: true }
+      );
+
+      if (!updatedVaccine) {
+        return ResponseDto.errorResponse("Failed to update vaccine");
+      }
+      return ResponseDto.successResponse("Vaccine fetched", updatedVaccine);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to update vaccine");
+    }
+  }
+
+  async deleteVaccine(animalId: string): Promise<ResponseDto> {
+    try {
+      const deletedVaccine = await this.vaccinationModel.findOneAndDelete({ animalId });
+      if (!deletedVaccine) {
+        return ResponseDto.errorResponse("Failed to delete vaccine");
+      }
+      return ResponseDto.successResponse("Vaccine fetched", "");
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to delete vaccine");
     }
   }
 }

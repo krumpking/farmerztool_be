@@ -30,7 +30,7 @@ export class CreateBreedingDto {
 
   @ApiProperty({
     description: 'Added by',
-    example: 'John Doe',
+    example: 'Ronnie Kakunguwo',
     required: true
   })
   @IsString()
@@ -101,7 +101,7 @@ export class CreateBreedingDto {
 
   @ApiProperty({
     description: 'Personnel Involved',
-    example: 'John Doe, Jane Doe',
+    example: 'Ronnie Kakunguwo, Jane Doe',
     required: true
   })
   @IsString()
