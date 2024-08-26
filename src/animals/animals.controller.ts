@@ -19,6 +19,7 @@ import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { UpdateBreedingDto } from './dto/updateBreeding.dto';
 import { UpdateFeedDto } from './dto/updateFeed.dto';
 import { UpdateVaccinationDto } from './dto/updateVaccination.dto';
+import { CreateProductionDto } from './dto/production.dto';
 
 
 
@@ -189,21 +190,53 @@ async deleteBreeding(@Param('animalId') animalId: string, @Request() req) {
   return this.animalsService.getAllVaccinesPerAnimal(animalId);
  }
 
- @Get('vaccination/:animalId')
- async getSpecificVaccine(@Param('animalId') animalId: string){
-  return this.animalsService.getSpecificVaccine(animalId);
+ @Get('vaccination/:Id')
+ async getSpecificVaccine(@Param('Id') Id: string){
+  return this.animalsService.getSpecificVaccine(Id);
  }
 
- @Patch('vaccination/:animalId')
- async updateVaccine(@Param('animalId') animalId: string, @Body() updateVaccinationDto: UpdateVaccinationDto){
-  return this.animalsService.updateVaccine(animalId, updateVaccinationDto);
+ @Patch('vaccination/:Id')
+ async updateVaccine(@Param('Id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto){
+  return this.animalsService.updateVaccine(Id, updateVaccinationDto);
  }
 
- @Delete('vaccination/:animalId')
- async deleteVaccine(@Param('animalId') animalId: string){
-  return this.animalsService.deleteAnimal(animalId);
+ @Delete('vaccination/:Id')
+ async deleteVaccine(@Param('Id') Id: string){
+  return this.animalsService.deleteAnimal(Id);
  }
 
 /////////////////////////PRODUCTION//////////////////////////////////////
+
+
+@Post('production/add')
+async addProduction(@Body() createProductionDto: CreateProductionDto){
+ return this.animalsService.addProduction(createProductionDto)
+}
+
+@Get('production/all/farm/:adminId')
+async getAllProductionsInFarm(@Param('adminId') adminId: string){
+ return this.animalsService.getAllProductionsInFarm(adminId);
+}
+
+@Get('production/all/animal/:animalId')
+async getAllProductiondPerAnimal(@Param('animalId') animalId: string){
+ return this.animalsService.getAllProductionsPerAnimal(animalId);
+}
+
+@Get('production/:Id')
+async getSpecificProduction(@Param('Id') Id: string){
+ return this.animalsService.getSpecificProduction(Id);
+}
+
+@Patch('production/:Id')
+async updateProduction(@Param('Id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto){
+ return this.animalsService.updateProduction(Id, updateVaccinationDto);
+}
+
+@Delete('production/:Id')
+async deleteProduction(@Param('Id') Id: string){
+ return this.animalsService.deleteProduction(Id);
+}
+
 
 }

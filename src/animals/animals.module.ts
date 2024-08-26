@@ -5,6 +5,7 @@ import {
   animalProviders,
   breedingProviders,
   feedProviders,
+  productionProviders,
   vaccinationProviders
 } from './animal.providers';
 import { DatabaseModule } from 'src/database/database.module';
@@ -20,6 +21,7 @@ import { userProviders } from 'src/auth/auth.providers';
     ...feedProviders,
     ...vaccinationProviders,
     ...userProviders,
+    ...productionProviders,
   ],
 })
 export class AnimalsModule {}

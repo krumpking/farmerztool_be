@@ -1,6 +1,7 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import {
   ANIMAL_MODEL,
+  ANIMAL_PRODUCTION_MODEL,
   BREEDING_MODEL,
   FEED_MODEL,
   VACCINATION_MODEL
@@ -21,6 +22,9 @@ import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { UpdateBreedingDto } from './dto/updateBreeding.dto';
 import { UpdateFeedDto } from './dto/updateFeed.dto';
 import { UpdateVaccinationDto } from './dto/updateVaccination.dto';
+import { Production } from './interfaces/production.interface';
+import { CreateProductionDto } from './dto/production.dto';
+import { UpdateProductionDto } from './dto/updateProduction.dto';
 
 @Injectable()
 export class AnimalsService {
@@ -34,7 +38,9 @@ export class AnimalsService {
     @Inject(VACCINATION_MODEL)
     private vaccinationModel: Model<Vaccination>,
     @Inject(USER_MODEL)
-    private userModel: Model<UserDto>
+    private userModel: Model<UserDto>,
+    @Inject(ANIMAL_PRODUCTION_MODEL)
+    private productionModel: Model<Production>
   ) { }
 
 
@@ -298,11 +304,6 @@ export class AnimalsService {
   }
 
 
-
-
-
-
-
   ////////////////////VACINATION/////////////////////////////////////////////////////////
 
   async addVaccination(createVaccinationDto: CreateVaccinationDto): Promise<ResponseDto> {
@@ -349,9 +350,9 @@ export class AnimalsService {
     }
   }
 
-  async getSpecificVaccine(animalId: string): Promise<ResponseDto> {
+  async getSpecificVaccine(Id: string): Promise<ResponseDto> {
     try {
-      const vaccine = await this.vaccinationModel.findOne({ animalId });
+      const vaccine = await this.vaccinationModel.findById(Id);
       if (!vaccine) {
         return ResponseDto.errorResponse("Failed to fetch vaccine");
       }
@@ -362,10 +363,10 @@ export class AnimalsService {
     }
   }
 
-  async updateVaccine(animalId: string, updateVaccinationDto: UpdateVaccinationDto): Promise<ResponseDto> {
+  async updateVaccine(Id: string, updateVaccinationDto: UpdateVaccinationDto): Promise<ResponseDto> {
     try {
-      const updatedVaccine = await this.vaccinationModel.findOneAndUpdate(
-        { animalId },
+      const updatedVaccine = await this.vaccinationModel.findByIdAndUpdate(
+        Id,
         updateVaccinationDto,
         { new: true }
       );
@@ -380,9 +381,9 @@ export class AnimalsService {
     }
   }
 
-  async deleteVaccine(animalId: string): Promise<ResponseDto> {
+  async deleteVaccine(Id: string): Promise<ResponseDto> {
     try {
-      const deletedVaccine = await this.vaccinationModel.findOneAndDelete({ animalId });
+      const deletedVaccine = await this.vaccinationModel.findByIdAndDelete(Id);
       if (!deletedVaccine) {
         return ResponseDto.errorResponse("Failed to delete vaccine");
       }
@@ -392,4 +393,99 @@ export class AnimalsService {
       return ResponseDto.errorResponse("Something went wrong, failed to delete vaccine");
     }
   }
+
+  ///////////////////////PRODUCTION///////////////////////////////////////
+
+  async addProduction(createProductionDto: CreateProductionDto): Promise<ResponseDto>{
+    try {
+      const animal = await this.animalModel.findOne({animalId: createProductionDto.animalId});
+      if(!animal){
+        return ResponseDto.errorResponse("Animal not found");
+      }
+
+      const productionInstance = new this.productionModel(createProductionDto);
+
+      if(!productionInstance){
+        return ResponseDto.errorResponse("Failed to add animal production");
+      }
+
+      const production = await productionInstance.save();
+      return ResponseDto.successResponse("Production added", production);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to add animal production");
+    }
+  }
+
+  async getAllProductionsInFarm(adminId: string): Promise<ResponseDto> {
+    try {
+      const productions = await this.productionModel.find({ adminId });
+      
+      if (!productions || productions.length === 0) {
+        return ResponseDto.errorResponse("No available productions");
+      }
+      return ResponseDto.successResponse("Productions fetched", productions);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch productions");
+    }
+  }
+
+  async getAllProductionsPerAnimal(animalId: string): Promise<ResponseDto> {
+    try {
+      const productions = await this.productionModel.find({ animalId });
+      
+      if (!productions || productions.length === 0) {
+        return ResponseDto.errorResponse("No available productions");
+      }
+      return ResponseDto.successResponse("Productions fetched", productions);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch productions");
+    }
+  }
+
+  async getSpecificProduction(Id: string): Promise<ResponseDto> {
+    try {
+      const production = await this.productionModel.findById(Id);
+      if (!production) {
+        return ResponseDto.errorResponse("Failed to fetch production");
+      }
+      return ResponseDto.successResponse("Production fetched", production);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch production");
+    }
+  }
+
+  async updateProduction(Id: string, updateProductionDto: UpdateProductionDto): Promise<ResponseDto> {
+    try {
+      const updatedProduction = await this.productionModel.findByIdAndUpdate(Id ,updateProductionDto,
+        { new: true });
+       
+
+      if (!updatedProduction) {
+        return ResponseDto.errorResponse("Failed to update production");
+      }
+      return ResponseDto.successResponse("Production updated", updatedProduction);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to update production");
+    }
+  }
+
+  async deleteProduction(Id: string): Promise<ResponseDto> {
+    try {
+      const deletedProduction = await this.productionModel.findByIdAndDelete(Id);
+      if (!deletedProduction) {
+        return ResponseDto.errorResponse("Failed to delete production");
+      }
+      return ResponseDto.successResponse("Production deleted", "");
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to delete production");
+    }
+  }
+ 
+
 }
