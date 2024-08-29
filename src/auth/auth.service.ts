@@ -122,7 +122,7 @@ export class AuthService {
         const payload = {
           id: emailExists._id,
           email: emailExists.email,
-          password: emailExists.password,
+          roles: emailExists.role,
         };
 
         const userData = {
