@@ -15,5 +15,6 @@ export const FarmSchema = new mongoose.Schema({
   areaSize: { type: String, required: true },
   animals: { type: [String], required: true },
   crops: { type: [String], required: true },
-  dateEstablished: { type: String, required: true },
-});
+  dateEstablished: { type: Date, default: Date.now() },
+  createdBy: {type: mongoose.Schema.Types.ObjectId, ref: "User"}
+}, {timestamps: true});

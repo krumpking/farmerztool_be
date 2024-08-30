@@ -8,6 +8,7 @@ export interface Farm extends Document {
   readonly numberOfEmployees: number;
   readonly uploadLogo: string;
   readonly areaSize: string;
+  readonly areaUnit: string,
   readonly animals: string[];
   readonly crops: string[];
   readonly dateEstablished: Date;
