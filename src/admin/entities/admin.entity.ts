@@ -6,6 +6,7 @@ export class Farm {
     location: string;
     numberOfEmployees: number;
     logo: string;
+    areaUnit: string
     areaSize: string;
     animals: string[];
     crops: string[];
