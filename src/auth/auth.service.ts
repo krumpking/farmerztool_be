@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { OTP_MODEL, USER_MODEL } from './constants/auth.constants';
-import * as nodemailer from 'nodemailer';
+// import * as nodemailer from 'nodemailer';
 import { Otp } from './interfaces/otp.interface';
 import { generatorRandomString, readHTMLFile } from 'src/common/utils';
 import { dirname } from 'path';
@@ -13,6 +13,8 @@ import handlebars from 'handlebars';
 import { EMPLOYEE_MODEL } from 'src/admin/constants/admin.constants';
 import { Employee } from 'src/admin/interfaces/employee.interface';
 import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
+import { ResponseDto } from 'src/common/response.dto';
+import { UpdateOtp } from './dto/update.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,101 +26,128 @@ export class AuthService {
     private jwtService: JwtService,
     @Inject(EMPLOYEE_MODEL)
     private employeeModel: Model<Employee>,
-  ) {}
+  ) { }
 
-  async addUser(user: UserDto): Promise<any> {
-    const emailExists = await this.employeeModel.findOne({
-      email: user.email,
-    });
 
-    if (emailExists != null) {
-      return null;
-    } else {
-      const otpExists = await this.otpModel.findOne({ otp: user.otp });
+  async addUser(userDto: UserDto): Promise<ResponseDto> {
+    const response = new ResponseDto();
+    const userExist = await this.userModel.findOne({ email: userDto.email });
 
-      if (otpExists == null) {
-        return null;
-      }
-
-      if (otpExists.otp == user.otp) {
-        const createdUser = new this.userModel(user);
-
-        var newUser = await createdUser.save();
-        const payload = {
-          adminId: newUser._id,
-          email: newUser.email,
-          password: newUser.password,
-        };
-        return {
-          access_token: await this.jwtService.signAsync(payload),
-          email: newUser.email,
-          password: newUser.password,
-          adminId: newUser._id,
-        };
-      } else {
-        return null;
-      }
+    if (userExist) {
+      response.success = false;
+      response.message = "User already exist";
+      response.data = null;
+      return response;
     }
+
+    //password must be 6 characters long
+
+    if (userDto.password.split("").length < 6) {
+      response.success = false;
+      response.message = "Password must be 6 characters long";
+      return response;
+    }
+
+
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = await bcrypt.hash(userDto.password, salt);
+
+    const newUser = new this.userModel({ ...userDto, password: hashedPassword });
+
+    const savedUser = await newUser.save();
+
+    response.success = true;
+    response.message = "User created successfully";
+    response.data = savedUser;
+
+    return response;
   }
 
-  async login(user: UserDto): Promise<any> {
-    // Check if email already exists before logging in and then use bycrypt to compare password if both pass login successfully if not return exact message
-    // Check if email is already taken before adding user
+
+  async login(user: UserDto): Promise<ResponseDto> {
+    const response = new ResponseDto();
+
     const emailExists = await this.userModel.findOne({ email: user.email });
+    if (!emailExists) {
+      const employeeExists = await this.employeeModel.findOne({ email: user.email });
 
-    if (emailExists == null) {
-      const employeeExists = await this.employeeModel.findOne({
-        email: user.email,
-      });
+      if (!employeeExists) {
+        response.success = false;
+        response.message = "User not found";
+        return response;
+      }
 
-      const match = await bcrypt.compare(
-        user.password,
-        employeeExists.password,
-      );
+      if (!employeeExists.password) {
+        response.success = false;
+        response.message = "Password not found";
+        return response;
+      }
 
-      const payload = {
-        id: employeeExists._id,
-        email: employeeExists.email,
-        password: employeeExists.password,
-      };
+      const match = await bcrypt.compare(user.password, employeeExists.password);
 
       if (match) {
-        console.log(employeeExists);
-        return {
+        const payload = {
+          id: employeeExists._id,
+          email: employeeExists.email,
+          password: employeeExists.password,
+        };
+
+        const userData = {
           access_token: await this.jwtService.signAsync(payload),
           adminId: employeeExists._id,
           email: employeeExists.email,
           password: employeeExists.password,
           perms: employeeExists.perms,
         };
+
+        response.success = true;
+        response.message = "Login successful";
+        response.data = userData;
+        return response;
       } else {
-        console.log(null);
-        return null;
+        response.success = false;
+        response.message = "Invalid password";
+        return response;
       }
     } else {
+      if (!emailExists.password) {
+        response.success = false;
+        response.message = "Password not found";
+        return response;
+      }
+
       const match = await bcrypt.compare(user.password, emailExists.password);
 
-      const payload = {
-        id: emailExists._id,
-        email: emailExists.email,
-        password: emailExists.password,
-      };
-
       if (match) {
-        return {
+        const payload = {
+          id: emailExists._id,
+          email: emailExists.email,
+          roles: emailExists.role,
+        };
+
+        const userData = {
           access_token: await this.jwtService.signAsync(payload),
           adminId: emailExists._id,
           email: emailExists.email,
           password: emailExists.password,
           perms: [],
         };
+
+        response.success = true;
+        response.message = "Login successful";
+        response.data = userData;
+        return response;
       } else {
-        return null;
+        response.success = false;
+        response.message = "Invalid password";
+        return response;
       }
     }
   }
+ 
 
-  async sendOtp(email: string): Promise<any> {
+  async sendOtp(email: string): Promise<ResponseDto> {
+    const response = new ResponseDto();
     const appDir = dirname(require.main.path);
 
     readHTMLFile(
@@ -129,20 +158,43 @@ export class AuthService {
           return;
         }
 
-        let randomString = generatorRandomString(6);
+        const randomString = generatorRandomString(6);
+
+        //OTP should be one hour after that delete it from db
+
+        const otpExpiryTime = new Date(Date.now() + 60 * 60 * 1000);
 
         // Create Otp model and save to database
-        let otpModel = {
+        const otpModel = {
           email: email,
           otp: randomString,
+          expiresAt: otpExpiryTime
         };
 
         const otpM = new this.otpModel(otpModel);
         await otpM.save();
 
+        //save the otp to user model
+        const userUpdateOnOTP = await this.userModel.findOneAndUpdate({ email: email },
+          {
+            $set: {
+              otp: randomString,
+              otpCreatedAt: new Date()
+            }
+          },
+          { new: true });
+
+        if (!userUpdateOnOTP) {
+          response.success = false;
+          response.message = "Invalid email";
+          response.data = null;
+          return response;
+        }
+
         const template = handlebars.compile(html);
         const replacements = {
           otp: randomString,
+          validity: "1 hour",
         };
 
         const htmlToSend = template(replacements);
@@ -178,56 +230,86 @@ export class AuthService {
         }
       },
     );
+
+    response.success = true,
+      response.message = "OTP sent successfully",
+      response.data = null;
+    return response;
   }
 
   async updatePassword(
     email: string,
-    newPassowrd: string,
     otp: string,
-  ): Promise<any> {
-    const otpExists = await this.otpModel.findOne({ otp: otp });
+    newPassowrd: string,
+  ): Promise<ResponseDto> {
 
-    if (otpExists == null) {
-      return null;
+    const response = new ResponseDto();
+
+    const user = await this.userModel.findOne({ email });
+
+    if (!user) {
+      response.success = false;
+      response.message = 'User not found';
+      response.data = null;
+      return response;
     }
 
-    if (otpExists.otp == otp) {
-      let newUser = await this.userModel.findOneAndUpdate(
-        {
-          email: email,
-        },
-        { password: newPassowrd },
-        { new: true },
-      );
-
-      if (newUser !== null) {
-        return {
-          updateSuccess: true,
-        };
-      } else {
-        return null;
-      }
-    } else {
-      return null;
+    if (newPassowrd.split("").length < 6) {
+      response.success = false;
+      response.message = 'Password should be 6 characters long';
+      return response;
     }
-  }
 
-  async updateUser(user: UserDto): Promise<any> {
-    let newUser = await this.userModel.findOneAndUpdate(
-      {
-        email: user.email,
-      },
-      { password: user.password },
-      { new: true },
-    );
-
-    if (newUser !== null) {
-      return {
-        updateSuccess: true,
-      };
-    } else {
-      return null;
+    if (user.otp !== otp) {
+      response.success = false;
+      response.message = "Invalid OTP";
+      response.data = null;
+      return response;
     }
+
+    // now lets check if otp hasnt expired
+
+    const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
+    if (user.otpCreatedAt < oneHourAgo) {
+      response.success = false;
+      response.message = "OTP has expired";
+      response.data = null;
+      return response;
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassowrd, salt);
+
+    const updatePassword = await this.userModel.findOneAndUpdate({ email: email }, { $set: { password: hashedPassword } }, { new: true });
+
+    if (!updatePassword) {
+      response.success = false;
+      response.message = "Failed to update password";
+      response.data = null;
+      return response;
+    }
+
+    response.success = true;
+    response.message = 'Password updated successfully';
+    response.data = null;
+
+    return response;
+  };
+
+
+  async updateUser(updateDto: UpdateOtp): Promise<ResponseDto> {
+    const newUser = await this.userModel.findOneAndUpdate({ email: updateDto.email }, updateDto, { new: true });
+    const response = new ResponseDto();
+    if (!newUser) {
+      response.success = false;
+      response.message = 'User not found';
+      response.data = null;
+      return response;
+    }
+    response.success = true;
+    response.message = 'User updated successfully';
+    response.data = null;
+    return response;
   }
 
   async deleteUser(user: UserDto): Promise<any> {

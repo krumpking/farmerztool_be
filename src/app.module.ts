@@ -11,6 +11,7 @@ import { AnimalsModule } from './animals/animals.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: '.env.local',
       isGlobal: true,
     }),
     DatabaseModule,

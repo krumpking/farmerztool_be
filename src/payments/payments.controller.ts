@@ -3,22 +3,23 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
-  Delete,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { CreateMobilePaymentDto } from './dto/mobile-payment.dto';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 
+@ApiTags("Payment routes")
 @Controller('/api/v1')
+@ApiBearerAuth()
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
 
   @Post('/initiate/mobile')
-  async create(@Body('payment') payment: CreateMobilePaymentDto) {
+  async create(@Body() payment: CreateMobilePaymentDto) {
     const _addSub = await this.paymentsService.initiateMobilePayment(payment);
 
     if (_addSub == null) {
@@ -38,7 +39,7 @@ export class PaymentsController {
 
 
   @Post('/confirm/mobile')
-  async confirmPayment(@Body('payment') payment: CreateMobilePaymentDto) {
+  async confirmPayment(@Body() payment: CreateMobilePaymentDto) {
 
     const _addSub = await this.paymentsService.confirmPayment(payment);
     console.log(_addSub);
@@ -61,7 +62,7 @@ export class PaymentsController {
 
 
   @Post('/add/subscription')
-  async createSub(@Body('payment') createPaymentDto: CreatePaymentDto) {
+  async createSub(@Body() createPaymentDto: CreatePaymentDto) {
     const _addSub = await this.paymentsService.addSub(createPaymentDto);
 
     if (_addSub == null) {
