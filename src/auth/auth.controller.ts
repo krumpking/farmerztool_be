@@ -26,8 +26,14 @@ export class AuthController {
   @Post('register')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Register a new user" })
-  async addUser(@Body() userDto: UserDto): Promise<ResponseDto> {
-    return this.authService.addUser(userDto);
+  async addUser(@Body() userDto: UserDto): Promise<any> {
+    const response = await this.authService.addUser(userDto);
+    
+    if (response.data) {
+      const userEmail = response.data.email;
+      await this.authService.sendOtp(userEmail);
+    }
+    return response;
   }
 
   @Public()
@@ -76,8 +82,27 @@ export class AuthController {
     @Body('email') email: string,
     @Body('newPassword') newPassword: string,
     @Body('otp') otp: string
-  ): Promise<ResponseDto> {
+  ) {
     return this.authService.updatePassword(email, otp, newPassword);
+  }
+
+
+  @Public()
+  @Patch('users/verification')
+  @ApiOperation({summary: "Update user verified status to true"})
+  @ApiBody({
+    schema: {
+      properties: {
+        email: {type: "string", example: 'user@example.com'},
+        otp: {type: 'string', example: '095645'}
+      }
+    }
+  })
+  async verifyUser(
+    @Body('email') email: string,
+    @Body('otp') otp: string
+  ){
+    return this.authService.verifyUser(email, otp);
   }
 
   
