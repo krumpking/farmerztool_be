@@ -64,6 +64,40 @@ export class AuthService {
   }
 
 
+  async verifyUser(email: string, otp: string): Promise<ResponseDto>{
+    try {
+      const user = await this.userModel.findOne({email});
+      if(!user){
+        return ResponseDto.errorResponse("User not found")
+      }
+
+      if(user.otp !== otp){
+        return ResponseDto.errorResponse("Invalid OTP")
+      }
+
+      // OTP HAS ONE HOUR LIFE
+
+      const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
+
+      if(user.otpCreatedAt < oneHourAgo){
+        return ResponseDto.errorResponse("OTP has expired");
+      }
+
+      const updateVerification = await this.userModel.findOneAndUpdate({email}, {$set: {verified: true}}, {new: true});
+
+      if(!updateVerification){
+        return ResponseDto.errorResponse("Email verification failed");
+      }
+
+      return ResponseDto.successResponse("verification successful", null);
+
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, while verifying user");
+    }
+  }
+
+
   async login(user: UserDto): Promise<ResponseDto> {
     const response = new ResponseDto();
 
@@ -72,15 +106,11 @@ export class AuthService {
       const employeeExists = await this.employeeModel.findOne({ email: user.email });
 
       if (!employeeExists) {
-        response.success = false;
-        response.message = "User not found";
-        return response;
+        return ResponseDto.errorResponse("User not found");
       }
 
       if (!employeeExists.password) {
-        response.success = false;
-        response.message = "Password not found";
-        return response;
+        return ResponseDto.errorResponse("Password not found");
       }
 
       const match = await bcrypt.compare(user.password, employeeExists.password);
