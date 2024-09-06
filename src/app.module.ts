@@ -7,6 +7,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { AnimalsModule } from './animals/animals.module';
+import { CropsModule } from './crops/crops.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AnimalsModule } from './animals/animals.module';
     AuthModule,
     PaymentsModule,
     AnimalsModule,
+    CropsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
