@@ -1,18 +1,22 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { CreateCropDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
-import { CROP_MODEL } from './constants/crop.constants';
+import { CROP_MODEL, IRRIGATION_MODEL } from './constants/crop.constants';
 import { Model } from 'mongoose';
 import { Crop } from './interfaces/crop.interface';
 import { ResponseDto } from 'src/common/response.dto';
 import { USER_MODEL } from 'src/auth/constants/auth.constants';
 import { User } from 'src/auth/interfaces/user.interface';
+import { Irrigation } from './interfaces/irrigation.interface';
+import { CreateIrrigationDto } from './dto/create-irrigation.dto';
+import { UpdateIrrigationDto } from './dto/update-irrigation.dto';
 
 @Injectable()
 export class CropsService {
   constructor(
     @Inject(CROP_MODEL) private cropModel: Model<Crop>,
     @Inject(USER_MODEL) private userModel: Model<User>,
+    @Inject(IRRIGATION_MODEL) private irrigationModel: Model<Irrigation>
   ) {}
 
   /////////////////////////// CROPS /////////////////////////////
@@ -95,6 +99,118 @@ export class CropsService {
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Something went wrong, while deleting crop")
+    }
+  }
+
+  ////////////////////// IRRIGATION //////////////////////////////
+
+  async addIrrigation(id: string, createIrrigationDto: CreateIrrigationDto): Promise<ResponseDto>{
+    try {
+      // after fetching a specific crop that id can be passed to the irrigation url
+      const crop = await this.cropModel.findById(id);
+
+      if(!crop){
+        return ResponseDto.errorResponse("Cannot find crop");
+      }
+
+      const irrigation = await this.irrigationModel.create({
+        crop: id,
+        ...createIrrigationDto
+      });
+
+      const createdIrrigation = await this.irrigationModel.findById(irrigation._id).populate('crop');
+
+      if(!createdIrrigation){
+        return ResponseDto.errorResponse("Failed to create irrigation record");
+      }
+
+      return ResponseDto.successResponse("Irrigation record created", createdIrrigation);
+
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, creating irrigation record")
+    }
+  }
+
+  async getIrrigationRecordById (id: string): Promise<ResponseDto>{
+    try {
+      const irrigation = await this.irrigationModel.findById(id).populate('crop');
+      if(!irrigation){
+        return ResponseDto.errorResponse("Failed to fetch irrigation record");
+      }
+
+      return ResponseDto.successResponse("Irrigation record fetched", irrigation);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching irrigation record")
+    }
+  }
+
+  async getIrrigationsForCrop(id: string): Promise<ResponseDto>{
+    try {
+      console.log(id);
+      
+      const crop = await this.cropModel.findById(id);
+
+      if(!crop){
+        return ResponseDto.errorResponse("Failed to fetch crop")
+      }
+      const irrigations = await this.irrigationModel.find({crop: id}).populate('crop');
+
+      if(!irrigations || irrigations.length === 0){
+        return ResponseDto.errorResponse("No available irrigations at the moment for " + crop?.cropName);
+      }
+
+      return ResponseDto.successResponse("Irrigations fetched", irrigations);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching irrigation records")
+    }
+  }
+
+  async getAllFarmIrrigations(adminId: string): Promise<ResponseDto>{
+    try {
+      const irrigations = await this.irrigationModel.find({adminId}).populate('crop');
+
+      if(!irrigations || irrigations.length === 0){
+        return ResponseDto.errorResponse("No available irrigation records")
+      }
+
+      return ResponseDto.successResponse("Irrigations records fetched", irrigations);
+
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong,fetching farm irrigation records");
+    }
+  }
+
+  async updateIrrigation(id: string, updateIrrigationDto: UpdateIrrigationDto): Promise<ResponseDto>{
+    try {
+      const updatedIrrigation = await this.irrigationModel.findByIdAndUpdate(id, updateIrrigationDto, {new: true}).exec();
+
+      if(!updatedIrrigation){
+        return ResponseDto.errorResponse("Failed to update irrigation")
+      }
+
+      return ResponseDto.successResponse("Irrigation updated", updatedIrrigation);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, updating irrigation record")
+    }
+  }
+
+  async deleteIrrigation(id: string): Promise<ResponseDto>{
+    try {
+      const deletedIrrigation = await this.irrigationModel.findByIdAndDelete(id).exec();
+
+      if(!deletedIrrigation){
+        return ResponseDto.errorResponse("Failed to delete irrigation")
+      }
+
+      return ResponseDto.successResponse("Irrigation deleted", null);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, deleting irrigation record")
     }
   }
 

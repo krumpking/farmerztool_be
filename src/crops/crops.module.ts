@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CropsService } from './crops.service';
 import { CropsController } from './crops.controller';
 import { DatabaseModule } from 'src/database/database.module';
-import { cropProviders } from './crops.providers';
+import { cropProviders, irrigationProviders } from './crops.providers';
 import { userProviders } from 'src/auth/auth.providers';
 
 @Module({
@@ -11,6 +11,7 @@ import { userProviders } from 'src/auth/auth.providers';
   providers: [
     CropsService,
     ...cropProviders,
+    ...irrigationProviders,
     ...userProviders,
   ],
 })
