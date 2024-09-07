@@ -8,7 +8,7 @@ export const farmProviders = [
   {
     provide: FARM_MODEL,
     useFactory: (connection: Connection) =>
-      connection.model('Farms', FarmSchema),
+      connection.model('Farm', FarmSchema),
     inject: [DATABASE_CONNECTION],
   },
 ];
@@ -17,7 +17,7 @@ export const employeeProviders = [
   {
     provide: EMPLOYEE_MODEL,
     useFactory: (connection: Connection) =>
-      connection.model('Employees', EmployeeSchema),
+      connection.model('Employee', EmployeeSchema),
     inject: [DATABASE_CONNECTION],
   },
 ];

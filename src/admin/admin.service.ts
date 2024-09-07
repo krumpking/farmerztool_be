@@ -28,6 +28,7 @@ export class AdminService {
     try {
       // Check if farm name is already taken before adding farm
       const farmExists = await this.farmModel.find({ adminId: farm.adminId });
+      farmExists
       if (farmExists.length > 0) {
         // if farm exists upadate the farm
         const updatedFarm = this.farmModel.findOneAndUpdate(

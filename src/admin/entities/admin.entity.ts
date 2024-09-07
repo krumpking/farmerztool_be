@@ -1,5 +1,5 @@
 export class Farm {
-    id: string;
+    adminId: string;
     farmerName:string;
     farmerAge:number;
     farmerPhoneNumber: string;
