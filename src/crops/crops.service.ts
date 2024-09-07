@@ -1,7 +1,7 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject} from '@nestjs/common';
 import { CreateCropDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
-import { CROP_MODEL, IRRIGATION_MODEL } from './constants/crop.constants';
+import { CROP_MODEL, FERTILIZER_PESTICIDE_MODEL, IRRIGATION_MODEL } from './constants/crop.constants';
 import { Model } from 'mongoose';
 import { Crop } from './interfaces/crop.interface';
 import { ResponseDto } from 'src/common/response.dto';
@@ -10,19 +10,32 @@ import { User } from 'src/auth/interfaces/user.interface';
 import { Irrigation } from './interfaces/irrigation.interface';
 import { CreateIrrigationDto } from './dto/create-irrigation.dto';
 import { UpdateIrrigationDto } from './dto/update-irrigation.dto';
+import { FARM_MODEL } from 'src/admin/constants/admin.constants';
+import { Farm } from 'src/admin/interfaces/farm.interface';
+import { FertiliserPesticide } from './interfaces/fertilizer-pesticide.interface';
+import { CreateFertiliserPesticideDTO } from './dto/create-fert-pest.dto';
+import { UpdateFertiliserPesticideDTO } from './dto/update-fert-pest.dto';
+
 
 @Injectable()
 export class CropsService {
   constructor(
     @Inject(CROP_MODEL) private cropModel: Model<Crop>,
     @Inject(USER_MODEL) private userModel: Model<User>,
-    @Inject(IRRIGATION_MODEL) private irrigationModel: Model<Irrigation>
+    @Inject(IRRIGATION_MODEL) private irrigationModel: Model<Irrigation>,
+    @Inject(FARM_MODEL) private farmModel: Model<Farm>,
+    @Inject(FERTILIZER_PESTICIDE_MODEL) private fertilizer_pesticideModel: Model<FertiliserPesticide>
   ) {}
 
   /////////////////////////// CROPS /////////////////////////////
 
   async addCrop(createCropDto: CreateCropDto): Promise<ResponseDto>{
     try {
+      //check farm using adminId in dto
+      const farm = await this.farmModel.findOne({adminId: createCropDto.adminId});
+      if(!farm){
+        return ResponseDto.errorResponse("Invalid adminId")
+      }
       // check if the crop is not already there using cropname
       const existingCrop = await this.cropModel.findOne({cropName: createCropDto.cropName});
       if(existingCrop){
@@ -37,6 +50,12 @@ export class CropsService {
         return ResponseDto.errorResponse("Failed to create crop record");
       }
 
+      const addCropToFarm = await this.farmModel.findByIdAndUpdate(farm._id, {$push: {crops: crop}});
+
+      if(!addCropToFarm){
+        await this.cropModel.findByIdAndDelete(crop._id);
+        return ResponseDto.errorResponse("Failed to add Crop to farm");
+      }
 
       return ResponseDto.successResponse("Crop record created", createdCrop);
     } catch (error) {
@@ -211,6 +230,124 @@ export class CropsService {
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Something went wrong, deleting irrigation record")
+    }
+  }
+
+
+  ///////////////////////  FERTLISER AND PESTICIDE ////////////////////////
+
+  async addFertiliserPesticide(id: string, createFertlizerPesticideDto: CreateFertiliserPesticideDTO): Promise<ResponseDto>{
+    try {
+
+      const farm = await this.farmModel.findOne({adminId: createFertlizerPesticideDto.adminId});
+      if(!farm){
+        return ResponseDto.errorResponse("Invalid adminId");
+      }
+      const crop = await this.cropModel.findById(id);
+      if(!crop){
+        return ResponseDto.errorResponse("Cannot find crop");
+      }
+
+      const fert_pest = await this.fertilizer_pesticideModel.create({
+        crop: id,
+        ...createFertlizerPesticideDto
+      });
+
+      const createdFertPest = await this.fertilizer_pesticideModel.findById(fert_pest._id);
+
+      if(!createdFertPest){
+        return ResponseDto.errorResponse("Failed to add " + createFertlizerPesticideDto.recordType + " record");
+      }
+
+      return ResponseDto.successResponse(`Created ${createFertlizerPesticideDto.recordType} record`, createdFertPest);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, while creating " + createFertlizerPesticideDto.recordType + " record")
+    }
+  }
+
+  async getAllFertPestApplicationsForFarm(adminId: string): Promise<ResponseDto>{
+    try {
+      const farm = await this.farmModel.findOne({adminId});
+      if(!farm){
+        return ResponseDto.errorResponse("Invalid adminId");
+      }
+
+      const fert_pest = await this.fertilizer_pesticideModel.find({adminId});
+      if(!fert_pest || fert_pest.length === 0){
+        return ResponseDto.errorResponse("No available records");
+      }
+
+      return ResponseDto.successResponse("Records fetched", fert_pest);
+
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching fertilizers and pesticide records for farm")
+    }
+  }
+
+  async getAllFertPestApplicationsForCrop(id: string): Promise<ResponseDto>{
+    try {
+      const crop = await this.cropModel.findById(id);
+      
+      if(!crop){
+        return ResponseDto.errorResponse("Crop not found");
+      }
+
+      const records = await this.fertilizer_pesticideModel.find({crop: crop._id});
+
+      if(!records || records.length === 0){
+        return ResponseDto.errorResponse("No available records");
+      }
+
+      return ResponseDto.successResponse(`Fertilizer and pesticide records for ${crop?.cropName} fetched`, records)
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching fertilizers and pesticide records for crop")
+    }
+  }
+
+  async getSpecificFertPestRecordById(id: string): Promise<ResponseDto>{
+    try {
+      const record = await this.fertilizer_pesticideModel.findById(id);
+      if(!record){
+        return ResponseDto.errorResponse("Record not found");
+      }
+
+      return ResponseDto.successResponse("Record fetched", record);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching fertilizers and pesticide record")
+    }
+  }
+
+  async updateFertPestRecordById(id: string, updateFertPestDto: UpdateFertiliserPesticideDTO): Promise<ResponseDto>{
+    try {
+      const updatedRecord = await this.fertilizer_pesticideModel.findByIdAndUpdate(id, updateFertPestDto, {new: true}).exec();
+
+      if(!updatedRecord){
+        return ResponseDto.errorResponse("Failed to update record");
+      }
+
+      return ResponseDto.successResponse("Record updated", updatedRecord);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, updating fertilizers and pesticide record")
+    }
+  }
+
+  async deleteFertPestRecordById(id: string): Promise<ResponseDto>{
+    try {
+      const deleteRecord = await this.fertilizer_pesticideModel.findByIdAndDelete(id).exec();
+
+      if(!deleteRecord){
+        return ResponseDto.errorResponse("Failed to delete record");
+      }
+
+      return ResponseDto.successResponse("Record deleted", null);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, deleting fertilizers and pesticide record")
     }
   }
 
