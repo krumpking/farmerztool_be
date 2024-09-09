@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEmail, IsEnum, IsArray, ArrayContains} from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsOptional, IsEmail, IsEnum, IsArray, ArrayContains, IsNotEmpty} from 'class-validator';
 
 export class UserDto {
   @ApiProperty({
@@ -30,13 +31,22 @@ export class UserDto {
   position?: string;
 
   @ApiProperty({
+    description: 'AdminId which is used to add an user to a farm',
+    example: '1234567890',
+  })
+  @IsString()
+  @IsNotEmpty()
+  adminId: string;
+
+  @ApiProperty({
     description: 'Date the user joined',
     example: '2022-01-01',
     required: false
   })
   @IsString()
   @IsOptional()
-  dateJoined?: string;
+  @Type(() => Date)
+  dateJoined?: Date;
 
   @ApiProperty({
     description: 'Role of the user',

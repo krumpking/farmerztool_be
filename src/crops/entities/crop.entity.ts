@@ -14,6 +14,7 @@ export class Crop {
     adminId: string;
     addedBy: string;
     dateAdded: Date;
+    attributes: any;
   }
   
 //   export enum CropStatus {

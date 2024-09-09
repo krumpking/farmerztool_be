@@ -16,4 +16,5 @@ export interface Crop extends Document {
   adminId: string;
   addedBy: string;
   dateAdded: Date;
+  attributes: any;
 }

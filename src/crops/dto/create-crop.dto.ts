@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsDate, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsDate, IsNumber, IsObject, IsString, ValidateNested } from 'class-validator';
 
 // export enum CropStatus {
 //   SEEDLING = 'seedling',
@@ -102,4 +102,8 @@ export class CreateCropDto {
   })
   @IsString()
   addedBy: string;
+
+  @ApiProperty({ description: 'Additional attributes for the crops', example: { breed: 'Drought resistant', harvest: "3 months" } })
+  @IsObject()
+  attributes: any;
 }

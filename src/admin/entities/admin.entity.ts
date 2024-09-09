@@ -10,5 +10,6 @@ export class Farm {
     areaSize: string;
     animals: string[];
     crops: string[];
+    employees: string[];
     dateEstablished: Date;
   }
