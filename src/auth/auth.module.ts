@@ -11,6 +11,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from 'src/common/constants';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth.guard';
+import { farmProviders } from 'src/admin/admin.providers';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuthGuard } from './auth.guard';
     ...userProviders,
     ...otpProviders,
     ...employeeProviders,
+    ...farmProviders,
 
     {
       provide: APP_GUARD,

@@ -54,5 +54,6 @@ export const CropSchema = new mongoose.Schema({
   dateAdded: {
     type: Date,
     default: Date.now
-  }
+  },
+  attributes: { type: {}, required: true },
 });

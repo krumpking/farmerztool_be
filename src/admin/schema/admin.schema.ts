@@ -21,6 +21,10 @@ export const FarmSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Crop"
   }],
+  employees: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Employee"
+  }],
   dateEstablished: { type: Date, default: Date.now() },
   createdBy: {type: mongoose.Schema.Types.ObjectId, ref: "User"}
 }, {timestamps: true});
