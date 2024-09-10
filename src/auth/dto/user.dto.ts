@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsString, IsOptional, IsEmail, IsEnum, IsArray, ArrayContains, IsNotEmpty} from 'class-validator';
+import { IsString, IsOptional, IsEmail, IsEnum, IsArray, ArrayContains} from 'class-validator';
 
 export class UserDto {
   @ApiProperty({
@@ -35,7 +35,7 @@ export class UserDto {
     example: '1234567890',
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   adminId: string;
 
   @ApiProperty({

@@ -40,20 +40,11 @@ export class AuthService {
       return ResponseDto.errorResponse("User already exist");
     }
 
-    // lets check if the farm exists
-
-    const farm = await this.farmModel.findOne({adminId: userDto.adminId});
-
-    if(!farm){
-      return ResponseDto.errorResponse("Farm not found");
-    }
-
     //password must be 6 characters long
 
     if (userDto.password.split("").length < 6) {
       return ResponseDto.errorResponse("Password must be 6 characters long");
     }
-
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
@@ -66,13 +57,6 @@ export class AuthService {
 
     if(!createdUser){
       return ResponseDto.errorResponse("Failed to create user");
-    }
-
-    const addUserToFarm = await this.farmModel.findByIdAndUpdate(farm._id, {$push: {employees: createdUser._id}}, {new: true}).exec();
-
-    if(!addUserToFarm){
-      await this.userModel.findByIdAndDelete(createdUser._id);
-      return ResponseDto.errorResponse("Failed to add user to farm");
     }
 
     return ResponseDto.successResponse("User created successfully", createdUser);
