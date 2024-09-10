@@ -16,6 +16,7 @@ import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
 import { Farm } from 'src/admin/interfaces/farm.interface';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -39,20 +40,11 @@ export class AuthService {
       return ResponseDto.errorResponse("User already exist");
     }
 
-    // lets check if the farm exists
-
-    const farm = await this.farmModel.findOne({adminId: userDto.adminId});
-
-    if(!farm){
-      return ResponseDto.errorResponse("Farm not found");
-    }
-
     //password must be 6 characters long
 
     if (userDto.password.split("").length < 6) {
       return ResponseDto.errorResponse("Password must be 6 characters long");
     }
-
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
@@ -65,13 +57,6 @@ export class AuthService {
 
     if(!createdUser){
       return ResponseDto.errorResponse("Failed to create user");
-    }
-
-    const addUserToFarm = await this.farmModel.findByIdAndUpdate(farm._id, {$push: {employees: createdUser._id}}, {new: true}).exec();
-
-    if(!addUserToFarm){
-      await this.userModel.findByIdAndDelete(createdUser._id);
-      return ResponseDto.errorResponse("Failed to add user to farm");
     }
 
     return ResponseDto.successResponse("User created successfully", createdUser);
@@ -166,12 +151,11 @@ export class AuthService {
   }
 
 
-  async login(user: UserDto): Promise<ResponseDto> {
-    const response = new ResponseDto();
+  async login(loginDto: LoginDto): Promise<ResponseDto> {
 
-    const emailExists = await this.userModel.findOne({ email: user.email });
+    const emailExists = await this.userModel.findOne({ email: loginDto.email });
     if (!emailExists) {
-      const employeeExists = await this.employeeModel.findOne({ email: user.email });
+      const employeeExists = await this.employeeModel.findOne({ email: loginDto.email });
 
       if (!employeeExists) {
         return ResponseDto.errorResponse("User not found");
@@ -181,7 +165,7 @@ export class AuthService {
         return ResponseDto.errorResponse("Password not found");
       }
 
-      const match = await bcrypt.compare(user.password, employeeExists.password);
+      const match = await bcrypt.compare(loginDto.password, employeeExists.password);
 
       if (match) {
         const payload = {
@@ -198,23 +182,16 @@ export class AuthService {
           perms: employeeExists.perms,
         };
 
-        response.success = true;
-        response.message = "Login successful";
-        response.data = userData;
-        return response;
+        return ResponseDto.successResponse("Login successful", userData);
       } else {
-        response.success = false;
-        response.message = "Invalid password";
-        return response;
+        return ResponseDto.errorResponse("Invalid password");
       }
     } else {
       if (!emailExists.password) {
-        response.success = false;
-        response.message = "Password not found";
-        return response;
+        return ResponseDto.errorResponse("Password not found");
       }
 
-      const match = await bcrypt.compare(user.password, emailExists.password);
+      const match = await bcrypt.compare(loginDto.password, emailExists.password);
 
       if (match) {
         const payload = {
@@ -231,14 +208,9 @@ export class AuthService {
           perms: [],
         };
 
-        response.success = true;
-        response.message = "Login successful";
-        response.data = userData;
-        return response;
+        return ResponseDto.successResponse("Login successful", userData);
       } else {
-        response.success = false;
-        response.message = "Invalid password";
-        return response;
+        return ResponseDto.errorResponse("Invalid password");
       }
     }
   }
