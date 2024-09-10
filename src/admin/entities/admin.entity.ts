@@ -1,5 +1,5 @@
 export class Farm {
-    id: string;
+    adminId: string;
     farmerName:string;
     farmerAge:number;
     farmerPhoneNumber: string;
@@ -10,5 +10,6 @@ export class Farm {
     areaSize: string;
     animals: string[];
     crops: string[];
+    employees: string[];
     dateEstablished: Date;
   }

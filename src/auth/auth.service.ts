@@ -10,11 +10,12 @@ import { Otp } from './interfaces/otp.interface';
 import { generatorRandomString, readHTMLFile } from 'src/common/utils';
 import { dirname } from 'path';
 import handlebars from 'handlebars';
-import { EMPLOYEE_MODEL } from 'src/admin/constants/admin.constants';
+import { EMPLOYEE_MODEL, FARM_MODEL } from 'src/admin/constants/admin.constants';
 import { Employee } from 'src/admin/interfaces/employee.interface';
 import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
+import { Farm } from 'src/admin/interfaces/farm.interface';
 
 @Injectable()
 export class AuthService {
@@ -26,26 +27,30 @@ export class AuthService {
     private jwtService: JwtService,
     @Inject(EMPLOYEE_MODEL)
     private employeeModel: Model<Employee>,
+    @Inject(FARM_MODEL) 
+    private farmModel: Model<Farm> 
   ) { }
 
 
   async addUser(userDto: UserDto): Promise<ResponseDto> {
-    const response = new ResponseDto();
     const userExist = await this.userModel.findOne({ email: userDto.email });
 
     if (userExist) {
-      response.success = false;
-      response.message = "User already exist";
-      response.data = null;
-      return response;
+      return ResponseDto.errorResponse("User already exist");
+    }
+
+    // lets check if the farm exists
+
+    const farm = await this.farmModel.findOne({adminId: userDto.adminId});
+
+    if(!farm){
+      return ResponseDto.errorResponse("Farm not found");
     }
 
     //password must be 6 characters long
 
     if (userDto.password.split("").length < 6) {
-      response.success = false;
-      response.message = "Password must be 6 characters long";
-      return response;
+      return ResponseDto.errorResponse("Password must be 6 characters long");
     }
 
 
@@ -56,11 +61,72 @@ export class AuthService {
 
     const savedUser = await newUser.save();
 
-    response.success = true;
-    response.message = "User created successfully";
-    response.data = savedUser;
+    const createdUser = await this.userModel.findById(savedUser._id);
 
-    return response;
+    if(!createdUser){
+      return ResponseDto.errorResponse("Failed to create user");
+    }
+
+    const addUserToFarm = await this.farmModel.findByIdAndUpdate(farm._id, {$push: {employees: createdUser._id}}, {new: true}).exec();
+
+    if(!addUserToFarm){
+      await this.userModel.findByIdAndDelete(createdUser._id);
+      return ResponseDto.errorResponse("Failed to add user to farm");
+    }
+
+    return ResponseDto.successResponse("User created successfully", createdUser);
+  }
+
+
+  async generateAccessTokenForVerifiedUser(email: string): Promise<ResponseDto>{
+    try {
+      const emailExists = await this.userModel.findOne({ email});
+      if (!emailExists) {
+        const employeeExists = await this.employeeModel.findOne({ email});
+  
+        if (!employeeExists) {
+          return ResponseDto.errorResponse("User not found");
+        }
+
+  
+        if (true) {
+          const payload = {
+            id: employeeExists._id,
+            email: employeeExists.email,
+            password: employeeExists.password,
+          };
+  
+          const userData = {
+            access_token: await this.jwtService.signAsync(payload),
+            adminId: employeeExists._id,
+            email: employeeExists.email,
+            password: employeeExists.password,
+            perms: employeeExists.perms,
+          };
+          return ResponseDto.successResponse("Login successful", userData);
+        } 
+      } else {
+        if (true) {
+          const payload = {
+            id: emailExists._id,
+            email: emailExists.email,
+            roles: emailExists.role,
+          };
+  
+          const userData = {
+            access_token: await this.jwtService.signAsync(payload),
+            adminId: emailExists._id,
+            email: emailExists.email,
+            password: emailExists.password,
+            perms: [],
+          };
+          return ResponseDto.successResponse("Login successful", userData);
+        } 
+      }
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, please try again")
+    }
   }
 
 
@@ -89,7 +155,9 @@ export class AuthService {
         return ResponseDto.errorResponse("Email verification failed");
       }
 
-      return ResponseDto.successResponse("verification successful", null);
+      const login = await this.generateAccessTokenForVerifiedUser(updateVerification?.email);
+
+      return ResponseDto.successResponse("verification successful", login);
 
     } catch (error) {
       console.log(error);

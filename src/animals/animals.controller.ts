@@ -29,6 +29,7 @@ import { CreateProductionDto } from './dto/production.dto';
 export class AnimalsController {
   constructor(private readonly animalsService: AnimalsService) {}
 
+
   /////////////////////// ANIMALS //////////////////////////////////////////////////////
 
   @Post('add')

@@ -91,7 +91,7 @@ export class AnimalsService {
 
   async getAllMyAnimals(adminId: string): Promise<ResponseDto> {
     try {
-      // Check if email is already taken before adding user
+      // 
       const animalExists = await this.animalModel.find({
         adminId: adminId,
       });
