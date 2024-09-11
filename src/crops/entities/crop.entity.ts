@@ -15,6 +15,13 @@ export class Crop {
     addedBy: string;
     dateAdded: Date;
     attributes: any;
+    growthRecords: {
+      dateUpdated: Date;
+      growthStage: string;
+      notes: string;
+      weatherConditionsNotes: string;
+    }[];
+    soilType: string;
   }
   
 //   export enum CropStatus {

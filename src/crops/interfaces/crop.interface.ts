@@ -17,4 +17,11 @@ export interface Crop extends Document {
   addedBy: string;
   dateAdded: Date;
   attributes: any;
+  growthRecords: {
+    dateUpdated: Date;
+    growthStage: string;
+    notes: string;
+    weatherConditionsNotes: string;
+  }[];
+  soilType: string;
 }
