@@ -1,5 +1,24 @@
 import * as mongoose from "mongoose";
 
+const growthRecords = new mongoose.Schema({
+  dateUpdated: {
+    type: Date,
+    default: Date.now()
+  },
+  growthStage: {
+    type: String,
+    required: true
+  },
+  notes: {
+    type: String,
+    required: true
+  },
+  weatherConditionsNotes: {
+    type: String,
+    required: true
+  }
+}, {timestamps: true});
+
 export const CropSchema = new mongoose.Schema({
   //crop name should be unique
   cropName: {
@@ -51,9 +70,14 @@ export const CropSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  growthRecords: [growthRecords],
   dateAdded: {
     type: Date,
     default: Date.now
   },
   attributes: { type: {}, required: true },
+  soilType: {
+    type: String,
+    required: true
+  }
 });

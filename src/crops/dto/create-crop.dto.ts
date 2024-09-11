@@ -9,6 +9,36 @@ import { IsArray, IsDate, IsNumber, IsObject, IsString, ValidateNested } from 'c
 //   HARVESTED = 'harvested',
 // }
 
+export class GrowthRecord {
+  @ApiProperty({
+    description: 'Date updated',
+    example: '2024-07-26T14:30:00.000Z',
+  })
+  @IsDate()
+  @Type(() => Date)
+  dateUpdated: Date;
+
+  @ApiProperty({
+    description: 'Growth stage of the crop',
+    example: 'Seedling',
+  })
+  @IsString()
+  growthStage: string;
+
+  @ApiProperty({
+    description: 'Notes about the growth',
+    example: 'Healthy growth',
+  })
+  @IsString()
+  notes: string;
+
+  @ApiProperty({
+    description: 'Weather conditions notes',
+    example: 'Sunny with moderate rainfall',
+  })
+  @IsString()
+  weatherConditionsNotes: string;
+}
 export class IrrigationSchedule {
   @ApiProperty({
     description: 'Days of the week when irrigation is scheduled',
@@ -106,4 +136,20 @@ export class CreateCropDto {
   @ApiProperty({ description: 'Additional attributes for the crops', example: { breed: 'Drought resistant', harvest: "3 months" } })
   @IsObject()
   attributes: any;
+
+  @ApiProperty({
+    description: 'Soil type of the crop',
+    example: 'Clay',
+  })
+  @IsString()
+  soilType: string; // new field
+
+  @ApiProperty({
+    description: 'Growth records of the crop',
+  })
+  @ValidateNested()
+  @Type(() => GrowthRecord)
+  growthRecords: GrowthRecord[]; 
+
+  
 }

@@ -4,5 +4,4 @@ export const PaymentSchema = new mongoose.Schema({
   adminId: String,
   description: String,
   amount: Number,
- createdAt: { type: Date, default: Date.now }
-});
+}, {timestamps: true});
