@@ -240,8 +240,7 @@ async deleteFertPestRecordById(@Param('id') id: string, @Request() req){
 async addFinancial(@Param('id') id: string, @Body() createFinancialDto: CreateFinancialDto, @Request() req){
   const check = req.user.roles === "Admin";
   if(check){
-    createFinancialDto.adminId = id;
-    return this.cropsService.createFinancialRecord(createFinancialDto);
+    return this.cropsService.createFinancialRecord(id, createFinancialDto);
   } else {
     throw new HttpException("Unauthorised", 401);
   }

@@ -358,14 +358,15 @@ export class CropsService {
 
   ///////////////////// FINANCIAL ///////////////////////////////////////////
 
-  async createFinancialRecord(createFinancialDto: CreateFinancialDto): Promise<ResponseDto>{
+  async createFinancialRecord(id: string,createFinancialDto: CreateFinancialDto): Promise<ResponseDto>{
     try {
-      const crop = await this.cropModel.findById(createFinancialDto.crop);
+      const crop = await this.cropModel.findById(id);
       if(!crop){
         return ResponseDto.errorResponse("Crop not found");
       }
 
       const financial = await this.financialModel.create({
+        crop: id,
         ...createFinancialDto
       });
 
@@ -439,6 +440,7 @@ export class CropsService {
   async updateFinancialRecordById(id: string, updateFinancialDto: UpdateFinancialDto): Promise<ResponseDto>{
     try {
       const updatedRecord = await this.financialModel.findByIdAndUpdate(id, updateFinancialDto, {new: true}).exec();
+
 
       if(!updatedRecord){
         return ResponseDto.errorResponse("Failed to update record");
