@@ -530,7 +530,8 @@ export class CropsService {
         return ResponseDto.errorResponse("Crop not found");
       }
 
-      const records = await this.activityModel.find({crop: crop._id});
+      const records = await this.activityModel.find({cropId: crop._id});
+      
 
       if(!records || records.length === 0){
         return ResponseDto.errorResponse("No available records");
