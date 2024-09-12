@@ -1,7 +1,7 @@
 import { Injectable, Inject} from '@nestjs/common';
 import { CreateCropDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
-import { CROP_MODEL, FERTILIZER_PESTICIDE_MODEL, IRRIGATION_MODEL } from './constants/crop.constants';
+import { CROP_MODEL, FERTILIZER_PESTICIDE_MODEL, FINANCIAL_MODE, IRRIGATION_MODEL } from './constants/crop.constants';
 import { Model } from 'mongoose';
 import { Crop } from './interfaces/crop.interface';
 import { ResponseDto } from 'src/common/response.dto';
@@ -15,6 +15,9 @@ import { Farm } from 'src/admin/interfaces/farm.interface';
 import { FertiliserPesticide } from './interfaces/fertilizer-pesticide.interface';
 import { CreateFertiliserPesticideDTO } from './dto/create-fert-pest.dto';
 import { UpdateFertiliserPesticideDTO } from './dto/update-fert-pest.dto';
+import { Financial } from './interfaces/financial.interface';
+import { CreateFinancialDto } from './dto/financial.dto';
+import { UpdateFinancialDto } from './dto/update-financial.dto';
 
 
 @Injectable()
@@ -24,7 +27,8 @@ export class CropsService {
     @Inject(USER_MODEL) private userModel: Model<User>,
     @Inject(IRRIGATION_MODEL) private irrigationModel: Model<Irrigation>,
     @Inject(FARM_MODEL) private farmModel: Model<Farm>,
-    @Inject(FERTILIZER_PESTICIDE_MODEL) private fertilizer_pesticideModel: Model<FertiliserPesticide>
+    @Inject(FERTILIZER_PESTICIDE_MODEL) private fertilizer_pesticideModel: Model<FertiliserPesticide>,
+    @Inject(FINANCIAL_MODE) private financialModel: Model<Financial>,
   ) {}
 
   /////////////////////////// CROPS /////////////////////////////
@@ -348,6 +352,119 @@ export class CropsService {
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Something went wrong, deleting fertilizers and pesticide record")
+    }
+  }
+
+
+  ///////////////////// FINANCIAL ///////////////////////////////////////////
+
+  async createFinancialRecord(createFinancialDto: CreateFinancialDto): Promise<ResponseDto>{
+    try {
+      const crop = await this.cropModel.findById(createFinancialDto.crop);
+      if(!crop){
+        return ResponseDto.errorResponse("Crop not found");
+      }
+
+      const financial = await this.financialModel.create({
+        ...createFinancialDto
+      });
+
+      const createdFinancial = await this.financialModel.findById(financial._id).populate("crop");
+
+      if(!createdFinancial){
+        return ResponseDto.errorResponse("Failed to create financial record");
+      }
+
+      return ResponseDto.successResponse("Financial record created successfully", createdFinancial);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, creating financial record")
+    }
+  }
+
+  async getAllFinancialRecordsForFarm(adminId: string): Promise<ResponseDto>{
+    try {
+      const farm = await this.farmModel.findOne({adminId});
+      if(!farm){
+        return ResponseDto.errorResponse("Invalid adminId");
+      }
+
+      const financial = await this.financialModel.find({adminId});
+      if(!financial){
+        return ResponseDto.errorResponse("No available records");
+      }
+
+      return ResponseDto.successResponse("Records fetched", financial);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching financial records for farm");
+    }
+  }
+
+  async getAllFinancialRecordsForCrop(id: string): Promise<ResponseDto>{
+    try {
+      const crop = await this.cropModel.findById(id);
+      
+      if(!crop){
+        return ResponseDto.errorResponse("Crop not found");
+      }
+
+      const records = await this.financialModel.find({crop: crop._id});
+
+      if(!records || records.length === 0){
+        return ResponseDto.errorResponse("No available records");
+      }
+
+      return ResponseDto.successResponse(`Financial records for ${crop?.cropName} fetched`, records)
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching financial records for crop");
+    }
+  }
+
+  async getSpecificFinancialRecordById(id: string): Promise<ResponseDto>{
+    try {
+      const financialRecord = await this.financialModel.findById(id);
+      if(!financialRecord){
+        return ResponseDto.errorResponse("Record not found");
+      }
+
+      return ResponseDto.successResponse("Record fetched", financialRecord);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching financial record")
+    }
+  }
+
+  async updateFinancialRecordById(id: string, updateFinancialDto: UpdateFinancialDto): Promise<ResponseDto>{
+    try {
+      const updatedRecord = await this.financialModel.findByIdAndUpdate(id, updateFinancialDto, {new: true}).exec();
+
+      if(!updatedRecord){
+        return ResponseDto.errorResponse("Failed to update record");
+      }
+
+      return ResponseDto.successResponse("Record updated", updatedRecord);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, updating financial record")
+    }
+  }
+
+  async deleteFinancialRecordById(id: string): Promise<ResponseDto>{
+    try {
+      const deleteRecord = await this.financialModel.findByIdAndDelete(id).exec();
+
+      if(!deleteRecord){
+        return ResponseDto.errorResponse("Failed to delete record");
+      }
+
+      return ResponseDto.successResponse("Record deleted", null);
+    }
+
+    catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, deleting financial record")
     }
   }
 
