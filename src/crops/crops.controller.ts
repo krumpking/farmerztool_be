@@ -16,6 +16,10 @@ import { UpdateFinancialDto } from './dto/update-financial.dto';
 export class CropsController {
   constructor(private readonly cropsService: CropsService) {}
 
+  private getUserFromRequest(req): any {
+    return req.user;
+  }
+
   ////////////////////////////// CROPS //////////////////////////////////////////
 
   @Post('add')
@@ -32,7 +36,8 @@ export class CropsController {
     },
   })
   async addCrop(@Body() createCropDto: CreateCropDto, @Request() req) {
-    const check = req.user.roles === "Admin";
+    const user = this.getUserFromRequest(req);
+    const check = user.roles === "Admin";
     if (check) {
       return this.cropsService.addCrop(createCropDto);
     } else {
