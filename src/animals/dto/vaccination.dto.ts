@@ -50,7 +50,7 @@ export class CreateVaccinationDto {
   })
   iotNumber: string;
 
-  @IsDate()
+  @IsString()
   @ApiProperty({
     description: 'The expiration date of the vaccine',
     example: '2025-12-31T00:00:00.000Z',
