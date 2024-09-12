@@ -19,6 +19,6 @@ export const EmployeeSchema = new mongoose.Schema({
     type: [String],
     required: true
   },
-  role: {type: String, enum: ["Admin", "Manager", "Finance", "Animal Manger", "Crop Management"], required: false},
+  role: {type: String, enum: ["Admin", "Manager", "Finance", "AnimalManger", "CropManagement"], required: false},
   }, {timestamps: true});
 

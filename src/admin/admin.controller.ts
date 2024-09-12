@@ -5,6 +5,7 @@ import {
   Param,
   Get,
   Delete,
+  Request,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateFarmDto } from './dto/create-admin.dto';
@@ -18,6 +19,10 @@ import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 @Controller('/api/v1/admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
+
+  private getUserFromRequest(req): any{
+    return req.user;
+  }
 
   @Post('farm')
   async addFarm(
@@ -38,8 +43,9 @@ export class AdminController {
 
   @Post('add/user')
   async addEmployee(
-    @Body() employeeDto: EmployeeDto,
+    @Body() employeeDto: EmployeeDto, @Request() req
   ){
+    const user = this.getUserFromRequest(req);
     const saltOrRounds = 10;
 
     const hash = await bcrypt.hash(employeeDto.password, saltOrRounds);
@@ -47,11 +53,13 @@ export class AdminController {
     const newUser: EmployeeDto = {
       email: employeeDto.email,
       password: hash,
-      adminId: employeeDto.adminId,
       perms: employeeDto.perms,
+      role: employeeDto.role
     };
 
-    return this.adminService.addEmployee(newUser);
+    const adminId = user.adminId;
+
+    return this.adminService.addEmployee(adminId, newUser);
   }
 
   @Delete('delete/employee')

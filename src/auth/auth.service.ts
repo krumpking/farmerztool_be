@@ -73,12 +73,14 @@ export class AuthService {
           return ResponseDto.errorResponse("User not found");
         }
 
-  
         if (true) {
           const payload = {
             id: employeeExists._id,
             email: employeeExists.email,
             password: employeeExists.password,
+            adminId: employeeExists.adminId,
+            permissions: employeeExists.perms,
+            roles: employeeExists
           };
   
           const userData = {
@@ -86,7 +88,7 @@ export class AuthService {
             adminId: employeeExists._id,
             email: employeeExists.email,
             password: employeeExists.password,
-            perms: employeeExists.perms,
+            permissions: employeeExists.perms,
           };
           return ResponseDto.successResponse("Login successful", userData);
         } 
@@ -96,6 +98,8 @@ export class AuthService {
             id: emailExists._id,
             email: emailExists.email,
             roles: emailExists.role,
+            adminId: emailExists._id,
+            permissions: emailExists.permissions,
           };
   
           const userData = {
@@ -173,6 +177,7 @@ export class AuthService {
           id: employeeExists._id,
           email: employeeExists.email,
           password: employeeExists.password,
+          adminId: employeeExists.adminId,
         };
 
         const userData = {
@@ -199,6 +204,9 @@ export class AuthService {
           id: emailExists._id,
           email: emailExists.email,
           roles: emailExists.role,
+          adminId: emailExists._id,
+          permissions: emailExists.permissions,
+          
         };
 
         const userData = {

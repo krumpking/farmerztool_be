@@ -84,7 +84,7 @@ export class AdminService {
     }
   }
 
-  async addEmployee(employee: EmployeeDto): Promise<ResponseDto> {
+  async addEmployee(adminId: string, employee: EmployeeDto): Promise<ResponseDto> {
     try {
       const emailExists = await this.userModel.findOne({
         email: employee.email,

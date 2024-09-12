@@ -1,7 +1,7 @@
 import { Injectable, Inject} from '@nestjs/common';
 import { CreateCropDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
-import { CROP_MODEL, FERTILIZER_PESTICIDE_MODEL, FINANCIAL_MODE, IRRIGATION_MODEL } from './constants/crop.constants';
+import { ACTIVITY_MODEL, CROP_MODEL, FERTILIZER_PESTICIDE_MODEL, FINANCIAL_MODE, IRRIGATION_MODEL } from './constants/crop.constants';
 import { Model } from 'mongoose';
 import { Crop } from './interfaces/crop.interface';
 import { ResponseDto } from 'src/common/response.dto';
@@ -18,6 +18,9 @@ import { UpdateFertiliserPesticideDTO } from './dto/update-fert-pest.dto';
 import { Financial } from './interfaces/financial.interface';
 import { CreateFinancialDto } from './dto/financial.dto';
 import { UpdateFinancialDto } from './dto/update-financial.dto';
+import { CropActivity } from './interfaces/activities.interface';
+import { CropActivityDto } from './dto/activity.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
 
 
 @Injectable()
@@ -29,6 +32,7 @@ export class CropsService {
     @Inject(FARM_MODEL) private farmModel: Model<Farm>,
     @Inject(FERTILIZER_PESTICIDE_MODEL) private fertilizer_pesticideModel: Model<FertiliserPesticide>,
     @Inject(FINANCIAL_MODE) private financialModel: Model<Financial>,
+    @Inject(ACTIVITY_MODEL) private activityModel: Model<CropActivity>,
   ) {}
 
   /////////////////////////// CROPS /////////////////////////////
@@ -469,5 +473,122 @@ export class CropsService {
       return ResponseDto.errorResponse("Something went wrong, deleting financial record")
     }
   }
+
+
+  ////////////////////ACTIVITY//////////////////////////////////////
+
+  async createActivityRecord(id: string, adminId: string, createActivityDto: CropActivityDto): Promise<ResponseDto>{
+    try {
+      const crop = await this.cropModel.findById(id);
+      if(!crop){
+        return ResponseDto.errorResponse("Crop not found");
+      }
+
+      const activity = await this.activityModel.create({
+        cropId: crop._id,
+        adminId: adminId,
+        ...createActivityDto
+      });
+
+      const createdActivity = await this.activityModel.findById(activity._id).populate("cropId");
+
+      if(!createdActivity){
+        return ResponseDto.errorResponse("Failed to create activity record");
+      }
+
+      return ResponseDto.successResponse("Activity record created successfully", createdActivity);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, creating activity record")
+    }
+  }
+
+  async getAllActivityRecordsForFarm(adminId: string): Promise<ResponseDto>{
+    try {
+      const farm = await this.farmModel.findOne({adminId});
+      if(!farm){
+        return ResponseDto.errorResponse("Invalid adminId");
+      }
+
+      const activity = await this.activityModel.find({adminId});
+      if(!activity){
+        return ResponseDto.errorResponse("No available records");
+      }
+
+      return ResponseDto.successResponse("Records fetched", activity);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching activity records for farm");
+    }
+  }
+
+  async getAllActivityRecordsForCrop(id: string): Promise<ResponseDto>{
+    try {
+      const crop = await this.cropModel.findById(id);
+      
+      if(!crop){
+        return ResponseDto.errorResponse("Crop not found");
+      }
+
+      const records = await this.activityModel.find({crop: crop._id});
+
+      if(!records || records.length === 0){
+        return ResponseDto.errorResponse("No available records");
+      }
+
+      return ResponseDto.successResponse(`Activity records for ${crop?.cropName} fetched`, records)
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching activity records for crop");
+    }
+  }
+
+  async getSpecificActivityRecordById(id: string): Promise<ResponseDto>{
+    try {
+      const activityRecord = await this.activityModel.findById(id);
+      if(!activityRecord){
+        return ResponseDto.errorResponse("Record not found");
+      }
+
+      return ResponseDto.successResponse("Record fetched", activityRecord);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, fetching activity record")
+    }
+  }
+
+  async updateActivityRecordById(id: string, updateActivityDto: UpdateActivityDto): Promise<ResponseDto>{
+    try {
+      const updatedRecord = await this.activityModel.findByIdAndUpdate(id, updateActivityDto, {new: true}).exec();
+
+      if(!updatedRecord){
+        return ResponseDto.errorResponse("Failed to update record");
+      }
+
+      return ResponseDto.successResponse("Record updated", updatedRecord);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, updating activity record")
+    }
+  }
+
+  async deleteActivityRecordById(id: string): Promise<ResponseDto>{
+    try {
+      const deleteRecord = await this.activityModel.findByIdAndDelete(id).exec();
+
+      if(!deleteRecord){
+        return ResponseDto.errorResponse("Failed to delete record");
+      }
+
+      return ResponseDto.successResponse("Record deleted", null);
+    }
+
+    catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, deleting activity record")
+    }
+  }
+  
+
 
 }
