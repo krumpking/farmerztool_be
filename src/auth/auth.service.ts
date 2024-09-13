@@ -19,7 +19,7 @@ import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
 import { Farm } from 'src/admin/interfaces/farm.interface';
-import { LoginDto } from './dto/login.dto';
+import { SignInDTO } from './dto/signin.dto';
 
 @Injectable()
 export class AuthService {
@@ -167,7 +167,7 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto): Promise<ResponseDto> {
+  async login(loginDto: SignInDTO): Promise<ResponseDto> {
     const emailExists = await this.userModel.findOne({ email: loginDto.email });
     if (!emailExists) {
       const employeeExists = await this.employeeModel.findOne({
@@ -210,10 +210,6 @@ export class AuthService {
       if (!emailExists.password) {
         return ResponseDto.errorResponse('Password not found');
       }
-
-      console.log('DTO ', JSON.stringify(loginDto));
-      console.log('Password 1', typeof loginDto.password);
-      console.log('Password 2', typeof emailExists.password);
 
       const match = await bcrypt.compare(
         loginDto.password,
