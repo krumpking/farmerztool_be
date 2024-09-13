@@ -19,7 +19,7 @@ import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
 import { Farm } from 'src/admin/interfaces/farm.interface';
-
+import { SignInDTO } from './dto/signin.dto';
 
 @Injectable()
 export class AuthService {
@@ -64,11 +64,18 @@ export class AuthService {
       return ResponseDto.errorResponse('Failed to create user');
     }
 
+    await this.userModel
+      .findByIdAndUpdate(
+        createdUser._id,
+        { adminId: createdUser._id },
+        { new: true },
+      )
+      .exec();
 
-    await this.userModel.findByIdAndUpdate(createdUser._id, {adminId: createdUser._id}, {new: true}).exec();
-
-    return ResponseDto.successResponse("User created successfully", createdUser);
-
+    return ResponseDto.successResponse(
+      'User created successfully',
+      createdUser,
+    );
   }
 
   async generateAccessTokenForVerifiedUser(
@@ -90,7 +97,7 @@ export class AuthService {
             password: employeeExists.password,
             adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
-            roles: employeeExists
+            roles: employeeExists,
           };
 
           const userData = {
@@ -171,14 +178,13 @@ export class AuthService {
     }
   }
 
+  async login(loginDto: SignInDTO): Promise<ResponseDto> {
+    let email = loginDto.email;
+    let password = loginDto.password;
 
-
-  async login(email: string, password: string): Promise<ResponseDto> {
-
-    const emailExists = await this.userModel.findOne({ email});
+    const emailExists = await this.userModel.findOne({ email });
     if (!emailExists) {
-      const employeeExists = await this.employeeModel.findOne({ email});
-
+      const employeeExists = await this.employeeModel.findOne({ email });
 
       if (!employeeExists) {
         return ResponseDto.errorResponse('User not found');
@@ -188,8 +194,7 @@ export class AuthService {
         return ResponseDto.errorResponse('Password not found');
       }
 
-   const match = await bcrypt.compare(password, employeeExists.password);
-
+      const match = await bcrypt.compare(password, employeeExists.password);
 
       if (match) {
         const payload = {
@@ -217,7 +222,6 @@ export class AuthService {
 
       const match = await bcrypt.compare(password, emailExists.password);
 
-
       if (match) {
         const payload = {
           id: emailExists._id,
@@ -225,7 +229,6 @@ export class AuthService {
           roles: emailExists.role,
           adminId: emailExists._id,
           permissions: emailExists.permissions,
-          
         };
 
         const userData = {
@@ -233,7 +236,7 @@ export class AuthService {
           adminId: emailExists._id,
           email: emailExists.email,
           perms: emailExists.permissions,
-          roles: emailExists.role
+          roles: emailExists.role,
         };
 
         return ResponseDto.successResponse('Login successful', userData);

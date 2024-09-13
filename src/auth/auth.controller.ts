@@ -14,6 +14,7 @@ import { Public } from './decorators/public.decator';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SignInDTO } from './dto/signin.dto';
 
 @ApiTags('Auth Controllers')
 @ApiBearerAuth()
@@ -37,20 +38,18 @@ export class AuthController {
 
   @Public()
   @Post('login')
-
-  @ApiOperation({ summary: "Login an existing user" })
+  @ApiOperation({ summary: 'Login an existing user' })
   @ApiBody({
     schema: {
       properties: {
-        email: {type: 'string', example: 'user@example.com'}, 
-        password: {type: 'string', example: 'password'}
-      }
-    }
+        email: { type: 'string', example: 'user@example.com' },
+        password: { type: 'string', example: 'password' },
+      },
+    },
   })
-  async login(@Body('email') email: string,
-  @Body('password') password: string,){
-    return this.authService.login(email, password);
-
+  async login(@Body() loginDto: SignInDTO) {
+    console.log(loginDto.email, loginDto.password);
+    return this.authService.login(loginDto);
   }
 
   @Public()
