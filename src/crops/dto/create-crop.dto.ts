@@ -119,12 +119,6 @@ export class CreateCropDto {
   @IsNumber()
   updatedHeightSizeLength: number;
 
-  @ApiProperty({
-    description: 'Admin ID',
-    example: 'admin123',
-  })
-  @IsString()
-  adminId: string;
 
   @ApiProperty({
     description: 'Added by',
@@ -149,7 +143,7 @@ export class CreateCropDto {
   })
   @ValidateNested()
   @Type(() => GrowthRecord)
-  growthRecords: GrowthRecord[]; 
+  growthRecords: GrowthRecord; 
 
   
 }

@@ -102,7 +102,7 @@ export class AdminService {
         email: employee.email,
       });
 
-      if (!emailExists) {
+      if (emailExists) {
         return ResponseDto.errorResponse("User already exists");
       } else {
         const employeeExists = await this.employeeModel.find({
@@ -123,6 +123,30 @@ export class AdminService {
 
           return ResponseDto.successResponse("Employee updated", updatedEmployee);
         } else {
+
+          const createdEmployeeInstance = new this.employeeModel({
+            adminId: adminId,
+            ...employee
+          });
+
+          const employ = await createdEmployeeInstance.save();
+
+          const employeeCreated = await this.employeeModel.findById(employ._id);
+
+          if(!employeeCreated){
+            return ResponseDto.errorResponse("Failed to create employee");
+          }
+
+          const updateFarm = await this.farmModel.findOneAndUpdate({adminId}, {$push: {employees: employeeCreated._id}}, {new: true}).exec();
+
+
+          if(!updateFarm){
+            await this.employeeModel.findByIdAndDelete(employeeCreated._id);
+            return ResponseDto.errorResponse("Failed to add employee to farm");
+          }
+
+          // send email
+
           const appDir = dirname(require.main.path);
 
           readHTMLFile(
@@ -173,12 +197,7 @@ export class AdminService {
             },
           );
 
-          const createdEmployee = new this.employeeModel(employee);
-          const employeeCreated =  await createdEmployee.save();
 
-          if(!employeeCreated){
-            return ResponseDto.errorResponse("Failed to create employee");
-          }
 
           return ResponseDto.successResponse("Employee created", employeeCreated);
 

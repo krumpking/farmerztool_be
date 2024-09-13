@@ -1,4 +1,4 @@
-import { IsDate, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsDate,  IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -7,7 +7,6 @@ export class CropActivityDto {
     description: 'The type of activity (e.g. planting, watering, harvesting)',
     example: 'planting'
   })
-  @IsEnum(['planting', 'watering', 'harvesting'])
   @IsNotEmpty()
   @IsString()
   activityType: string;

@@ -10,6 +10,9 @@ import { UpdateFertiliserPesticideDTO } from './dto/update-fert-pest.dto';
 import { CreateFinancialDto } from './dto/financial.dto';
 import { UpdateFinancialDto } from './dto/update-financial.dto';
 import { CropActivityDto } from './dto/activity.dto';
+import { CreatePestDiseaseIssueDto } from './dto/pest-disease.dto';
+import { UpdatePestDiseaseIssueDto } from './dto/update-pest-disease.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
 
 @ApiTags("CROPS")
 @ApiBearerAuth()
@@ -40,7 +43,9 @@ export class CropsController {
     const user = this.getUserFromRequest(req);
     const check = user.roles === "Admin";
     if (check) {
-      return this.cropsService.addCrop(createCropDto);
+      const adminId = user.adminId;
+      
+      return this.cropsService.addCrop(adminId ,createCropDto);
     } else {
       throw new HttpException("Unauthorised", 401);
     }
@@ -51,8 +56,13 @@ export class CropsController {
     summary: "Gets all crop records",
     description: "Gets all crop records",
   })
-  async getCrops() {
-    return this.cropsService.getCrops();
+  async getCrops(
+    @Request() req
+  ) {
+    const user = this.getUserFromRequest(req);
+    const adminId = user.adminId;
+
+    return this.cropsService.getCrops(adminId);
   }
 
   @Get(':id')
@@ -324,7 +334,6 @@ async addActivity(@Param('id') id: string, @Body() createActivityDto: CropActivi
   const check = user.roles === "Admin";
   if(check){
     const adminId = user.adminId;
-    console.log(user);
     
     return this.cropsService.createActivityRecord(id, adminId, createActivityDto);
   } else {
@@ -338,7 +347,7 @@ async addActivity(@Param('id') id: string, @Body() createActivityDto: CropActivi
   description: "Get all activity records for a farm using adminId",
 })
 async getAllActivityForFarm(@Param('adminId') adminId: string){
-  return this.cropsService.getAllActivityRecordsForCrop(adminId);
+  return this.cropsService.getAllActivityRecordsForFarm(adminId);
 }
 
 
@@ -365,7 +374,7 @@ async getSpecificActivityRecordById(@Param('id') id: string){
   summary: "Update a specific activity record",
   description: "Update a specific activity record using its mongoose.ObjectId _id",
 })
-async updateActivityRecordById(@Param('id') id: string, @Body() updateActivityDto: CropActivityDto, @Request() req){
+async updateActivityRecordById(@Param('id') id: string, @Body() updateActivityDto: UpdateActivityDto, @Request() req){
   const check = req.user.roles === "Admin";
     if (check) {
       return this.cropsService.updateActivityRecordById(id, updateActivityDto);
@@ -388,6 +397,82 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
     }
 
 }
+
+  ////////////////////////////////////PestDiseaseIssue////////////////////////////////
+
+  @Post(':id/pest-disease-issue')
+  @ApiOperation({
+    summary: "Add a pest disease issue for a crop",
+    description: "Add a pest disease issue for a crop using crop id",
+  })
+  async addPestDiseaseIssue(@Param('id') id: string, @Body() createPestDiseaseIssueDto: CreatePestDiseaseIssueDto, @Request() req){
+    const user = this.getUserFromRequest(req);
+    const check = user.roles === "Admin";
+    if(check){
+      const adminId = user.adminId;
+      return this.cropsService.createPestDiseaseIssue(id, adminId, createPestDiseaseIssueDto);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+  }
+
+  @Get(':adminId/pest-disease-issue')
+  @ApiOperation({
+    summary: "Get all pest disease issues for a farm",
+    description: "Get all pest disease issues for a farm using adminId",
+  })
+  async getAllPestDiseaseIssuesForFarm(@Param('adminId') adminId: string){
+    return this.cropsService.getAllPestDiseaseIssueForFarm(adminId);
+  }
+
+
+  @Get(':id/pest-disease-issue')
+  @ApiOperation({
+    summary: "Get all pest disease issues for a crop",
+    description: "Get all pest disease issues for a crop using crop id",
+  })
+  async getAllPestDiseaseIssuesForCrop(@Param('id') id: string){
+    return this.cropsService.getAllPestDiseaseIssueForCrop(id);
+  }
+
+  @Get('pest-disease-issue/:id')
+  @ApiOperation({
+    summary: "Get a specific pest disease issue by its id",
+    description: "Get a specific pest disease issue by its mongoose.ObjectId _id",
+  })
+  async getSpecificPestDiseaseIssueById(@Param('id') id: string){
+    return this.cropsService.getPestDiseaseIssueById(id)  
+  }
+
+  @Patch('pest-disease-issue/:id')
+  @ApiOperation({
+    summary: "Update a specific pest disease issue",
+    description: "Update a specific pest disease issue using its mongoose.ObjectId _id",
+  })
+  async updatePestDiseaseIssueById(@Param('id') id: string, @Body() updatePestDiseaseIssueDto: UpdatePestDiseaseIssueDto, @Request() req){
+    const check = req.user.roles === "Admin";
+    if (check) {
+      return this.cropsService.updatePestDiseaseIssueById(id, updatePestDiseaseIssueDto);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+  }
+
+  @Delete('pest-disease-issue/:id')
+  @ApiOperation({
+    summary: "Deletes a specific pest disease issue",
+    description: "Deletes a specific pest disease issue using its mongoose.ObjectId _id",
+  })
+  async deletePestDiseaseIssueById(@Param('id') id: string, @Request() req){
+    const check = req.user.roles === "Admin";
+    if (check) {
+      return this.cropsService.deletePestDiseaseIssueById(id);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+
+  }
+
 
 
 }
