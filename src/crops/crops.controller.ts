@@ -7,6 +7,8 @@ import { CreateIrrigationDto } from './dto/create-irrigation.dto';
 import { UpdateIrrigationDto } from './dto/update-irrigation.dto';
 import { CreateFertiliserPesticideDTO } from './dto/create-fert-pest.dto';
 import { UpdateFertiliserPesticideDTO } from './dto/update-fert-pest.dto';
+import { CreateFinancialDto } from './dto/financial.dto';
+import { UpdateFinancialDto } from './dto/update-financial.dto';
 
 @ApiTags("CROPS")
 @ApiBearerAuth()
@@ -228,7 +230,77 @@ async deleteFertPestRecordById(@Param('id') id: string, @Request() req){
 }
 
 
+/////////////////////FINANCIAL //////////////////////////////////
+
+@Post(':id/financial')
+@ApiOperation({
+  summary: "Adds financial record for a crop",
+  description: "Adds financial record for a crop using crop id",
+})
+async addFinancial(@Param('id') id: string, @Body() createFinancialDto: CreateFinancialDto, @Request() req){
+  const check = req.user.roles === "Admin";
+  if(check){
+    return this.cropsService.createFinancialRecord(id, createFinancialDto);
+  } else {
+    throw new HttpException("Unauthorised", 401);
+  }
+}
+
+@Get(':adminId/financial')
+@ApiOperation({
+  summary: "Get all financial records for a farm",
+  description: "Get all financial records for a farm using adminId",
+})
+async getAllFinancialForFarm(@Param('adminId') adminId: string){
+  return this.cropsService.getAllFinancialRecordsForFarm(adminId);
+}
+
+@Get(':id/financial/crop')
+@ApiOperation({
+  summary: "Gets all financial records for a specific crop by _id",
+  description: "Gets all financial records for a specific crop by its mongoose.ObjectId _id",
+})
+async getAllFinancialForCrop(@Param('id') id: string){
+  return this.cropsService.getAllFinancialRecordsForCrop(id);
+}
+
+@Get('financial/:id')
+@ApiOperation({
+  summary: "Get a specific financial record by its id",
+  description: "Gets financial record by its mongoose.ObjectId _id"
+})
+async getSpecificFinancialRecordById(@Param('id') id: string){
+  return this.cropsService.getSpecificFinancialRecordById(id)
+}
+
+@Patch('financial/:id')
+@ApiOperation({
+  summary: "Update a specific financial record",
+  description: "Update a specific financial record using its mongoose.ObjectId _id",
+})
+async updateFinancialRecordById(@Param('id') id: string, @Body() updateFinancialDto: UpdateFinancialDto, @Request() req){
+  const check = req.user.roles === "Admin";
+    if (check) {
+      return this.cropsService.updateFinancialRecordById(id, updateFinancialDto);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+}
+
+@Delete('financial/:id')
+@ApiOperation({
+  summary: "Deletes a specific financial record",
+  description: "Deletes a specific financial record using its mongoose.ObjectId _id",
+})
+async deleteFinancialRecordById(@Param('id') id: string, @Request() req){
+  const check = req.user.roles === "Admin";
+    if (check) {
+      return this.cropsService.deleteFinancialRecordById(id);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
 }
 
 
 
+}

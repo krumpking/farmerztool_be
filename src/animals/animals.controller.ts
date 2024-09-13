@@ -48,6 +48,8 @@ export class AnimalsController {
   async create(@Body() createAnimalDto: CreateAnimalDto, @Request() req) {
 
     const check = req.user.roles === "Admin";
+    console.log(req.user.roles);
+    
     if (check) {
       return this.animalsService.addAnimal(createAnimalDto);
     } else {

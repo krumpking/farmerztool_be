@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsDate, IsArray} from 'class-validator';
+import { IsString, IsNotEmpty, IsArray} from 'class-validator';
 
 export class CreateVaccinationDto {
   @IsString()
@@ -50,7 +50,7 @@ export class CreateVaccinationDto {
   })
   iotNumber: string;
 
-  @IsDate()
+  @IsString()
   @ApiProperty({
     description: 'The expiration date of the vaccine',
     example: '2025-12-31T00:00:00.000Z',

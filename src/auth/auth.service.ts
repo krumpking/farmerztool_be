@@ -104,6 +104,7 @@ export class AuthService {
             email: emailExists.email,
             password: emailExists.password,
             perms: [],
+            roles: emailExists.role
           };
           return ResponseDto.successResponse("Login successful", userData);
         } 
@@ -206,6 +207,7 @@ export class AuthService {
           email: emailExists.email,
           password: emailExists.password,
           perms: [],
+          roles: emailExists.role
         };
 
         return ResponseDto.successResponse("Login successful", userData);
