@@ -1,0 +1,1 @@
+export const HATCHERY_MODEL = 'HATCHERY_MODEL';
