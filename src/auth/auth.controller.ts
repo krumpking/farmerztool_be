@@ -48,7 +48,6 @@ export class AuthController {
     },
   })
   async login(@Body() loginDto: SignInDTO) {
-    console.log(loginDto.email, loginDto.password);
     return this.authService.login(loginDto);
   }
 
