@@ -14,7 +14,7 @@ import { Public } from './decorators/public.decator';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { LoginDto } from './dto/login.dto';
+
 
 
 @ApiTags("Auth Controllers")
@@ -40,8 +40,17 @@ export class AuthController {
   @Public()
   @Post('login')
   @ApiOperation({ summary: "Login an existing user" })
-  async login(@Body() loginDto: LoginDto): Promise<any> {
-    return this.authService.login(loginDto);
+  @ApiBody({
+    schema: {
+      properties: {
+        email: {type: 'string', example: 'user@example.com'}, 
+        password: {type: 'string', example: 'password'}
+      }
+    }
+  })
+  async login(@Body('email') email: string,
+  @Body('password') password: string,){
+    return this.authService.login(email, password);
   }
 
   @Public()
