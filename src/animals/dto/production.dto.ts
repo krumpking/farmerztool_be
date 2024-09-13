@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsDate, IsArray, ValidateNested } from 'class-validator';
+import { IsString, IsNumber, IsDate, IsArray, ValidateNested, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -88,16 +88,19 @@ export class CreateProductionDto {
   productionType: string;
 
   @ApiProperty({ description: 'Meat production details' })
+  @IsOptional()
   @ValidateNested()
   @Type(() => MeatProduction)
   meatProduction: MeatProduction;
 
   @ApiProperty({ description: 'Milk production details' })
+  @IsOptional()
   @ValidateNested()
   @Type(() => MilkProduction)
   milkProduction: MilkProduction;
 
   @ApiProperty({ description: 'Wool/Fur production details' })
+  @IsOptional()
   @ValidateNested()
   @Type(() => WoolFurProduction)
   woolFurProduction: WoolFurProduction;

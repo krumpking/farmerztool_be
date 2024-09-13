@@ -1,13 +1,7 @@
-import { IsString, IsNumber, IsArray, IsDateString } from 'class-validator';
+import { IsString, IsNumber, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFarmDto {
-  @ApiProperty({
-    description: 'Admin ID',
-    example: 'admin-123',
-  })
-  @IsString()
-  adminId: string;
 
   @ApiProperty({
     description: 'Farm name',
@@ -85,20 +79,6 @@ export class CreateFarmDto {
   })
   @IsString()
   areaUnit: string
-
-  @ApiProperty({
-    description: 'List of animals (e.g. cows, pigs, chickens)',
-    example: ['cows', 'pigs', 'chickens'],
-  })
-  @IsArray()
-  animals: string[];
-
-  @ApiProperty({
-    description: 'List of crops (e.g. corn, wheat, soybeans)',
-    example: ['corn', 'wheat', 'soybeans'],
-  })
-  @IsArray()
-  crops: string[];
 
   @ApiProperty({
     description: 'Date established (YYYY-MM-DD)',

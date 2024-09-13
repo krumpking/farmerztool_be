@@ -12,4 +12,5 @@ export class Farm {
     crops: string[];
     employees: string[];
     dateEstablished: Date;
+    farmName: string;
   }
