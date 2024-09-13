@@ -210,7 +210,7 @@ export class AuthService {
       if (!emailExists.password) {
         return ResponseDto.errorResponse('Password not found');
       }
-
+      console.log('DTO ', typeof loginDto);
       console.log('Password 1', typeof loginDto.password);
       console.log('Password 2', typeof emailExists.password);
 
