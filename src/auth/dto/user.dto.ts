@@ -31,14 +31,6 @@ export class UserDto {
   position?: string;
 
   @ApiProperty({
-    description: 'AdminId which is used to add an user to a farm',
-    example: '1234567890',
-  })
-  @IsString()
-  @IsOptional()
-  adminId: string;
-
-  @ApiProperty({
     description: 'Date the user joined',
     example: '2022-01-01',
     required: false

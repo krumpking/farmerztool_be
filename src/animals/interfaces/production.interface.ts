@@ -34,8 +34,8 @@ export interface Production extends Document{
     readonly addedBy: string;
     readonly animalId: string;
     readonly productionType: string;
-    readonly meatProduction: Readonly<MeatProduction>;
-    readonly milkProduction: Readonly<MilkProduction>;
-    readonly woolFurProduction: Readonly<WoolFurProduction>;
+    readonly meatProduction?: Readonly<MeatProduction>;
+    readonly milkProduction?: Readonly<MilkProduction>;
+    readonly woolFurProduction?: Readonly<WoolFurProduction>;
     readonly salesRecords: ReadonlyArray<Readonly<SalesRecord>>;
   }

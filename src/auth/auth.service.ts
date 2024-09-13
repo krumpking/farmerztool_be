@@ -19,7 +19,7 @@ import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
 import { Farm } from 'src/admin/interfaces/farm.interface';
-import { SignInDTO } from './dto/signin.dto';
+
 
 @Injectable()
 export class AuthService {
@@ -64,10 +64,11 @@ export class AuthService {
       return ResponseDto.errorResponse('Failed to create user');
     }
 
-    return ResponseDto.successResponse(
-      'User created successfully',
-      createdUser,
-    );
+
+    await this.userModel.findByIdAndUpdate(createdUser._id, {adminId: createdUser._id}, {new: true}).exec();
+
+    return ResponseDto.successResponse("User created successfully", createdUser);
+
   }
 
   async generateAccessTokenForVerifiedUser(
@@ -87,14 +88,16 @@ export class AuthService {
             id: employeeExists._id,
             email: employeeExists.email,
             password: employeeExists.password,
+            adminId: employeeExists.adminId,
+            permissions: employeeExists.perms,
+            roles: employeeExists
           };
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
             adminId: employeeExists._id,
             email: employeeExists.email,
-            password: employeeExists.password,
-            perms: employeeExists.perms,
+            permissions: employeeExists.perms,
           };
           return ResponseDto.successResponse('Login successful', userData);
         }
@@ -104,13 +107,14 @@ export class AuthService {
             id: emailExists._id,
             email: emailExists.email,
             roles: emailExists.role,
+            adminId: emailExists._id,
+            permissions: emailExists.permissions,
           };
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
             adminId: emailExists._id,
             email: emailExists.email,
-            password: emailExists.password,
             perms: [],
             roles: emailExists.role,
           };
@@ -167,12 +171,14 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: SignInDTO): Promise<ResponseDto> {
-    const emailExists = await this.userModel.findOne({ email: loginDto.email });
+
+
+  async login(email: string, password: string): Promise<ResponseDto> {
+
+    const emailExists = await this.userModel.findOne({ email});
     if (!emailExists) {
-      const employeeExists = await this.employeeModel.findOne({
-        email: loginDto.email,
-      });
+      const employeeExists = await this.employeeModel.findOne({ email});
+
 
       if (!employeeExists) {
         return ResponseDto.errorResponse('User not found');
@@ -182,23 +188,21 @@ export class AuthService {
         return ResponseDto.errorResponse('Password not found');
       }
 
-      const match = await bcrypt.compare(
-        loginDto.password,
-        employeeExists.password,
-      );
+   const match = await bcrypt.compare(password, employeeExists.password);
+
 
       if (match) {
         const payload = {
           id: employeeExists._id,
           email: employeeExists.email,
           password: employeeExists.password,
+          adminId: employeeExists.adminId,
         };
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
           adminId: employeeExists._id,
           email: employeeExists.email,
-          password: employeeExists.password,
           perms: employeeExists.perms,
         };
 
@@ -211,25 +215,25 @@ export class AuthService {
         return ResponseDto.errorResponse('Password not found');
       }
 
-      const match = await bcrypt.compare(
-        loginDto.password,
-        emailExists.password,
-      );
+      const match = await bcrypt.compare(password, emailExists.password);
+
 
       if (match) {
         const payload = {
           id: emailExists._id,
           email: emailExists.email,
           roles: emailExists.role,
+          adminId: emailExists._id,
+          permissions: emailExists.permissions,
+          
         };
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
           adminId: emailExists._id,
           email: emailExists.email,
-          password: emailExists.password,
           perms: emailExists.permissions,
-          roles: emailExists.role,
+          roles: emailExists.role
         };
 
         return ResponseDto.successResponse('Login successful', userData);

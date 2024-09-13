@@ -23,6 +23,7 @@ import { CreateProductionDto } from './dto/production.dto';
 
 
 
+
 @ApiTags("ANIMALS")
 @ApiBearerAuth()
 @Controller('/api/v1/animals')
@@ -31,7 +32,6 @@ export class AnimalsController {
 
 
   /////////////////////// ANIMALS //////////////////////////////////////////////////////
-
   @Post('add')
   @ApiOperation({
     summary: 'Create a new animal',
@@ -461,7 +461,6 @@ async deleteBreeding(@Param('animalId') animalId: string, @Request() req) {
  }
 
 /////////////////////////PRODUCTION//////////////////////////////////////
-
 
 @Post('production/add')
 @ApiOperation({

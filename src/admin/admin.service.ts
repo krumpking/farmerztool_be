@@ -24,23 +24,35 @@ export class AdminService {
     private userModel: Model<User>,
   ) { }
 
-  async addFarm(farm: CreateFarmDto): Promise<ResponseDto> {
+  async addFarm(adminId: string, farm: CreateFarmDto): Promise<ResponseDto> {
     try {
       // Check if farm name is already taken before adding farm
-      const farmExists = await this.farmModel.find({ adminId: farm.adminId });
+      const farmExists = await this.farmModel.find({
+        $and: [{adminId: adminId}, {farmerName: farm.farmerName}, {farmName: farm.farmName}]
+      });
       farmExists
       if (farmExists.length > 0) {
         // if farm exists upadate the farm
         const updatedFarm = this.farmModel.findOneAndUpdate(
-          { adminId: farm.adminId },
+          {adminId},
           farm,
           { new: true },
         );
         return ResponseDto.successResponse("Farm updated", updatedFarm);
       } else {
-        const createdFarm = new this.farmModel(farm);
-        const farmCreated = await createdFarm.save();
-        return ResponseDto.successResponse("New farm created", farmCreated);
+        const farmInstance = new this.farmModel({
+          adminId: adminId,
+          ...farm
+        });
+        const farmSaved = await farmInstance.save();
+
+        const createdFarm = await this.farmModel.findById(farmSaved._id);
+
+        if(!createdFarm){
+          return ResponseDto.errorResponse("Failed to create farm");
+        }
+
+        return ResponseDto.successResponse("New farm created", createdFarm);
       }
     } catch (error) {
       console.log(error);
@@ -84,13 +96,13 @@ export class AdminService {
     }
   }
 
-  async addEmployee(employee: EmployeeDto): Promise<ResponseDto> {
+  async addEmployee(adminId: string, password: string, employee: EmployeeDto): Promise<ResponseDto> {
     try {
       const emailExists = await this.userModel.findOne({
         email: employee.email,
       });
 
-      if (!emailExists) {
+      if (emailExists) {
         return ResponseDto.errorResponse("User already exists");
       } else {
         const employeeExists = await this.employeeModel.find({
@@ -111,9 +123,31 @@ export class AdminService {
 
           return ResponseDto.successResponse("Employee updated", updatedEmployee);
         } else {
+
+          const createdEmployeeInstance = new this.employeeModel({
+            adminId: adminId,
+            ...employee
+          });
+
+          const employ = await createdEmployeeInstance.save();
+
+          const employeeCreated = await this.employeeModel.findById(employ._id);
+
+          if(!employeeCreated){
+            return ResponseDto.errorResponse("Failed to create employee");
+          }
+
+          const updateFarm = await this.farmModel.findOneAndUpdate({adminId}, {$push: {employees: employeeCreated._id}}, {new: true}).exec();
+
+
+          if(!updateFarm){
+            await this.employeeModel.findByIdAndDelete(employeeCreated._id);
+            return ResponseDto.errorResponse("Failed to add employee to farm");
+          }
+
+          // send email
+
           const appDir = dirname(require.main.path);
-
-
 
           readHTMLFile(
             `${appDir}/src/admin/html/otpUser.html`,
@@ -125,7 +159,8 @@ export class AdminService {
 
               const template = handlebars.compile(html);
               const replacements = {
-                otp: '',
+                email : employeeCreated.email,
+                password: password,
               };
 
               const htmlToSend = template(replacements);
@@ -162,12 +197,7 @@ export class AdminService {
             },
           );
 
-          const createdEmployee = new this.employeeModel(employee);
-          const employeeCreated =  await createdEmployee.save();
 
-          if(!employeeCreated){
-            return ResponseDto.errorResponse("Failed to create employee");
-          }
 
           return ResponseDto.successResponse("Employee created", employeeCreated);
 

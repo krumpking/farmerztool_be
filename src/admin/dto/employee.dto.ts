@@ -1,5 +1,13 @@
-import { IsEmail, IsString, IsArray } from 'class-validator';
+import { IsEmail, IsString, IsArray, IsEnum } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+
+enum Roles {
+  Admin,
+  Manager,
+  Finance,
+  AnimalManager,
+  CropManagement
+}
 
 export class EmployeeDto {
 
@@ -17,13 +25,6 @@ export class EmployeeDto {
   })
   password: string;
 
-  @IsString()
-  @ApiProperty({
-    description: 'Admin ID',
-    example: 'admin123',
-  })
-  adminId: string;
-
   @IsArray()
   @IsString({ each: true })
   @ApiProperty({
@@ -31,4 +32,15 @@ export class EmployeeDto {
     example: ['read', 'write', 'delete'],
   })
   perms: string[];
+
+
+  @IsString()
+  @IsEnum(Roles)
+  @ApiProperty({
+    description: 'Role',
+    example: 'Admin',
+  })
+  role: string;
+
 }
+

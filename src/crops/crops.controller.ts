@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, HttpException, UseGuards } from '@nestjs/common';
 import { CropsService } from './crops.service';
 import { CreateCropDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
@@ -9,16 +9,31 @@ import { CreateFertiliserPesticideDTO } from './dto/create-fert-pest.dto';
 import { UpdateFertiliserPesticideDTO } from './dto/update-fert-pest.dto';
 import { CreateFinancialDto } from './dto/financial.dto';
 import { UpdateFinancialDto } from './dto/update-financial.dto';
+import { CropActivityDto } from './dto/activity.dto';
+import { CreatePestDiseaseIssueDto } from './dto/pest-disease.dto';
+import { UpdatePestDiseaseIssueDto } from './dto/update-pest-disease.dto';
+import { UpdateActivityDto } from './dto/update-activity.dto';
+import { RolesGuard } from 'src/roles/roles.guard';
+import { Permissions, Roles } from 'src/roles/roles.decorators';
+import { Role } from 'src/roles/roles.enum';
+import { Permission } from 'src/roles/permissions.enum';
 
 @ApiTags("CROPS")
 @ApiBearerAuth()
 @Controller('/api/v1/crops')
+@UseGuards(RolesGuard)
 export class CropsController {
   constructor(private readonly cropsService: CropsService) {}
+
+  private getUserFromRequest(req): any {
+    return req.user;
+  }
 
   ////////////////////////////// CROPS //////////////////////////////////////////
 
   @Post('add')
+  @Roles(Role.FarmManager, Role.Admin)
+  @Permissions(Permission.Create)
   @ApiOperation({
     summary: "Adds new crop record",
     description: "Creates new crop record",
@@ -32,9 +47,14 @@ export class CropsController {
     },
   })
   async addCrop(@Body() createCropDto: CreateCropDto, @Request() req) {
-    const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.addCrop(createCropDto);
+    const user = this.getUserFromRequest(req);
+  
+    
+    // const check = user.roles === "Admin";
+    if (true) {
+      const adminId = user.adminId;
+      
+      return this.cropsService.addCrop(adminId ,createCropDto);
     } else {
       throw new HttpException("Unauthorised", 401);
     }
@@ -45,8 +65,13 @@ export class CropsController {
     summary: "Gets all crop records",
     description: "Gets all crop records",
   })
-  async getCrops() {
-    return this.cropsService.getCrops();
+  async getCrops(
+    @Request() req
+  ) {
+    const user = this.getUserFromRequest(req);
+    const adminId = user.adminId;
+
+    return this.cropsService.getCrops(adminId);
   }
 
   @Get(':id')
@@ -94,7 +119,8 @@ export class CropsController {
   description: "Adds irrigation record for a specific crop. That id should be the mongoose.ObjectId of that specific crop that needs an irrigation record"
 })
 async addIrrigation(@Param('id') id: string, @Body() createIrrigatioDto: CreateIrrigationDto, @Request() req){
-  const check = req.user.roles === "Admin";
+  const user = this.getUserFromRequest(req);
+  const check = user.roles === "Admin";
   if(check){
     return this.cropsService.addIrrigation(id, createIrrigatioDto);
   } else {
@@ -135,7 +161,8 @@ async getAllFarmIrrigations(@Param('adminId') adminId: string){
   description: "Update a specific irrigation record using its mongoose.ObjectId _id",
 })
 async updateIrrigation(@Param('id') id: string, @Body() updateIrrigationDto: UpdateIrrigationDto, @Request() req){
-  const check = req.user.roles === "Admin";
+  const user = this.getUserFromRequest(req);
+  const check = user.roles === "Admin";
     if (check) {
       return this.cropsService.updateIrrigation(id, updateIrrigationDto);
     } else {
@@ -149,7 +176,8 @@ async updateIrrigation(@Param('id') id: string, @Body() updateIrrigationDto: Upd
   description: "Deletes a specific irrigation record using its mongoose.ObjectId _id",
 })
 async deleteIrrigation(@Param('id') id: string, @Request() req){
-  const check = req.user.roles === "Admin";
+  const user = this.getUserFromRequest(req);
+  const check = user.roles === "Admin";
     if (check) {
       return this.cropsService.deleteIrrigation(id);
     } else {
@@ -166,7 +194,8 @@ async deleteIrrigation(@Param('id') id: string, @Request() req){
   description: "Adds fertilizer and pesticide application record using crop id"
 })
 async addFertiliserPesticide(@Param('id') id: string, @Body() createFertPestDto: CreateFertiliserPesticideDTO, @Request() req){
-  const check = req.user.roles === "Admin";
+  const user = this.getUserFromRequest(req);
+  const check = user.roles === "Admin";
   if(check){
     return this.cropsService.addFertiliserPesticide(id, createFertPestDto);
   } else {
@@ -300,6 +329,158 @@ async deleteFinancialRecordById(@Param('id') id: string, @Request() req){
       throw new HttpException("Unauthorised", 401);
     }
 }
+
+
+////////////////////////////ACTIVITY//////////////////////////////////////
+
+@Post(':id/activity')
+@ApiOperation({
+  summary: "Adds activity record for a crop",
+  description: "Adds activity record for a crop using crop id",
+})
+async addActivity(@Param('id') id: string, @Body() createActivityDto: CropActivityDto, @Request() req){
+  const user = this.getUserFromRequest(req);
+  const check = user.roles === "Admin";
+  if(check){
+    const adminId = user.adminId;
+    
+    return this.cropsService.createActivityRecord(id, adminId, createActivityDto);
+  } else {
+    throw new HttpException("Unauthorised", 401);
+  }
+}
+
+@Get(':adminId/activity')
+@ApiOperation({
+  summary: "Get all activity records for a farm",
+  description: "Get all activity records for a farm using adminId",
+})
+async getAllActivityForFarm(@Param('adminId') adminId: string){
+  return this.cropsService.getAllActivityRecordsForFarm(adminId);
+}
+
+
+@Get(':id/activity')
+@ApiOperation({
+  summary: "Get all activity records for a crop",
+  description: "Get all activity records for a crop using crop id",
+})
+async getAllActivityForCrop(@Param('id') id: string){
+  return this.cropsService.getAllActivityRecordsForCrop(id);
+}
+
+@Get('activity/:id')
+@ApiOperation({
+  summary: "Get a specific activity record by its id",
+  description: "Get a specific activity record by its mongoose.ObjectId _id",
+})
+async getSpecificActivityRecordById(@Param('id') id: string){
+  return this.cropsService.getSpecificActivityRecordById(id)  
+}
+
+@Patch('activity/:id')
+@ApiOperation({
+  summary: "Update a specific activity record",
+  description: "Update a specific activity record using its mongoose.ObjectId _id",
+})
+async updateActivityRecordById(@Param('id') id: string, @Body() updateActivityDto: UpdateActivityDto, @Request() req){
+  const check = req.user.roles === "Admin";
+    if (check) {
+      return this.cropsService.updateActivityRecordById(id, updateActivityDto);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+}
+
+@Delete('activity/:id')
+@ApiOperation({
+  summary: "Deletes a specific activity record",
+  description: "Deletes a specific activity record using its mongoose.ObjectId _id",
+})
+async deleteActivityRecordById(@Param('id') id: string, @Request() req){
+  const check = req.user.roles === "Admin";
+    if (check) {
+      return this.cropsService.deleteActivityRecordById(id);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+
+}
+
+  ////////////////////////////////////PestDiseaseIssue////////////////////////////////
+
+  @Post(':id/pest-disease-issue')
+  @ApiOperation({
+    summary: "Add a pest disease issue for a crop",
+    description: "Add a pest disease issue for a crop using crop id",
+  })
+  async addPestDiseaseIssue(@Param('id') id: string, @Body() createPestDiseaseIssueDto: CreatePestDiseaseIssueDto, @Request() req){
+    const user = this.getUserFromRequest(req);
+    const check = user.roles === "Admin";
+    if(check){
+      const adminId = user.adminId;
+      return this.cropsService.createPestDiseaseIssue(id, adminId, createPestDiseaseIssueDto);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+  }
+
+  @Get(':adminId/pest-disease-issue')
+  @ApiOperation({
+    summary: "Get all pest disease issues for a farm",
+    description: "Get all pest disease issues for a farm using adminId",
+  })
+  async getAllPestDiseaseIssuesForFarm(@Param('adminId') adminId: string){
+    return this.cropsService.getAllPestDiseaseIssueForFarm(adminId);
+  }
+
+
+  @Get(':id/pest-disease-issue')
+  @ApiOperation({
+    summary: "Get all pest disease issues for a crop",
+    description: "Get all pest disease issues for a crop using crop id",
+  })
+  async getAllPestDiseaseIssuesForCrop(@Param('id') id: string){
+    return this.cropsService.getAllPestDiseaseIssueForCrop(id);
+  }
+
+  @Get('pest-disease-issue/:id')
+  @ApiOperation({
+    summary: "Get a specific pest disease issue by its id",
+    description: "Get a specific pest disease issue by its mongoose.ObjectId _id",
+  })
+  async getSpecificPestDiseaseIssueById(@Param('id') id: string){
+    return this.cropsService.getPestDiseaseIssueById(id)  
+  }
+
+  @Patch('pest-disease-issue/:id')
+  @ApiOperation({
+    summary: "Update a specific pest disease issue",
+    description: "Update a specific pest disease issue using its mongoose.ObjectId _id",
+  })
+  async updatePestDiseaseIssueById(@Param('id') id: string, @Body() updatePestDiseaseIssueDto: UpdatePestDiseaseIssueDto, @Request() req){
+    const check = req.user.roles === "Admin";
+    if (check) {
+      return this.cropsService.updatePestDiseaseIssueById(id, updatePestDiseaseIssueDto);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+  }
+
+  @Delete('pest-disease-issue/:id')
+  @ApiOperation({
+    summary: "Deletes a specific pest disease issue",
+    description: "Deletes a specific pest disease issue using its mongoose.ObjectId _id",
+  })
+  async deletePestDiseaseIssueById(@Param('id') id: string, @Request() req){
+    const check = req.user.roles === "Admin";
+    if (check) {
+      return this.cropsService.deletePestDiseaseIssueById(id);
+    } else {
+      throw new HttpException("Unauthorised", 401);
+    }
+
+  }
 
 
 
