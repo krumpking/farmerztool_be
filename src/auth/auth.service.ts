@@ -16,7 +16,6 @@ import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateOtp } from './dto/update.dto';
 import { Farm } from 'src/admin/interfaces/farm.interface';
-import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -89,7 +88,6 @@ export class AuthService {
             access_token: await this.jwtService.signAsync(payload),
             adminId: employeeExists._id,
             email: employeeExists.email,
-            password: employeeExists.password,
             permissions: employeeExists.perms,
           };
           return ResponseDto.successResponse("Login successful", userData);
@@ -108,7 +106,6 @@ export class AuthService {
             access_token: await this.jwtService.signAsync(payload),
             adminId: emailExists._id,
             email: emailExists.email,
-            password: emailExists.password,
             perms: [],
             roles: emailExists.role
           };
@@ -158,11 +155,11 @@ export class AuthService {
   }
 
 
-  async login(loginDto: LoginDto): Promise<ResponseDto> {
+  async login(email: string, password: string): Promise<ResponseDto> {
 
-    const emailExists = await this.userModel.findOne({ email: loginDto.email });
+    const emailExists = await this.userModel.findOne({ email});
     if (!emailExists) {
-      const employeeExists = await this.employeeModel.findOne({ email: loginDto.email });
+      const employeeExists = await this.employeeModel.findOne({ email});
 
       if (!employeeExists) {
         return ResponseDto.errorResponse("User not found");
@@ -172,7 +169,7 @@ export class AuthService {
         return ResponseDto.errorResponse("Password not found");
       }
 
-      const match = await bcrypt.compare(loginDto.password, employeeExists.password);
+      const match = await bcrypt.compare(password, employeeExists.password);
 
       if (match) {
         const payload = {
@@ -186,7 +183,6 @@ export class AuthService {
           access_token: await this.jwtService.signAsync(payload),
           adminId: employeeExists._id,
           email: employeeExists.email,
-          password: employeeExists.password,
           perms: employeeExists.perms,
         };
 
@@ -199,7 +195,7 @@ export class AuthService {
         return ResponseDto.errorResponse("Password not found");
       }
 
-      const match = await bcrypt.compare(loginDto.password, emailExists.password);
+      const match = await bcrypt.compare(password, emailExists.password);
 
       if (match) {
         const payload = {
@@ -215,8 +211,7 @@ export class AuthService {
           access_token: await this.jwtService.signAsync(payload),
           adminId: emailExists._id,
           email: emailExists.email,
-          password: emailExists.password,
-          perms: [],
+          perms: emailExists.permissions,
           roles: emailExists.role
         };
 

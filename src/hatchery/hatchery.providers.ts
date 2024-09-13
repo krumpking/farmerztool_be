@@ -7,7 +7,7 @@ export const hatcheryProviders = [
     {
         provide: HATCHERY_MODEL,
         useFactory: (connection: Connection) =>
-            connection.model('Users', HatcherySchema),
+            connection.model('Hatchery', HatcherySchema),
         inject: [DATABASE_CONNECTION],
     },
 ];
