@@ -12,7 +12,7 @@ class MeatProduction {
   estimatedSlaughterWeight: number; // in kg
 
   @ApiProperty({ description: 'Expected slaughter date', example: '2022-01-01' })
-  @IsDate()
+  @Type(() => Date)
   expectedSlaughterDate: Date;
 
   @ApiProperty({ description: 'Yield', example: 50 })
@@ -36,7 +36,7 @@ class MilkProduction {
 
 class WoolFurProduction {
   @ApiProperty({ description: 'Shearing date', example: '2022-02-01' })
-  @IsDate()
+  @Type(() => Date)
   shearingDate: Date;
 
   @ApiProperty({ description: 'Quantity', example: 10 })
@@ -66,6 +66,7 @@ class SalesRecord {
   price: number; // e.g. $500
 
   @ApiProperty({ description: 'Date', example: '2022-03-01' })
+  @Type(() => Date)
   @IsDate()
   date: Date;
 }
@@ -109,5 +110,5 @@ export class CreateProductionDto {
   @IsArray()
   @ValidateNested()
   @Type(() => SalesRecord)
-  salesRecords: SalesRecord[];
+  salesRecords: SalesRecord;
 }
