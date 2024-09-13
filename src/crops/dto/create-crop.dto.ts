@@ -57,7 +57,7 @@ export class IrrigationSchedule {
 
 export class CreateCropDto {
   @ApiProperty({
-    description: 'Name of the crop',
+    description: 'Name of the crop which is unique',
     example: 'Tomato',
   })
   @IsString()

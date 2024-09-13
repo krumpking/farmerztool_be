@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Request, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, HttpException, UseGuards } from '@nestjs/common';
 import { CropsService } from './crops.service';
 import { CreateCropDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
@@ -13,10 +13,15 @@ import { CropActivityDto } from './dto/activity.dto';
 import { CreatePestDiseaseIssueDto } from './dto/pest-disease.dto';
 import { UpdatePestDiseaseIssueDto } from './dto/update-pest-disease.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
+import { RolesGuard } from 'src/roles/roles.guard';
+import { Permissions, Roles } from 'src/roles/roles.decorators';
+import { Role } from 'src/roles/roles.enum';
+import { Permission } from 'src/roles/permissions.enum';
 
 @ApiTags("CROPS")
 @ApiBearerAuth()
 @Controller('/api/v1/crops')
+@UseGuards(RolesGuard)
 export class CropsController {
   constructor(private readonly cropsService: CropsService) {}
 
@@ -27,6 +32,8 @@ export class CropsController {
   ////////////////////////////// CROPS //////////////////////////////////////////
 
   @Post('add')
+  @Roles(Role.FarmManager, Role.Admin)
+  @Permissions(Permission.Create)
   @ApiOperation({
     summary: "Adds new crop record",
     description: "Creates new crop record",
@@ -41,8 +48,10 @@ export class CropsController {
   })
   async addCrop(@Body() createCropDto: CreateCropDto, @Request() req) {
     const user = this.getUserFromRequest(req);
-    const check = user.roles === "Admin";
-    if (check) {
+  
+    
+    // const check = user.roles === "Admin";
+    if (true) {
       const adminId = user.adminId;
       
       return this.cropsService.addCrop(adminId ,createCropDto);
