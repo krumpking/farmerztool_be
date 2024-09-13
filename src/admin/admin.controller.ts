@@ -6,6 +6,7 @@ import {
   Get,
   Delete,
   Request,
+  HttpException,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateFarmDto } from './dto/create-admin.dto';
@@ -26,9 +27,11 @@ export class AdminController {
 
   @Post('farm')
   async addFarm(
-    @Body() createFarmDto: CreateFarmDto,
+    @Body() createFarmDto: CreateFarmDto, @Request() req
   ){
-    return this.adminService.addFarm(createFarmDto);
+    const user = this.getUserFromRequest(req);
+    const adminId = user?.adminId;
+    return this.adminService.addFarm(adminId ,createFarmDto);
   }
 
   @Get('farm/:adminId')
@@ -46,6 +49,10 @@ export class AdminController {
     @Body() employeeDto: EmployeeDto, @Request() req
   ){
     const user = this.getUserFromRequest(req);
+
+    if((employeeDto.password.trim()).length < 6){
+      throw new HttpException("Password should be at least 6 characters", 421);
+    }
     const saltOrRounds = 10;
 
     const hash = await bcrypt.hash(employeeDto.password, saltOrRounds);
@@ -59,7 +66,7 @@ export class AdminController {
 
     const adminId = user.adminId;
 
-    return this.adminService.addEmployee(adminId, newUser);
+    return this.adminService.addEmployee(adminId, employeeDto.password, newUser);
   }
 
   @Delete('delete/employee')

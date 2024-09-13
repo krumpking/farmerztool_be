@@ -24,23 +24,35 @@ export class AdminService {
     private userModel: Model<User>,
   ) { }
 
-  async addFarm(farm: CreateFarmDto): Promise<ResponseDto> {
+  async addFarm(adminId: string, farm: CreateFarmDto): Promise<ResponseDto> {
     try {
       // Check if farm name is already taken before adding farm
-      const farmExists = await this.farmModel.find({ adminId: farm.adminId });
+      const farmExists = await this.farmModel.find({
+        $and: [{adminId: adminId}, {farmerName: farm.farmerName}, {farmName: farm.farmName}]
+      });
       farmExists
       if (farmExists.length > 0) {
         // if farm exists upadate the farm
         const updatedFarm = this.farmModel.findOneAndUpdate(
-          { adminId: farm.adminId },
+          {adminId},
           farm,
           { new: true },
         );
         return ResponseDto.successResponse("Farm updated", updatedFarm);
       } else {
-        const createdFarm = new this.farmModel(farm);
-        const farmCreated = await createdFarm.save();
-        return ResponseDto.successResponse("New farm created", farmCreated);
+        const farmInstance = new this.farmModel({
+          adminId: adminId,
+          ...farm
+        });
+        const farmSaved = await farmInstance.save();
+
+        const createdFarm = await this.farmModel.findById(farmSaved._id);
+
+        if(!createdFarm){
+          return ResponseDto.errorResponse("Failed to create farm");
+        }
+
+        return ResponseDto.successResponse("New farm created", createdFarm);
       }
     } catch (error) {
       console.log(error);
@@ -84,7 +96,7 @@ export class AdminService {
     }
   }
 
-  async addEmployee(adminId: string, employee: EmployeeDto): Promise<ResponseDto> {
+  async addEmployee(adminId: string, password: string, employee: EmployeeDto): Promise<ResponseDto> {
     try {
       const emailExists = await this.userModel.findOne({
         email: employee.email,
@@ -113,8 +125,6 @@ export class AdminService {
         } else {
           const appDir = dirname(require.main.path);
 
-
-
           readHTMLFile(
             `${appDir}/src/admin/html/otpUser.html`,
             async (err: any, html: any) => {
@@ -125,7 +135,8 @@ export class AdminService {
 
               const template = handlebars.compile(html);
               const replacements = {
-                otp: '',
+                email : employeeCreated.email,
+                password: password,
               };
 
               const htmlToSend = template(replacements);

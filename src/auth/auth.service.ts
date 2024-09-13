@@ -59,6 +59,8 @@ export class AuthService {
       return ResponseDto.errorResponse("Failed to create user");
     }
 
+    await this.userModel.findByIdAndUpdate(createdUser._id, {adminId: createdUser._id}, {new: true}).exec();
+
     return ResponseDto.successResponse("User created successfully", createdUser);
   }
 

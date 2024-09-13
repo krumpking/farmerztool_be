@@ -484,6 +484,24 @@ export class CropsService {
         return ResponseDto.errorResponse("Crop not found");
       }
 
+      const activityExists = await this.activityModel.findOne({
+        $and: [
+          {adminId: adminId},
+          {amountQuantity: createActivityDto.amountQuantity},
+          {activityType: createActivityDto.activityType},
+          {method: createActivityDto.method},
+          {price: createActivityDto.price},
+          {time: createActivityDto.time},
+          {IoTDeviceData: createActivityDto.IoTDeviceData},
+          {squareFootage: createActivityDto.squareFootage},
+          {date: createActivityDto.date}
+        ]
+      })
+
+      if(activityExists){
+        return ResponseDto.errorResponse("An activity matching this one already exists")
+      }
+
       const activity = await this.activityModel.create({
         cropId: crop._id,
         adminId: adminId,
@@ -511,7 +529,7 @@ export class CropsService {
       }
 
       const activity = await this.activityModel.find({adminId});
-      if(!activity){
+      if(!activity || activity.length === 0){
         return ResponseDto.errorResponse("No available records");
       }
 

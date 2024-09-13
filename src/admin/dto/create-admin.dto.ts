@@ -2,12 +2,6 @@ import { IsString, IsNumber, IsArray, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFarmDto {
-  @ApiProperty({
-    description: 'Admin ID',
-    example: 'admin-123',
-  })
-  @IsString()
-  adminId: string;
 
   @ApiProperty({
     description: 'Farm name',
