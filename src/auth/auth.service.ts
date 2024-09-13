@@ -10,7 +10,10 @@ import { Otp } from './interfaces/otp.interface';
 import { generatorRandomString, readHTMLFile } from 'src/common/utils';
 import { dirname } from 'path';
 import handlebars from 'handlebars';
-import { EMPLOYEE_MODEL, FARM_MODEL } from 'src/admin/constants/admin.constants';
+import {
+  EMPLOYEE_MODEL,
+  FARM_MODEL,
+} from 'src/admin/constants/admin.constants';
 import { Employee } from 'src/admin/interfaces/employee.interface';
 import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
@@ -28,59 +31,64 @@ export class AuthService {
     private jwtService: JwtService,
     @Inject(EMPLOYEE_MODEL)
     private employeeModel: Model<Employee>,
-    @Inject(FARM_MODEL) 
-    private farmModel: Model<Farm> 
-  ) { }
-
+    @Inject(FARM_MODEL)
+    private farmModel: Model<Farm>,
+  ) {}
 
   async addUser(userDto: UserDto): Promise<ResponseDto> {
     const userExist = await this.userModel.findOne({ email: userDto.email });
 
     if (userExist) {
-      return ResponseDto.errorResponse("User already exist");
+      return ResponseDto.errorResponse('User already exist');
     }
 
     //password must be 6 characters long
 
-    if (userDto.password.split("").length < 6) {
-      return ResponseDto.errorResponse("Password must be 6 characters long");
+    if (userDto.password.split('').length < 6) {
+      return ResponseDto.errorResponse('Password must be 6 characters long');
     }
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
 
-    const newUser = new this.userModel({ ...userDto, password: hashedPassword });
+    const newUser = new this.userModel({
+      ...userDto,
+      password: hashedPassword,
+    });
 
     const savedUser = await newUser.save();
 
     const createdUser = await this.userModel.findById(savedUser._id);
 
-    if(!createdUser){
-      return ResponseDto.errorResponse("Failed to create user");
+    if (!createdUser) {
+      return ResponseDto.errorResponse('Failed to create user');
     }
 
-    return ResponseDto.successResponse("User created successfully", createdUser);
+    return ResponseDto.successResponse(
+      'User created successfully',
+      createdUser,
+    );
   }
 
-
-  async generateAccessTokenForVerifiedUser(email: string): Promise<ResponseDto>{
+  async generateAccessTokenForVerifiedUser(
+    email: string,
+  ): Promise<ResponseDto> {
     try {
-      const emailExists = await this.userModel.findOne({ email});
+      const emailExists = await this.userModel.findOne({ email });
       if (!emailExists) {
-        const employeeExists = await this.employeeModel.findOne({ email});
-  
+        const employeeExists = await this.employeeModel.findOne({ email });
+
         if (!employeeExists) {
-          return ResponseDto.errorResponse("User not found");
+          return ResponseDto.errorResponse('User not found');
         }
 
-  
         if (true) {
           const payload = {
             id: employeeExists._id,
             email: employeeExists.email,
             password: employeeExists.password,
           };
-  
+
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
             adminId: employeeExists._id,
@@ -88,8 +96,8 @@ export class AuthService {
             password: employeeExists.password,
             perms: employeeExists.perms,
           };
-          return ResponseDto.successResponse("Login successful", userData);
-        } 
+          return ResponseDto.successResponse('Login successful', userData);
+        }
       } else {
         if (true) {
           const payload = {
@@ -97,76 +105,87 @@ export class AuthService {
             email: emailExists.email,
             roles: emailExists.role,
           };
-  
+
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
             adminId: emailExists._id,
             email: emailExists.email,
             password: emailExists.password,
             perms: [],
-            roles: emailExists.role
+            roles: emailExists.role,
           };
-          return ResponseDto.successResponse("Login successful", userData);
-        } 
+          return ResponseDto.successResponse('Login successful', userData);
+        }
       }
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, please try again")
+      return ResponseDto.errorResponse(
+        'Something went wrong, please try again',
+      );
     }
   }
 
-
-  async verifyUser(email: string, otp: string): Promise<ResponseDto>{
+  async verifyUser(email: string, otp: string): Promise<ResponseDto> {
     try {
-      const user = await this.userModel.findOne({email});
-      if(!user){
-        return ResponseDto.errorResponse("User not found")
+      const user = await this.userModel.findOne({ email });
+      if (!user) {
+        return ResponseDto.errorResponse('User not found');
       }
 
-      if(user.otp !== otp){
-        return ResponseDto.errorResponse("Invalid OTP")
+      if (user.otp !== otp) {
+        return ResponseDto.errorResponse('Invalid OTP');
       }
 
       // OTP HAS ONE HOUR LIFE
 
-      const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
-      if(user.otpCreatedAt < oneHourAgo){
-        return ResponseDto.errorResponse("OTP has expired");
+      if (user.otpCreatedAt < oneHourAgo) {
+        return ResponseDto.errorResponse('OTP has expired');
       }
 
-      const updateVerification = await this.userModel.findOneAndUpdate({email}, {$set: {verified: true}}, {new: true});
+      const updateVerification = await this.userModel.findOneAndUpdate(
+        { email },
+        { $set: { verified: true } },
+        { new: true },
+      );
 
-      if(!updateVerification){
-        return ResponseDto.errorResponse("Email verification failed");
+      if (!updateVerification) {
+        return ResponseDto.errorResponse('Email verification failed');
       }
 
-      const login = await this.generateAccessTokenForVerifiedUser(updateVerification?.email);
+      const login = await this.generateAccessTokenForVerifiedUser(
+        updateVerification?.email,
+      );
 
-      return ResponseDto.successResponse("verification successful", login);
-
+      return ResponseDto.successResponse('verification successful', login);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, while verifying user");
+      return ResponseDto.errorResponse(
+        'Something went wrong, while verifying user',
+      );
     }
   }
 
-
   async login(loginDto: LoginDto): Promise<ResponseDto> {
-
     const emailExists = await this.userModel.findOne({ email: loginDto.email });
     if (!emailExists) {
-      const employeeExists = await this.employeeModel.findOne({ email: loginDto.email });
+      const employeeExists = await this.employeeModel.findOne({
+        email: loginDto.email,
+      });
 
       if (!employeeExists) {
-        return ResponseDto.errorResponse("User not found");
+        return ResponseDto.errorResponse('User not found');
       }
 
       if (!employeeExists.password) {
-        return ResponseDto.errorResponse("Password not found");
+        return ResponseDto.errorResponse('Password not found');
       }
 
-      const match = await bcrypt.compare(loginDto.password, employeeExists.password);
+      const match = await bcrypt.compare(
+        loginDto.password,
+        employeeExists.password,
+      );
 
       if (match) {
         const payload = {
@@ -183,16 +202,24 @@ export class AuthService {
           perms: employeeExists.perms,
         };
 
-        return ResponseDto.successResponse("Login successful", userData);
+        return ResponseDto.successResponse('Login successful', userData);
       } else {
-        return ResponseDto.errorResponse("Invalid password");
+        return ResponseDto.errorResponse('Invalid password');
       }
     } else {
       if (!emailExists.password) {
-        return ResponseDto.errorResponse("Password not found");
+        return ResponseDto.errorResponse('Password not found');
       }
 
-      const match = await bcrypt.compare(loginDto.password, emailExists.password);
+      console.log('Password 1', typeof loginDto.password);
+      console.log('Password 2', typeof emailExists.password);
+
+      const match = await bcrypt.compare(
+        loginDto.password,
+        emailExists.password,
+      );
+
+      console.log('Match', match);
 
       if (match) {
         const payload = {
@@ -206,17 +233,16 @@ export class AuthService {
           adminId: emailExists._id,
           email: emailExists.email,
           password: emailExists.password,
-          perms: [],
-          roles: emailExists.role
+          perms: emailExists.permissions,
+          roles: emailExists.role,
         };
 
-        return ResponseDto.successResponse("Login successful", userData);
+        return ResponseDto.successResponse('Login successful', userData);
       } else {
-        return ResponseDto.errorResponse("Invalid password");
+        return ResponseDto.errorResponse('Invalid password');
       }
     }
   }
- 
 
   async sendOtp(email: string): Promise<ResponseDto> {
     const response = new ResponseDto();
@@ -240,25 +266,27 @@ export class AuthService {
         const otpModel = {
           email: email,
           otp: randomString,
-          expiresAt: otpExpiryTime
+          expiresAt: otpExpiryTime,
         };
 
         const otpM = new this.otpModel(otpModel);
         await otpM.save();
 
         //save the otp to user model
-        const userUpdateOnOTP = await this.userModel.findOneAndUpdate({ email: email },
+        const userUpdateOnOTP = await this.userModel.findOneAndUpdate(
+          { email: email },
           {
             $set: {
               otp: randomString,
-              otpCreatedAt: new Date()
-            }
+              otpCreatedAt: new Date(),
+            },
           },
-          { new: true });
+          { new: true },
+        );
 
         if (!userUpdateOnOTP) {
           response.success = false;
-          response.message = "Invalid email";
+          response.message = 'Invalid email';
           response.data = null;
           return response;
         }
@@ -266,7 +294,7 @@ export class AuthService {
         const template = handlebars.compile(html);
         const replacements = {
           otp: randomString,
-          validity: "1 hour",
+          validity: '1 hour',
         };
 
         const htmlToSend = template(replacements);
@@ -303,9 +331,9 @@ export class AuthService {
       },
     );
 
-    response.success = true,
-      response.message = "OTP sent successfully",
-      response.data = null;
+    (response.success = true),
+      (response.message = 'OTP sent successfully'),
+      (response.data = null);
     return response;
   }
 
@@ -314,7 +342,6 @@ export class AuthService {
     otp: string,
     newPassowrd: string,
   ): Promise<ResponseDto> {
-
     const response = new ResponseDto();
 
     const user = await this.userModel.findOne({ email });
@@ -326,7 +353,7 @@ export class AuthService {
       return response;
     }
 
-    if (newPassowrd.split("").length < 6) {
+    if (newPassowrd.split('').length < 6) {
       response.success = false;
       response.message = 'Password should be 6 characters long';
       return response;
@@ -334,17 +361,17 @@ export class AuthService {
 
     if (user.otp !== otp) {
       response.success = false;
-      response.message = "Invalid OTP";
+      response.message = 'Invalid OTP';
       response.data = null;
       return response;
     }
 
     // now lets check if otp hasnt expired
 
-    const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     if (user.otpCreatedAt < oneHourAgo) {
       response.success = false;
-      response.message = "OTP has expired";
+      response.message = 'OTP has expired';
       response.data = null;
       return response;
     }
@@ -352,11 +379,15 @@ export class AuthService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassowrd, salt);
 
-    const updatePassword = await this.userModel.findOneAndUpdate({ email: email }, { $set: { password: hashedPassword } }, { new: true });
+    const updatePassword = await this.userModel.findOneAndUpdate(
+      { email: email },
+      { $set: { password: hashedPassword } },
+      { new: true },
+    );
 
     if (!updatePassword) {
       response.success = false;
-      response.message = "Failed to update password";
+      response.message = 'Failed to update password';
       response.data = null;
       return response;
     }
@@ -366,11 +397,14 @@ export class AuthService {
     response.data = null;
 
     return response;
-  };
-
+  }
 
   async updateUser(updateDto: UpdateOtp): Promise<ResponseDto> {
-    const newUser = await this.userModel.findOneAndUpdate({ email: updateDto.email }, updateDto, { new: true });
+    const newUser = await this.userModel.findOneAndUpdate(
+      { email: updateDto.email },
+      updateDto,
+      { new: true },
+    );
     const response = new ResponseDto();
     if (!newUser) {
       response.success = false;
