@@ -134,23 +134,12 @@ export class AdminService {
       if (emailExists) {
         return ResponseDto.errorResponse("User already exists");
       } else {
-        const employeeExists = await this.employeeModel.find({
+        const employeeExists = await this.employeeModel.findOne({
           email: employee.email,
         });
 
-        if (employeeExists.length > 0) {
-          
-          const updatedEmployee = await this.employeeModel.findOneAndUpdate(
-            { email: employee.email },
-            employee,
-            { new: true },
-          );
-
-          if (!updatedEmployee) {
-            return ResponseDto.errorResponse("Employee exists,but failed to update");
-          }
-
-          return ResponseDto.successResponse("Employee updated", updatedEmployee);
+        if (employeeExists) {
+          return ResponseDto.errorResponse("Employee exists");
         } else {
 
           const createdEmployeeInstance = new this.employeeModel({
@@ -160,7 +149,7 @@ export class AdminService {
 
           const employ = await createdEmployeeInstance.save();
 
-          const employeeCreated = await this.employeeModel.findById(employ._id);
+          const employeeCreated = await this.employeeModel.findById(employ._id).select("-password");
 
           if(!employeeCreated){
             return ResponseDto.errorResponse("Failed to create employee");

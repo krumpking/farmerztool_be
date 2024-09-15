@@ -47,7 +47,7 @@ export class AdminController {
     return this.adminService.addFarm(userId, adminId ,createFarmDto);
   }
 
-  @Get('farms/all/adminId')
+  @Get('farms/all/:adminId')
   @Roles(Role.Admin)
   @Permissions(Permission.Read)
   @ApiOperation({

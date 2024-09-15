@@ -48,15 +48,17 @@ export class AuthService {
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
+    console.log(hashedPassword);
+    
 
     const newUser = await this.userModel.create({
+      ...userDto,
       role: "Admin",
       permissions: permissions,
-      password: hashedPassword,
-      ...userDto
+      password: hashedPassword
     })
 
-    const createdUser = await this.userModel.findById(newUser._id);
+    const createdUser = await this.userModel.findById(newUser._id).select("-password");
 
     if(!createdUser){
       return ResponseDto.errorResponse("Failed to create user");
@@ -200,6 +202,9 @@ export class AuthService {
       }
 
       const match = await bcrypt.compare(password, emailExists.password);
+
+      console.log(match);
+      
 
       if (match) {
         const payload = {
