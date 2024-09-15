@@ -7,7 +7,7 @@ export interface User extends Document {
   readonly phoneNumber?: string;
   readonly position?: string;
   readonly adminId?: string;
-  readonly dateJoined?: Date;
+  readonly verified?: boolean;
   readonly role?: "Admin" | "Manager" | "Finance" | "Animal Manger" | "Crop Management";
   readonly permissions?: string[];
   readonly farmArea?: string;
