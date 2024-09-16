@@ -10,12 +10,16 @@ import { Otp } from './interfaces/otp.interface';
 import { generatorRandomString, readHTMLFile } from 'src/common/utils';
 import { dirname } from 'path';
 import handlebars from 'handlebars';
-import { EMPLOYEE_MODEL, FARM_MODEL } from 'src/admin/constants/admin.constants';
+import {
+  EMPLOYEE_MODEL,
+  FARM_MODEL,
+} from 'src/admin/constants/admin.constants';
 import { Employee } from 'src/admin/interfaces/employee.interface';
 import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
 import { Farm } from 'src/admin/interfaces/farm.interface';
 import { UpdateUserDto } from './dto/update.dto';
+
 
 @Injectable()
 export class AuthService {
@@ -27,28 +31,26 @@ export class AuthService {
     private jwtService: JwtService,
     @Inject(EMPLOYEE_MODEL)
     private employeeModel: Model<Employee>,
-    @Inject(FARM_MODEL) 
-    private farmModel: Model<Farm> 
-  ) { }
-
+    @Inject(FARM_MODEL)
+    private farmModel: Model<Farm>,
+  ) {}
 
   async addUser(userDto: UserDto): Promise<ResponseDto> {
     const permissions = ["create", "read", "update", "delete"];
     const userExist = await this.userModel.findOne({ email: userDto.email });
 
     if (userExist) {
-      return ResponseDto.errorResponse("User already exist");
+      return ResponseDto.errorResponse('User already exist');
     }
 
     //password must be 6 characters long
 
-    if (userDto.password.split("").length < 6) {
-      return ResponseDto.errorResponse("Password must be 6 characters long");
+    if (userDto.password.split('').length < 6) {
+      return ResponseDto.errorResponse('Password must be 6 characters long');
     }
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
-    console.log(hashedPassword);
     
 
     const newUser = await this.userModel.create({
@@ -60,24 +62,27 @@ export class AuthService {
 
     const createdUser = await this.userModel.findById(newUser._id).select("-password");
 
-    if(!createdUser){
-      return ResponseDto.errorResponse("Failed to create user");
+    if (!createdUser) {
+      return ResponseDto.errorResponse('Failed to create user');
     }
+
 
     await this.userModel.findByIdAndUpdate(createdUser._id, {adminId: createdUser._id}, {new: true}).exec();
 
     return ResponseDto.successResponse("User created successfully", createdUser);
+
   }
 
-
-  async generateAccessTokenForVerifiedUser(email: string): Promise<ResponseDto>{
+  async generateAccessTokenForVerifiedUser(
+    email: string,
+  ): Promise<ResponseDto> {
     try {
-      const emailExists = await this.userModel.findOne({ email});
+      const emailExists = await this.userModel.findOne({ email });
       if (!emailExists) {
-        const employeeExists = await this.employeeModel.findOne({ email});
-  
+        const employeeExists = await this.employeeModel.findOne({ email });
+
         if (!employeeExists) {
-          return ResponseDto.errorResponse("User not found");
+          return ResponseDto.errorResponse('User not found');
         }
 
         if (true) {
@@ -88,7 +93,7 @@ export class AuthService {
             permissions: employeeExists.perms,
             roles: employeeExists.role
           };
-  
+
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
             adminId: employeeExists._id,
@@ -96,8 +101,8 @@ export class AuthService {
             roles: employeeExists.role,
             permissions: employeeExists.perms,
           };
-          return ResponseDto.successResponse("Login successful", userData);
-        } 
+          return ResponseDto.successResponse('Login successful', userData);
+        }
       } else {
         if (true) {
           const payload = {
@@ -107,7 +112,7 @@ export class AuthService {
             adminId: emailExists._id,
             permissions: emailExists.permissions,
           };
-  
+
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
             adminId: emailExists._id,
@@ -115,50 +120,59 @@ export class AuthService {
             perms: emailExists.permissions,
             roles: emailExists.role
           };
-          return ResponseDto.successResponse("Login successful", userData);
-        } 
+          return ResponseDto.successResponse('Login successful', userData);
+        }
       }
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, please try again")
+      return ResponseDto.errorResponse(
+        'Something went wrong, please try again',
+      );
     }
   }
 
-
-  async verifyUser(email: string, otp: string): Promise<ResponseDto>{
+  async verifyUser(email: string, otp: string): Promise<ResponseDto> {
     try {
-      const user = await this.userModel.findOne({email});
-      if(!user){
-        return ResponseDto.errorResponse("User not found")
+      const user = await this.userModel.findOne({ email });
+      if (!user) {
+        return ResponseDto.errorResponse('User not found');
       }
 
-      if(user.otp !== otp){
-        return ResponseDto.errorResponse("Invalid OTP")
+      if (user.otp !== otp) {
+        return ResponseDto.errorResponse('Invalid OTP');
       }
 
       // OTP HAS ONE HOUR LIFE
 
-      const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
-      if(user.otpCreatedAt < oneHourAgo){
-        return ResponseDto.errorResponse("OTP has expired");
+      if (user.otpCreatedAt < oneHourAgo) {
+        return ResponseDto.errorResponse('OTP has expired');
       }
 
-      const updateVerification = await this.userModel.findOneAndUpdate({email}, {$set: {verified: true}}, {new: true});
+      const updateVerification = await this.userModel.findOneAndUpdate(
+        { email },
+        { $set: { verified: true } },
+        { new: true },
+      );
 
-      if(!updateVerification){
-        return ResponseDto.errorResponse("Email verification failed");
+      if (!updateVerification) {
+        return ResponseDto.errorResponse('Email verification failed');
       }
 
-      const login = await this.generateAccessTokenForVerifiedUser(updateVerification?.email);
+      const login = await this.generateAccessTokenForVerifiedUser(
+        updateVerification?.email,
+      );
 
-      return ResponseDto.successResponse("verification successful", login);
-
+      return ResponseDto.successResponse('verification successful', login);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, while verifying user");
+      return ResponseDto.errorResponse(
+        'Something went wrong, while verifying user',
+      );
     }
   }
+
 
 
   async login(email: string, password: string): Promise<ResponseDto> {
@@ -167,15 +181,17 @@ export class AuthService {
     if (!emailExists) {
       const employeeExists = await this.employeeModel.findOne({ email});
 
+
       if (!employeeExists) {
-        return ResponseDto.errorResponse("User not found");
+        return ResponseDto.errorResponse('User not found');
       }
 
       if (!employeeExists.password) {
-        return ResponseDto.errorResponse("Password not found");
+        return ResponseDto.errorResponse('Password not found');
       }
 
-      const match = await bcrypt.compare(password, employeeExists.password);
+   const match = await bcrypt.compare(password, employeeExists.password);
+
 
       if (match) {
         const payload = {
@@ -195,19 +211,16 @@ export class AuthService {
           roles: employeeExists.role
         };
 
-        return ResponseDto.successResponse("Login successful", userData);
+        return ResponseDto.successResponse('Login successful', userData);
       } else {
-        return ResponseDto.errorResponse("Invalid password");
+        return ResponseDto.errorResponse('Invalid password');
       }
     } else {
       if (!emailExists.password) {
-        return ResponseDto.errorResponse("Password not found");
+        return ResponseDto.errorResponse('Password not found');
       }
 
       const match = await bcrypt.compare(password, emailExists.password);
-
-      console.log(match);
-      
 
       if (match) {
         const payload = {
@@ -227,13 +240,12 @@ export class AuthService {
           roles: emailExists.role
         };
 
-        return ResponseDto.successResponse("Login successful", userData);
+        return ResponseDto.successResponse('Login successful', userData);
       } else {
-        return ResponseDto.errorResponse("Invalid password");
+        return ResponseDto.errorResponse('Invalid password');
       }
     }
   }
- 
 
   async sendOtp(email: string): Promise<ResponseDto> {
     const appDir = dirname(require.main.path);
@@ -256,30 +268,33 @@ export class AuthService {
         const otpModel = {
           email: email,
           otp: randomString,
-          expiresAt: otpExpiryTime
+          expiresAt: otpExpiryTime,
         };
 
         const otpM = new this.otpModel(otpModel);
         await otpM.save();
 
         //save the otp to user model
-        const userUpdateOnOTP = await this.userModel.findOneAndUpdate({ email: email },
+        const userUpdateOnOTP = await this.userModel.findOneAndUpdate(
+          { email: email },
           {
             $set: {
               otp: randomString,
-              otpCreatedAt: new Date()
-            }
+              otpCreatedAt: new Date(),
+            },
           },
-          { new: true });
+          { new: true },
+        );
 
         if (!userUpdateOnOTP) {
+          
           return ResponseDto.errorResponse("Invalid email");
         }
 
         const template = handlebars.compile(html);
         const replacements = {
           otp: randomString,
-          validity: "1 hour",
+          validity: '1 hour',
         };
 
         const htmlToSend = template(replacements);
@@ -316,6 +331,7 @@ export class AuthService {
       },
     );
 
+
     return ResponseDto.successResponse("OTP sent successfully", null);
   }
 
@@ -331,6 +347,7 @@ export class AuthService {
       return ResponseDto.errorResponse('User not found');
     }
 
+
     if (newPassowrd.split("").length < 6) {
       return ResponseDto.errorResponse('Password should be 6 characters long');
     }
@@ -341,17 +358,23 @@ export class AuthService {
 
     // now lets check if otp hasnt expired
 
-    const oneHourAgo = new Date(Date.now() - (60 * 60 * 1000));
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     if (user.otpCreatedAt < oneHourAgo) {
+
       return ResponseDto.errorResponse("OTP has expired");
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassowrd, salt);
 
-    const updatePassword = await this.userModel.findOneAndUpdate({ email: email }, { $set: { password: hashedPassword } }, { new: true });
+    const updatePassword = await this.userModel.findOneAndUpdate(
+      { email: email },
+      { $set: { password: hashedPassword } },
+      { new: true },
+    );
 
     if (!updatePassword) {
+
       return ResponseDto.errorResponse("Failed to update password");
     }
 

@@ -17,9 +17,7 @@ import { ResponseDto } from 'src/common/response.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update.dto';
 
-
-
-@ApiTags("Auth Controllers")
+@ApiTags('Auth Controllers')
 @ApiBearerAuth()
 @Controller('/api/v1')
 export class AuthController {
@@ -28,13 +26,15 @@ export class AuthController {
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.OK)
+
   @ApiOperation({ 
     summary: "Register a new user" ,
     description: "Note that there are 4 fields all required except phone number since there is email, so user can register without phone number. The reason why l removed other fields is that they dont need to be filled by the user but the system will such as roles and permissions"
   })
+
   async addUser(@Body() userDto: UserDto): Promise<any> {
     const response = await this.authService.addUser(userDto);
-    
+
     if (response.data) {
       const userEmail = response.data.email;
       await this.authService.sendOtp(userEmail);
@@ -44,6 +44,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+
   @ApiOperation({ summary: "Login an existing user",
     description: "All fields required"
    })
@@ -58,6 +59,7 @@ export class AuthController {
   async login(@Body('email') email: string,
   @Body('password') password: string,){
     return this.authService.login(email, password);
+
   }
 
   @Public()
@@ -66,9 +68,9 @@ export class AuthController {
   @ApiBody({
     schema: {
       properties: {
-        email: {type: 'string', example: 'user@example.com'}, 
-      }
-    }
+        email: { type: 'string', example: 'user@example.com' },
+      },
+    },
   })
   async sendOtp(@Body('email') email: string): Promise<ResponseDto> {
     const res = await this.authService.sendOtp(email);
@@ -85,45 +87,45 @@ export class AuthController {
 
   @Public()
   @Patch('update/password')
-  @ApiOperation({ summary: "Update a user's password using their email, OTP, and new password" })
+  @ApiOperation({
+    summary:
+      "Update a user's password using their email, OTP, and new password",
+  })
   @ApiBody({
     schema: {
       properties: {
-        email: {type: 'string',example: 'user@example.com'},
-        newPassword: {type: 'string', example: '1234567890'},
-        otp: {type: 'string', example: '095645'}
-      }
-    }
+        email: { type: 'string', example: 'user@example.com' },
+        newPassword: { type: 'string', example: '1234567890' },
+        otp: { type: 'string', example: '095645' },
+      },
+    },
   })
   async updatePassword(
     @Body('email') email: string,
     @Body('newPassword') newPassword: string,
-    @Body('otp') otp: string
+    @Body('otp') otp: string,
   ) {
     return this.authService.updatePassword(email, otp, newPassword);
   }
 
-
   @Public()
   @Patch('users/verification')
-  @ApiOperation({summary: "Update user verified status to true"})
+  @ApiOperation({ summary: 'Update user verified status to true' })
   @ApiBody({
     schema: {
       properties: {
-        email: {type: "string", example: 'user@example.com'},
-        otp: {type: 'string', example: '095645'}
-      }
-    }
+        email: { type: 'string', example: 'user@example.com' },
+        otp: { type: 'string', example: '095645' },
+      },
+    },
   })
-  async verifyUser(
-    @Body('email') email: string,
-    @Body('otp') otp: string
-  ){
+  async verifyUser(@Body('email') email: string, @Body('otp') otp: string) {
     return this.authService.verifyUser(email, otp);
   }
 
   
   @Patch('update/user/:id')
+
   @ApiOperation({ summary: "Update a user's profile information" })
   async updateUser(@Param('id') id: string ,@Body() updateDto: UpdateUserDto, @Request() req): Promise<ResponseDto> {
     const userId = req.user.id;
@@ -167,11 +169,13 @@ export class AuthController {
 
   @Delete('delete/user')
   @HttpCode(HttpStatus.OK)
+
   @ApiOperation({ summary: "Delete a user account" })
   async adminDeleteUser(@Param('id') id: string, @Request() req):Promise<ResponseDto> {
     const userId = req.user.id;
     if(userId === id){
       return await this.authService.deleteUser(id);
+
     } else {
       return ResponseDto.errorResponse("Cannot delete user")
     }
