@@ -328,12 +328,12 @@ export class AnimalsController {
     }
   }
 
-  @Patch('feeding/:feedId')
+  @Patch('feeding/:Id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Update feeding information for a feed',
-    description: 'Updates feeding information for a feed',
+    description: 'Updates feeding information for a feed using mongoose id',
     responses: {
       200: {
         description: 'Feeding information updated successfully',
@@ -343,11 +343,11 @@ export class AnimalsController {
       },
     },
   })
-  async updateFeeding(@Param('feedId') feedId: string, @Body() updateFeedingDto: UpdateFeedDto) {
-    return this.animalsService.updateFeed(feedId, updateFeedingDto);
+  async updateFeeding(@Param('Id') Id: string, @Body() updateFeedingDto: UpdateFeedDto) {
+    return this.animalsService.updateFeed(Id, updateFeedingDto);
   }
 
-  @Delete('feeding/:feedId')
+  @Delete('feeding/:Id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
@@ -362,8 +362,8 @@ export class AnimalsController {
       },
     },
   })
-  async deleteFeeding(@Param('feedId') feedId: string) {
-    return this.animalsService.deleteFeed(feedId);
+  async deleteFeeding(@Param('Id') Id: string) {
+    return this.animalsService.deleteFeed(Id);
   }
 
 
@@ -485,7 +485,7 @@ export class AnimalsController {
     },
   })
   async deleteVaccine(@Param('Id') Id: string) {
-    return this.animalsService.deleteAnimal(Id);
+    return this.animalsService.deleteVaccine(Id);
   }
 
   /////////////////////////PRODUCTION//////////////////////////////////////

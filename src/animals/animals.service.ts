@@ -418,7 +418,7 @@ export class AnimalsService {
       if (!updatedVaccine) {
         return ResponseDto.errorResponse("Failed to update vaccine");
       }
-      return ResponseDto.successResponse("Vaccine fetched", updatedVaccine);
+      return ResponseDto.successResponse("Vaccine updated", updatedVaccine);
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Something went wrong, failed to update vaccine");
@@ -431,7 +431,7 @@ export class AnimalsService {
       if (!deletedVaccine) {
         return ResponseDto.errorResponse("Failed to delete vaccine");
       }
-      return ResponseDto.successResponse("Vaccine fetched", "");
+      return ResponseDto.successResponse("Vaccine deleted", "");
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Something went wrong, failed to delete vaccine");

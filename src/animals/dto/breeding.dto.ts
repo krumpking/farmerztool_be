@@ -29,7 +29,7 @@ export class CreateBreedingDto {
   addedBy: string;
 
   @ApiProperty({
-    description: 'Courtship',
+    description: 'Courtship. NB: Can be either Successful or Unsuccessful',
     example: 'Successful',
     required: true
   })
@@ -38,7 +38,7 @@ export class CreateBreedingDto {
   courtship: string;
 
   @ApiProperty({
-    description: 'Mating',
+    description: 'Mating. NB: Can be either Natural or Artificial',
     example: 'Natural',
     required: true
   })

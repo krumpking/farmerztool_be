@@ -167,7 +167,7 @@ export class AuthController {
   //   }
   // }
 
-  @Delete('delete/user')
+  @Delete('delete/user/:id')
   @HttpCode(HttpStatus.OK)
 
   @ApiOperation({ summary: "Delete a user account" })
