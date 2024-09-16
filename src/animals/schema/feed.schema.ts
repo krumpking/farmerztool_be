@@ -10,3 +10,4 @@ export const FeedSchema = new mongoose.Schema({
   nutritionalValue: { type: String, required: true },
   barcode: { type: [String], required: true },
 });
+

@@ -8,6 +8,7 @@ import {
   Request,
   HttpException,
   Patch,
+  UseGuards,
 } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
@@ -20,6 +21,10 @@ import { UpdateBreedingDto } from './dto/updateBreeding.dto';
 import { UpdateFeedDto } from './dto/updateFeed.dto';
 import { UpdateVaccinationDto } from './dto/updateVaccination.dto';
 import { CreateProductionDto } from './dto/production.dto';
+import { RolesGuard } from 'src/roles/roles.guard';
+import { Role } from 'src/roles/roles.enum';
+import { Permissions, Roles } from 'src/roles/roles.decorators';
+import { Permission } from 'src/roles/permissions.enum';
 
 
 
@@ -27,15 +32,22 @@ import { CreateProductionDto } from './dto/production.dto';
 @ApiTags("ANIMALS")
 @ApiBearerAuth()
 @Controller('/api/v1/animals')
+@UseGuards(RolesGuard)
 export class AnimalsController {
-  constructor(private readonly animalsService: AnimalsService) {}
+  constructor(private readonly animalsService: AnimalsService) { }
+
+  private getUserFromRequest(req): any {
+    return req.user;
+  }
 
 
   /////////////////////// ANIMALS //////////////////////////////////////////////////////
   @Post('add')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Create)
   @ApiOperation({
     summary: 'Create a new animal',
-    description: 'Creates a new animal',
+    description: 'Creates a new animal. NB: Animal Id should be unique',
     responses: {
       201: {
         description: 'Animal created successfully',
@@ -46,18 +58,13 @@ export class AnimalsController {
     },
   })
   async create(@Body() createAnimalDto: CreateAnimalDto, @Request() req) {
-
-    const check = req.user.roles === "Admin";
-    console.log(req.user.roles);
-    
-    if (check) {
-      return this.animalsService.addAnimal(createAnimalDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.addAnimal(user.adminId, createAnimalDto);
   }
 
   @Get(':animalId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get an animal by ID',
     description: 'Retrieves an animal by ID',
@@ -70,18 +77,16 @@ export class AnimalsController {
       },
     },
   })
-  async getAnimal(@Param('animalId') animalId: string, @Request() req) {
-    if(req.user.roles === "Admin"){
-      return this.animalsService.getAnimal(animalId);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+  async getAnimal(@Param('animalId') animalId: string) {
+    return this.animalsService.getAnimal(animalId);
   }
 
   @Get('all/:adminId')
+  @Roles(Role.Admin, Role.FarmManager, Role.AnimalManager)
+  @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all animals for a specific admin',
-    description: 'Retrieves all animals for a specific admin',
+    description: 'Retrieves all animals for a specific admin. NB: Every user has got an adminId property accessed like this user?.adminId',
     responses: {
       200: {
         description: 'Animals retrieved successfully',
@@ -91,8 +96,9 @@ export class AnimalsController {
       },
     },
   })
-  async getAllAnimals(@Param('adminId') adminId: string , @Request() req) {
-    if(req.user.roles === "Admin"){
+  async getAllAnimals(@Param('adminId') adminId: string, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    if (user?.adminId === adminId) {
       return this.animalsService.getAllMyAnimals(adminId);
     } else {
       throw new HttpException("Unauthorised", 401);
@@ -100,6 +106,8 @@ export class AnimalsController {
   }
 
   @Patch(':animalId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Update an animal',
     description: 'Updates an animal',
@@ -112,15 +120,13 @@ export class AnimalsController {
       },
     },
   })
-  async updateAnimal(@Param('animalId') animalId: string, @Request() req, @Body() updateAnimalDto: UpdateAnimalDto){
-    if(req.user.roles === "Admin"){
-      return this.animalsService.updateAnimal(animalId, updateAnimalDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+  async updateAnimal(@Param('animalId') animalId: string, @Request() req, @Body() updateAnimalDto: UpdateAnimalDto) {
+    return this.animalsService.updateAnimal(animalId, updateAnimalDto);
   }
 
   @Delete(':animalId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Delete)
   @ApiOperation({
     summary: 'Delete an animal',
     description: 'Deletes an animal',
@@ -133,436 +139,476 @@ export class AnimalsController {
       },
     },
   })
-  async deleteAnimal(@Param('animalId') animalId: string, @Request() req){
-    if(req.user.roles === "Admin"){
-      return this.animalsService.deleteAnimal(animalId);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+  async deleteAnimal(@Param('animalId') animalId: string) {
+    return this.animalsService.deleteAnimal(animalId);
   }
 
   ////////////////////////// BREEDING //////////////////////////////////////////////
 
-@Post('breeding/add')
-@ApiOperation({
-  summary: 'Create new breeding information',
-  description: 'Creates new breeding information',
-  responses: {
-    201: {
-      description: 'Breeding information created successfully',
+  @Post('breeding/add')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    summary: 'Create new breeding information',
+    description: 'Creates new breeding information',
+    responses: {
+      201: {
+        description: 'Breeding information created successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Request() req) {
-  if (req.user.roles === "Admin") {
-    return this.animalsService.addBreedingInfo(createBreedingDto);
-  } else {
-    throw new HttpException("Unauthorised", 401);
+  })
+  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.addBreedingInfo(user.adminId, createBreedingDto);
   }
-}
 
-@Get('breeding/:animalId')
-@ApiOperation({
-  summary: 'Get breeding information for an animal',
-  description: 'Retrieves breeding information for an animal',
-  responses: {
-    200: {
-      description: 'Breeding information retrieved successfully',
+  @Get('breeding/:animalId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get breeding information for an animal',
+    description: 'Retrieves breeding information for an animal',
+    responses: {
+      200: {
+        description: 'Breeding information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async getBreedingInfo(@Param('animalId') animalId: string, @Request() req) {
-  if (req.user.roles === "Admin") {
-    return this.animalsService.getAnimalBreedingInfo(animalId);
-  } else {
-    throw new HttpException("Unauthorised", 401);
+  })
+  async getBreedingInfo(@Param('animalId') animalId: string, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.getAnimalBreedingInfo(user?.adminId, animalId);
   }
-}
 
-@Get('breeding/all/:adminId')
-@ApiOperation({
-  summary: 'Get all breeding information for an admin',
-  description: 'Retrieves all breeding information for an admin',
-  responses: {
-    200: {
-      description: 'Breeding information retrieved successfully',
+  @Get('breeding/all/:adminId')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all breeding information for an admin',
+    description: 'Retrieves all breeding information for an admin',
+    responses: {
+      200: {
+        description: 'Breeding information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async getAllBreedingInfo(@Param('adminId') adminId: string, @Request() req) {
-  if (req.user.roles === "Admin") {
-    return this.animalsService.getAllBreedingInfo(adminId);
-  } else {
-    throw new HttpException("Unauthorised", 401);
+  })
+  async getAllBreedingInfo(@Param('adminId') adminId: string, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    if (user?.adminId === adminId) {
+      return this.animalsService.getAllBreedingInfo(adminId);
+    }
   }
-}
 
-@Patch('breeding/:animalId')
-@ApiOperation({
-  summary: 'Update breeding information for an animal',
-  description: 'Updates breeding information for an animal',
-  responses: {
-    200: {
-      description: 'Breeding information updated successfully',
+  @Patch('breeding/:animalId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Update breeding information for an animal',
+    description: 'Updates breeding information for an animal',
+    responses: {
+      200: {
+        description: 'Breeding information updated successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async updateBreeding(@Param('animalId') animalId: string, @Request() req, @Body() updateBreedingDto: UpdateBreedingDto) {
-  if (req.user.roles === "Admin") {
+  })
+  async updateBreeding(@Param('animalId') animalId: string, @Request() req, @Body() updateBreedingDto: UpdateBreedingDto) {
     return this.animalsService.updateBreedingInfo(updateBreedingDto);
-  } else {
-    throw new HttpException("Unauthorised", 401);
   }
-}
 
-@Delete('breeding/:animalId')
-@ApiOperation({
-  summary: 'Delete breeding information for an animal',
-  description: 'Deletes breeding information for an animal',
-  responses: {
-    200: {
-      description: 'Breeding information deleted successfully',
+  @Delete('breeding/:animalId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Delete)
+  @ApiOperation({
+    summary: 'Delete breeding information for an animal',
+    description: 'Deletes breeding information for an animal',
+    responses: {
+      200: {
+        description: 'Breeding information deleted successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async deleteBreeding(@Param('animalId') animalId: string, @Request() req) {
-  if (req.user.roles === "Admin") {
+  })
+  async deleteBreeding(@Param('animalId') animalId: string) {
     return this.animalsService.deleteBreedingInfo(animalId);
-  } else {
-    throw new HttpException("Unauthorised", 401);
   }
-}
 
- ////////////////// FEEDING /////////////////////////////////////////////////////////
+  ////////////////// FEEDING /////////////////////////////////////////////////////////
 
- @Post('feeding/add/info')
- @ApiOperation({
-  summary: 'Create new feeding information',
-  description: 'Creates new feeding information',
-  responses: {
-    201: {
-      description: 'Feeding information created successfully',
+  @Post('feeding/add/info')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    summary: 'Create new feeding information',
+    description: 'Creates new feeding information',
+    responses: {
+      201: {
+        description: 'Feeding information created successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async createFeeding(@Body() createFeedingDto: CreateFeedDto, @Request() req) {
-   if (req.user.roles === "Admin") {
-     return this.animalsService.addFeed(createFeedingDto);
-   } else {
-     throw new HttpException("Unauthorised", 401);
-   }
- }
+  })
+  async createFeeding(@Body() createFeedingDto: CreateFeedDto, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.addFeed(user.adminId, createFeedingDto);
+  }
 
- @Get('feeding/:feedId')
- @ApiOperation({
-  summary: 'Get feeding information for a feed',
-  description: 'Retrieves feeding information for a feed',
-  responses: {
-    200: {
-      description: 'Feeding information retrieved successfully',
+  @Get('feeding/:id')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get feeding information for a feed',
+    description: 'Retrieves feeding information for a feed',
+    responses: {
+      200: {
+        description: 'Feeding information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async getFeedingInfo(@Param('feedId') feedId: string, @Request() req) {
-   if (req.user.roles === "Admin") {
-     return this.animalsService.getFeedingInfo(feedId);
-   } else {
-     throw new HttpException("Unauthorised", 401);
-   }
- }
+  })
+  async getFeedingInfo(@Param('id') id: string) {
+    return this.animalsService.getFeedingInfo(id);
+  }
 
- @Get('feeding/all/:adminId')
- @ApiOperation({
-  summary: 'Get all feeding information for an admin',
-  description: 'Retrieves all feeding information for an admin',
-  responses: {
-    200: {
-      description: 'Feeding information retrieved successfully',
+  @Get('feeding/animal/:animalId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get feeding information for an animal',
+    description: 'Retrieves feeding information for an animal',
+    responses: {
+      200: {
+        description: 'Feeding information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async getAllFeedingInfo(@Param('adminId') adminId: string, @Request() req) {
-   if (req.user.roles === "Admin") {
-     return this.animalsService.getAllAnimalFeedingInfo(adminId);
-   } else {
-     throw new HttpException("Unauthorised", 401);
-   }
- }
+  })
+  async getFeedingInfoByAnimalId(@Param('animalId') animalId: string, @Request() req) {
+    const user = this.getUserFromRequest(req)
+    return this.animalsService.getAnimalFeedingInfo(animalId, user?.adminId);
+  }
 
- @Patch('feeding/:feedId')
- @ApiOperation({
-  summary: 'Update feeding information for a feed',
-  description: 'Updates feeding information for a feed',
-  responses: {
-    200: {
-      description: 'Feeding information updated successfully',
+  @Get('feeding/all/:adminId')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all feeding information for an admin',
+    description: 'Retrieves all feeding information for an admin',
+    responses: {
+      200: {
+        description: 'Feeding information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async updateFeeding(@Param('feedId') feedId: string, @Request() req, @Body() updateFeedingDto: UpdateFeedDto) {
-   if (req.user.roles === "Admin") {
-     return this.animalsService.updateFeed(feedId, updateFeedingDto);
-   } else {
-     throw new HttpException("Unauthorised", 401);
-   }
- }
+  })
+  async getAllFeedingInfo(@Param('adminId') adminId: string, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    if (user?.adminId === adminId) {
+      return this.animalsService.getAllAnimalFeedingInfo(adminId);
+    }
+  }
 
- @Delete('feeding/:feedId')
- @ApiOperation({
-  summary: 'Delete feeding information for a feed',
-  description: 'Deletes feeding information for a feed',
-  responses: {
-    200: {
-      description: 'Feeding information deleted successfully',
+  @Patch('feeding/:feedId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Update feeding information for a feed',
+    description: 'Updates feeding information for a feed',
+    responses: {
+      200: {
+        description: 'Feeding information updated successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
+  })
+  async updateFeeding(@Param('feedId') feedId: string, @Body() updateFeedingDto: UpdateFeedDto) {
+    return this.animalsService.updateFeed(feedId, updateFeedingDto);
+  }
+
+  @Delete('feeding/:feedId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Delete)
+  @ApiOperation({
+    summary: 'Delete feeding information for a feed',
+    description: 'Deletes feeding information for a feed',
+    responses: {
+      200: {
+        description: 'Feeding information deleted successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-  },
-})
- async deleteFeeding(@Param('feedId') feedId: string, @Request() req) {
-   if (req.user.roles === "Admin") {
-     return this.animalsService.deleteFeed(feedId);
-   } else {
-     throw new HttpException("Unauthorised", 401);
-   }
- }
+  })
+  async deleteFeeding(@Param('feedId') feedId: string) {
+    return this.animalsService.deleteFeed(feedId);
+  }
 
 
- /////////////////////////VACCINATION/////////////////////////////////////////////
+  /////////////////////////VACCINATION/////////////////////////////////////////////
 
- @Post('vaccination/add')
- @ApiOperation({
-  summary: 'Create new vaccination information',
-  description: 'Creates new vaccination information',
-  responses: {
-    201: {
-      description: 'Vaccination information created successfully',
+  @Post('vaccination/add')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    summary: 'Create new vaccination information',
+    description: 'Creates new vaccination information',
+    responses: {
+      201: {
+        description: 'Vaccination information created successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async addVaccination(@Body() createVaccinationDto: CreateVaccinationDto){
-  return this.animalsService.addVaccination(createVaccinationDto)
- }
+  })
+  async addVaccination(@Body() createVaccinationDto: CreateVaccinationDto, @Request() req) {
+    const user = this.getUserFromRequest(req)
+    return this.animalsService.addVaccination(user?.adminId, createVaccinationDto)
+  }
 
- @Get('vaccination/all/farm/:adminId')
- @ApiOperation({
-  summary: 'Get all vaccination information for a farm',
-  description: 'Retrieves all vaccination information for a farm',
-  responses: {
-    200: {
-      description: 'Vaccination information retrieved successfully',
+  @Get('vaccination/all/farm/:adminId')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all vaccination information for a farm',
+    description: 'Retrieves all vaccination information for a farm',
+    responses: {
+      200: {
+        description: 'Vaccination information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async getAllVaccinesInFarm(@Param('adminId') adminId: string){
-  return this.animalsService.getAllVaccinesInFarm(adminId);
- }
+  })
+  async getAllVaccinesInFarm(@Param('adminId') adminId: string, @Request() req) {
+    const user = this.getUserFromRequest(req)
+    if (user?.adminId === adminId) {
+      return this.animalsService.getAllVaccinesInFarm(adminId);
+    }
+  }
 
- @Get('vaccination/all/animal/:animalId')
- @ApiOperation({
-  summary: 'Get all vaccination information for an animal',
-  description: 'Retrieves all vaccination information for an animal',
-  responses: {
-    200: {
-      description: 'Vaccination information retrieved successfully',
+  @Get('vaccination/all/animal/:animalId')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all vaccination information for an animal',
+    description: 'Retrieves all vaccination information for an animal',
+    responses: {
+      200: {
+        description: 'Vaccination information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async getAllVaccinesPerAnimal(@Param('animalId') animalId: string){
-  return this.animalsService.getAllVaccinesPerAnimal(animalId);
- }
+  })
+  async getAllVaccinesPerAnimal(@Param('animalId') animalId: string, @Request() req) {
+    const user = this.getUserFromRequest(req)
+    return this.animalsService.getAllVaccinesPerAnimal(animalId, user?.adminId);
+  }
 
- @Get('vaccination/:Id')
- @ApiOperation({
-  summary: 'Get specific vaccination information',
-  description: 'Retrieves specific vaccination information',
-  responses: {
-    200: {
-      description: 'Vaccination information retrieved successfully',
+  @Get('vaccination/:Id')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get specific vaccination information',
+    description: 'Retrieves specific vaccination information by its id',
+    responses: {
+      200: {
+        description: 'Vaccination information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async getSpecificVaccine(@Param('Id') Id: string){
-  return this.animalsService.getSpecificVaccine(Id);
- }
+  })
+  async getSpecificVaccine(@Param('Id') Id: string) {
+    return this.animalsService.getSpecificVaccine(Id);
+  }
 
- @Patch('vaccination/:Id')
- @ApiOperation({
-  summary: 'Update vaccination information',
-  description: 'Updates vaccination information',
-  responses: {
-    200: {
-      description: 'Vaccination information updated successfully',
+  @Patch('vaccination/:Id')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Update vaccination information',
+    description: 'Updates vaccination information',
+    responses: {
+      200: {
+        description: 'Vaccination information updated successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async updateVaccine(@Param('Id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto){
-  return this.animalsService.updateVaccine(Id, updateVaccinationDto);
- }
+  })
+  async updateVaccine(@Param('Id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto) {
+    return this.animalsService.updateVaccine(Id, updateVaccinationDto);
+  }
 
- @Delete('vaccination/:Id')
- @ApiOperation({
-  summary: 'Delete vaccination information',
-  description: 'Deletes vaccination information',
-  responses: {
-    200: {
-      description: 'Vaccination information deleted successfully',
+  @Delete('vaccination/:Id')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Delete)
+  @ApiOperation({
+    summary: 'Delete vaccination information',
+    description: 'Deletes vaccination information',
+    responses: {
+      200: {
+        description: 'Vaccination information deleted successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
- async deleteVaccine(@Param('Id') Id: string){
-  return this.animalsService.deleteAnimal(Id);
- }
+  })
+  async deleteVaccine(@Param('Id') Id: string) {
+    return this.animalsService.deleteAnimal(Id);
+  }
 
-/////////////////////////PRODUCTION//////////////////////////////////////
+  /////////////////////////PRODUCTION//////////////////////////////////////
 
-@Post('production/add')
-@ApiOperation({
-  summary: 'Create new production information',
-  description: 'Creates new production information',
-  responses: {
-    201: {
-      description: 'Production information created successfully',
+  @Post('production/add')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    summary: 'Create new production information',
+    description: 'Creates new production information',
+    responses: {
+      201: {
+        description: 'Production information created successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async addProduction(@Body() createProductionDto: CreateProductionDto){
- return this.animalsService.addProduction(createProductionDto)
-}
+  })
+  async addProduction(@Body() createProductionDto: CreateProductionDto, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.addProduction(user?.adminId, createProductionDto)
+  }
 
-@Get('production/all/farm/:adminId')
-@ApiOperation({
-  summary: 'Get all production information for a farm',
-  description: 'Retrieves all production information for a farm',
-  responses: {
-    200: {
-      description: 'Production information retrieved successfully',
+  @Get('production/all/farm/:adminId')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all production information for a farm',
+    description: 'Retrieves all production information for a farm',
+    responses: {
+      200: {
+        description: 'Production information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async getAllProductionsInFarm(@Param('adminId') adminId: string){
- return this.animalsService.getAllProductionsInFarm(adminId);
-}
+  })
+  async getAllProductionsInFarm(@Param('adminId') adminId: string, @Request() req) {
+    const user = this.getUserFromRequest(req)
+    if (user?.adminId === adminId) {
+      return this.animalsService.getAllProductionsInFarm(adminId);
+    }
 
-@Get('production/all/animal/:animalId')
-@ApiOperation({
-  summary: 'Get all production information for an animal',
-  description: 'Retrieves all production information for an animal',
-  responses: {
-    200: {
-      description: 'Production information retrieved successfully',
-    },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async getAllProductiondPerAnimal(@Param('animalId') animalId: string){
- return this.animalsService.getAllProductionsPerAnimal(animalId);
-}
+  }
 
-@Get('production/:Id')
-@ApiOperation({
-  summary: 'Get specific production information',
-  description: 'Retrieves specific production information',
-  responses: {
-    200: {
-      description: 'Production information retrieved successfully',
+  @Get('production/all/animal/:animalId')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all production information for an animal',
+    description: 'Retrieves all production information for an animal',
+    responses: {
+      200: {
+        description: 'Production information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async getSpecificProduction(@Param('Id') Id: string){
- return this.animalsService.getSpecificProduction(Id);
-}
+  })
+  async getAllProductiondPerAnimal(@Param('animalId') animalId: string, @Request() req) {
+    const user = this.getUserFromRequest(req)
+    return this.animalsService.getAllProductionsPerAnimal(animalId, user?.adminId);
+  }
 
-@Patch('production/:Id')
-@ApiOperation({
-  summary: 'Update production information',
-  description: 'Updates production information',
-  responses: {
-    200: {
-      description: 'Production information updated successfully',
+  @Get('production/:Id')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get specific production information',
+    description: 'Retrieves specific production information',
+    responses: {
+      200: {
+        description: 'Production information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
-    },
-  },
-})
-async updateProduction(@Param('Id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto){
- return this.animalsService.updateProduction(Id, updateVaccinationDto);
-}
+  })
+  async getSpecificProduction(@Param('Id') Id: string) {
+    return this.animalsService.getSpecificProduction(Id);
+  }
 
-@Delete('production/:Id')
-@ApiOperation({
-  summary: 'Delete production information',
-  description: 'Deletes production information',
-  responses: {
-    200: {
-      description: 'Production information deleted successfully',
+  @Patch('production/:Id')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Update production information',
+    description: 'Updates production information',
+    responses: {
+      200: {
+        description: 'Production information updated successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-    401: {
-      description: 'Unauthorized',
+  })
+  async updateProduction(@Param('Id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto) {
+    return this.animalsService.updateProduction(Id, updateVaccinationDto);
+  }
+
+  @Delete('production/:Id')
+  @Roles(Role.Admin, Role.AnimalManager)
+@Permissions(Permission.Delete)
+  @ApiOperation({
+    summary: 'Delete production information',
+    description: 'Deletes production information',
+    responses: {
+      200: {
+        description: 'Production information deleted successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
     },
-  },
-})
-async deleteProduction(@Param('Id') Id: string){
- return this.animalsService.deleteProduction(Id);
-}
+  })
+  async deleteProduction(@Param('Id') Id: string) {
+    return this.animalsService.deleteProduction(Id);
+  }
 
 
 }

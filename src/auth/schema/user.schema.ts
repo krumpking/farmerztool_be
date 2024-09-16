@@ -5,7 +5,19 @@ export const UserSchema = new mongoose.Schema({
   phoneNumber: {type: String, required: false},
   position: {type: String, required: false},
   adminId: {type: String, required: false},
-  role: {type: String, enum: ["Admin", "Manager", "Finance", "Animal Manger", "Crop Management"], required: false},
+  role: {
+    type: String, enum: [
+      'Admin',
+      'Finance',
+      'Animal Manager',
+      'Crop Management',
+      'Farm Manager',
+      'Asset Manager',
+      'Eggs Hatchery Manager',
+      'Communication Manager',
+      'Farm Worker',
+      'Veterinarian'], required: true
+  },
   permissions: {type: [String], default: []},
   email: {type: String  , unique: true, required: true},
   password: {type: String, required: true},

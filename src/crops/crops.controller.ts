@@ -32,7 +32,7 @@ export class CropsController {
   ////////////////////////////// CROPS //////////////////////////////////////////
 
   @Post('add')
-  @Roles(Role.FarmManager, Role.Admin)
+  @Roles(Role.Admin, Role.CropManager)
   @Permissions(Permission.Create)
   @ApiOperation({
     summary: "Adds new crop record",
@@ -61,6 +61,8 @@ export class CropsController {
   }
 
   @Get()
+  @Roles(Role.FarmManager, Role.Admin, Role.CropManager)
+  @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Gets all crop records",
     description: "Gets all crop records",
@@ -75,6 +77,8 @@ export class CropsController {
   }
 
   @Get(':id')
+  @Roles(Role.FarmManager, Role.Admin, Role.CropManager)
+  @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Gets a single crop by id",
     description: "Gets a single crop by id",
@@ -84,6 +88,8 @@ export class CropsController {
   }
 
   @Patch(':id')
+  @Roles(Role.Admin, Role.CropManager)
+  @Permissions(Permission.Update)
   @ApiOperation({
     summary: "Updates crop record by id",
     description: "Updates crop record by id",
@@ -98,6 +104,7 @@ export class CropsController {
   }
 
   @Delete(':id')
+  @Roles(Role.Admin, Role.CropManager)
   @ApiOperation({
     summary: "Deletes crop record by id",
     description: "Deletes crop record by id",
@@ -114,6 +121,8 @@ export class CropsController {
 ///////////////////////////////////// IRRIGATION //////////////////////////////////////////////
 
 @Post(':id/irrigation/add')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Create)
 @ApiOperation({
   summary: "Adds irrigation record for a crop",
   description: "Adds irrigation record for a specific crop. That id should be the mongoose.ObjectId of that specific crop that needs an irrigation record"
@@ -129,6 +138,7 @@ async addIrrigation(@Param('id') id: string, @Body() createIrrigatioDto: CreateI
 }
 
 @Get('irrigation/:id')
+@Roles(Role.Admin, Role.CropManager)
 @ApiOperation({
   summary: "Get a specific irrigation record by its id",
   description: "Gets irrigation record by its mongoose.ObjectId _id"
@@ -138,6 +148,7 @@ async getIrrigationRecordById(@Param('id') id: string){
 }
 
 @Get(':id/irrigation')
+@Roles(Role.Admin, Role.CropManager)
 @ApiOperation({
   summary: "Gets all irigations for a specific crop by _id",
   description: "Gets all irigations for a specific crop by its mongoose.ObjectId _id",
@@ -147,6 +158,8 @@ async getIrrigationsForCrop(@Param('id') id: string){
 }
 
 @Get(':adminId/irrigations')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Get all irrigation records in a farm",
   description: "Get all irrigation records in a farm using adminId",
@@ -156,6 +169,8 @@ async getAllFarmIrrigations(@Param('adminId') adminId: string){
 }
 
 @Patch('irrigation/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Update)
 @ApiOperation({
   summary: "Update a specific irrigation record",
   description: "Update a specific irrigation record using its mongoose.ObjectId _id",
@@ -171,6 +186,8 @@ async updateIrrigation(@Param('id') id: string, @Body() updateIrrigationDto: Upd
 }
 
 @Delete('irrigation/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Delete)
 @ApiOperation({
   summary: "Deletes a specific irrigation record",
   description: "Deletes a specific irrigation record using its mongoose.ObjectId _id",
@@ -189,6 +206,8 @@ async deleteIrrigation(@Param('id') id: string, @Request() req){
 //////////////////// FERTILIZER$PESTICIDE /////////////////
 
 @Post(':id/fertilizer-pestcide-applications/add')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Create)
 @ApiOperation({
   summary: "Adds fertilizer and pesticide application record using crop id",
   description: "Adds fertilizer and pesticide application record using crop id"
@@ -204,6 +223,8 @@ async addFertiliserPesticide(@Param('id') id: string, @Body() createFertPestDto:
 }
 
 @Get(':adminId/fertilizer-pestcide-applications/farm')
+@Roles(Role.Admin, Role.CropManager, Role.FarmManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Get all fertilizer-pestcide-applications records in a farm",
   description: "Get all fertilizer-pestcide-applications records in a farm using adminId",
@@ -213,6 +234,8 @@ async getAllFertPestApplicationsForFarm(@Param('adminId') adminId: string){
 }
 
 @Get(':id/fertilizer-pestcide-applications/crop')
+@Roles(Role.Admin, Role.CropManager, Role.FarmManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Gets all fertilizer-pestcide-applications records for a specific crop by _id",
   description: "Gets all fertilizer-pestcide-applications records for a specific crop by its mongoose.ObjectId _id",
@@ -222,6 +245,8 @@ async getAllFertPestApplicationsForCrop(@Param('id') id: string){
 }
 
 @Get('fertilizer-pestcide-applications/:id')
+@Roles(Role.Admin, Role.CropManager, Role.FarmManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Get a specific fertilizer-pestcide-applications record by its id",
   description: "Gets fertilizer-pestcide-applications record by its mongoose.ObjectId _id"
@@ -231,6 +256,8 @@ async getSpecificFertPestRecordById(@Param('id') id: string){
 }
 
 @Patch('fertilizer-pestcide-applications/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Update)
 @ApiOperation({
   summary: "Update a specific fertilizer-pestcide-applicationsrecord",
   description: "Update a specific fertilizer-pestcide-applications record using its mongoose.ObjectId _id",
@@ -245,6 +272,8 @@ async updateFertPestRecordById(@Param('id') id: string, @Body() updateFertPestDt
 }
 
 @Delete('fertilizer-pestcide-applications/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Delete)
 @ApiOperation({
   summary: "Deletes a specific fertilizer-pestcide-applications record",
   description: "Deletes a specific fertilizer-pestcide-applications record using its mongoose.ObjectId _id",
@@ -262,6 +291,8 @@ async deleteFertPestRecordById(@Param('id') id: string, @Request() req){
 /////////////////////FINANCIAL //////////////////////////////////
 
 @Post(':id/financial')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Create)
 @ApiOperation({
   summary: "Adds financial record for a crop",
   description: "Adds financial record for a crop using crop id",
@@ -276,6 +307,8 @@ async addFinancial(@Param('id') id: string, @Body() createFinancialDto: CreateFi
 }
 
 @Get(':adminId/financial')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Get all financial records for a farm",
   description: "Get all financial records for a farm using adminId",
@@ -285,6 +318,7 @@ async getAllFinancialForFarm(@Param('adminId') adminId: string){
 }
 
 @Get(':id/financial/crop')
+@Roles(Role.Admin, Role.CropManager)
 @ApiOperation({
   summary: "Gets all financial records for a specific crop by _id",
   description: "Gets all financial records for a specific crop by its mongoose.ObjectId _id",
@@ -294,6 +328,8 @@ async getAllFinancialForCrop(@Param('id') id: string){
 }
 
 @Get('financial/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Get a specific financial record by its id",
   description: "Gets financial record by its mongoose.ObjectId _id"
@@ -303,6 +339,8 @@ async getSpecificFinancialRecordById(@Param('id') id: string){
 }
 
 @Patch('financial/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Update)
 @ApiOperation({
   summary: "Update a specific financial record",
   description: "Update a specific financial record using its mongoose.ObjectId _id",
@@ -317,6 +355,8 @@ async updateFinancialRecordById(@Param('id') id: string, @Body() updateFinancial
 }
 
 @Delete('financial/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Delete)
 @ApiOperation({
   summary: "Deletes a specific financial record",
   description: "Deletes a specific financial record using its mongoose.ObjectId _id",
@@ -334,6 +374,8 @@ async deleteFinancialRecordById(@Param('id') id: string, @Request() req){
 ////////////////////////////ACTIVITY//////////////////////////////////////
 
 @Post(':id/activity')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Create)
 @ApiOperation({
   summary: "Adds activity record for a crop",
   description: "Adds activity record for a crop using crop id",
@@ -351,6 +393,8 @@ async addActivity(@Param('id') id: string, @Body() createActivityDto: CropActivi
 }
 
 @Get(':adminId/activity')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Get all activity records for a farm",
   description: "Get all activity records for a farm using adminId",
@@ -361,6 +405,8 @@ async getAllActivityForFarm(@Param('adminId') adminId: string){
 
 
 @Get(':id/activity')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Get all activity records for a crop",
   description: "Get all activity records for a crop using crop id",
@@ -370,6 +416,8 @@ async getAllActivityForCrop(@Param('id') id: string){
 }
 
 @Get('activity/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Read)
 @ApiOperation({
   summary: "Get a specific activity record by its id",
   description: "Get a specific activity record by its mongoose.ObjectId _id",
@@ -379,6 +427,8 @@ async getSpecificActivityRecordById(@Param('id') id: string){
 }
 
 @Patch('activity/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Update)
 @ApiOperation({
   summary: "Update a specific activity record",
   description: "Update a specific activity record using its mongoose.ObjectId _id",
@@ -393,6 +443,8 @@ async updateActivityRecordById(@Param('id') id: string, @Body() updateActivityDt
 }
 
 @Delete('activity/:id')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Delete)
 @ApiOperation({
   summary: "Deletes a specific activity record",
   description: "Deletes a specific activity record using its mongoose.ObjectId _id",
@@ -410,6 +462,8 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
   ////////////////////////////////////PestDiseaseIssue////////////////////////////////
 
   @Post(':id/pest-disease-issue')
+  @Roles(Role.Admin, Role.CropManager)
+  @Permissions(Permission.Create)
   @ApiOperation({
     summary: "Add a pest disease issue for a crop",
     description: "Add a pest disease issue for a crop using crop id",
@@ -426,6 +480,8 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
   }
 
   @Get(':adminId/pest-disease-issue')
+  @Roles(Role.Admin, Role.CropManager)
+  @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Get all pest disease issues for a farm",
     description: "Get all pest disease issues for a farm using adminId",
@@ -436,6 +492,8 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
 
 
   @Get(':id/pest-disease-issue')
+  @Roles(Role.Admin, Role.CropManager)
+  @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Get all pest disease issues for a crop",
     description: "Get all pest disease issues for a crop using crop id",
@@ -445,6 +503,8 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
   }
 
   @Get('pest-disease-issue/:id')
+  @Roles(Role.Admin, Role.CropManager)
+  @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Get a specific pest disease issue by its id",
     description: "Get a specific pest disease issue by its mongoose.ObjectId _id",
@@ -454,6 +514,8 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
   }
 
   @Patch('pest-disease-issue/:id')
+  @Roles(Role.Admin, Role.CropManager)
+  @Permissions(Permission.Update)
   @ApiOperation({
     summary: "Update a specific pest disease issue",
     description: "Update a specific pest disease issue using its mongoose.ObjectId _id",
@@ -468,6 +530,8 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
   }
 
   @Delete('pest-disease-issue/:id')
+  @Roles(Role.Admin, Role.CropManager)
+  @Permissions(Permission.Delete)
   @ApiOperation({
     summary: "Deletes a specific pest disease issue",
     description: "Deletes a specific pest disease issue using its mongoose.ObjectId _id",

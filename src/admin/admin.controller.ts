@@ -32,7 +32,7 @@ export class AdminController {
   }
 
   @Post('farm')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Create)
   @ApiOperation({
     summary: "Endpoint for creating farm by admin",
@@ -48,7 +48,7 @@ export class AdminController {
   }
 
   @Get('farms/all/:adminId')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Endpoint for getting all farms by admin",
@@ -59,7 +59,7 @@ export class AdminController {
   }
 
   @Get('farm/:id')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Endpoint for getting farm by admin",
@@ -70,7 +70,7 @@ export class AdminController {
   }
 
   @Patch('farm/:id')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: "Endpoint for updating farm by admin",
@@ -84,7 +84,7 @@ export class AdminController {
   }
 
   @Delete('farm/:id')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
     summary: "Endpoint for deleting farm by admin",
@@ -95,7 +95,7 @@ export class AdminController {
   }
 
   @Get('employees/:adminId')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Endpoint for getting employees by admin",
@@ -106,7 +106,7 @@ export class AdminController {
   }
 
   @Get('employee/:id')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Endpoint for getting employee by admin",
@@ -117,7 +117,7 @@ export class AdminController {
   }
 
   @Post('add/employees')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Create)
   @ApiOperation({
     
@@ -149,7 +149,7 @@ export class AdminController {
   }
 
   @Patch('update/employee/:id')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: "Endpoint for updating employees by admin",
@@ -163,7 +163,7 @@ export class AdminController {
   }
 
   @Delete('delete/employee/:id')
-  @Roles(Role.Admin)
+  @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
     summary: "Endpoint for deleting employees by admin",

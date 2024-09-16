@@ -9,5 +9,5 @@ export const VaccinationSchema = new mongoose.Schema({
   iotNumber: { type: String, required: true },
   expirationDate: { type: String, required: true },
   barcode: { type: String, required: true },
-  datesAdminstered:{ type: [String],default: [], required: true },
+  datesAdminstered:{ type: [String], default: [], required: true },
 });

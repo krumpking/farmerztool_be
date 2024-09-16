@@ -86,7 +86,7 @@ export class AuthService {
             email: employeeExists.email,
             adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
-            roles: employeeExists
+            roles: employeeExists.role
           };
   
           const userData = {
@@ -183,6 +183,8 @@ export class AuthService {
           email: employeeExists.email,
           password: employeeExists.password,
           adminId: employeeExists.adminId,
+          permissions: employeeExists.perms,
+          roles: employeeExists.role
         };
 
         const userData = {
@@ -190,6 +192,7 @@ export class AuthService {
           adminId: employeeExists._id,
           email: employeeExists.email,
           perms: employeeExists.perms,
+          roles: employeeExists.role
         };
 
         return ResponseDto.successResponse("Login successful", userData);

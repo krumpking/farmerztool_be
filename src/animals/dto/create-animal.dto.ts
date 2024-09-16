@@ -16,11 +16,6 @@ export class CreateAnimalDto {
   @IsNotEmpty()
   addedBy: string;
 
-  @ApiProperty({ description: 'Admin user ID', example: 'ADMIN-123' })
-  @IsString()
-  @IsNotEmpty()
-  adminId: string;
-
   @ApiProperty({ description: 'Type of animal', example: 'Cow' })
   @IsString()
   @IsNotEmpty()
