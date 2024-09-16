@@ -108,9 +108,9 @@ export class AnimalsService {
     }
   }
 
-  async updateAnimal(animalId: string, updateAnimalDto: UpdateAnimalDto): Promise<ResponseDto> {
+  async updateAnimal(Id: string, updateAnimalDto: UpdateAnimalDto): Promise<ResponseDto> {
     try {
-      const animalExist = await this.animalModel.findOneAndUpdate({ animalId }, updateAnimalDto, { new: true }).exec();
+      const animalExist = await this.animalModel.findByIdAndUpdate(Id, updateAnimalDto, { new: true }).exec();
 
       if (!animalExist) {
         throw new HttpException("Animal not found", 404);
@@ -118,13 +118,15 @@ export class AnimalsService {
 
       return ResponseDto.successResponse("Animal updated successfully", animalExist);
     } catch (error) {
+      console.log(error);
+      
       return ResponseDto.errorResponse('Something went wrong updating animal')
     }
   }
 
-  async deleteAnimal(animalId: string): Promise<ResponseDto> {
+  async deleteAnimal(Id: string): Promise<ResponseDto> {
     try {
-      const animal = await this.animalModel.findOneAndDelete({ animalId });
+      const animal = await this.animalModel.findByIdAndDelete(Id);
       if (!animal) {
         return ResponseDto.errorResponse("Failed to delete animal");
       }

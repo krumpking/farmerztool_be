@@ -30,16 +30,18 @@ export class AdminService {
     try {
       // Check if farm name is already taken before adding farm
       const farmExists = await this.farmModel.findOne({
-        $and: [{adminId: adminId}, {farmerName: farm.farmerName}, {farmName: farm.farmName}]
-      }); 
+        farmName: farm.farmName,
+        farmerName: farm.farmerName,
+        adminId: adminId,
+      });; 
       if (farmExists) {
         return ResponseDto.errorResponse('Farm already exists');
       }
 
       const newFarm = await this.farmModel.create({
+        ...farm,
         adminId: adminId,
         createdBy: userId,
-        ...farm
       });
 
       const createdFarm = await this.farmModel.findById(newFarm._id);

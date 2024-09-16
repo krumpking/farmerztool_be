@@ -17,10 +17,10 @@ class MeatProduction {
   @IsDate()
   @Type(() => Date)
   expectedSlaughterDate?: Date;
- 
+
   @ApiProperty({ description: 'Yield', example: 50 })
   @IsNumber()
-  yield?: number ; // in kg
+  yield?: number; // in kg
 }
 
 class MilkProduction {
@@ -94,7 +94,7 @@ export class CreateProductionDto {
   @Type(() => MeatProduction)
   meatProduction?: MeatProduction;
 
-  @ApiProperty({ description: 'Milk production details' , required: false})
+  @ApiProperty({ description: 'Milk production details', required: false })
   @IsOptional()
   @ValidateNested()
   @Type(() => MilkProduction)
@@ -106,9 +106,10 @@ export class CreateProductionDto {
   @Type(() => WoolFurProduction)
   woolFurProduction?: WoolFurProduction;
 
-  @ApiProperty({ description: 'Sales records', isArray: true , required: false})
+  @ApiProperty({ description: 'Sales records', required: false })
+  @IsOptional()
   @IsArray()
   @ValidateNested()
   @Type(() => SalesRecord)
-  salesRecords?: SalesRecord;
+  salesRecords?: SalesRecord[] | null;
 }

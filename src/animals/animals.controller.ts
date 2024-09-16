@@ -105,12 +105,12 @@ export class AnimalsController {
     }
   }
 
-  @Patch(':animalId')
+  @Patch(':Id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Update an animal',
-    description: 'Updates an animal',
+    description: 'Updates an animal by id mongoose id',
     responses: {
       200: {
         description: 'Animal updated successfully',
@@ -120,16 +120,16 @@ export class AnimalsController {
       },
     },
   })
-  async updateAnimal(@Param('animalId') animalId: string, @Request() req, @Body() updateAnimalDto: UpdateAnimalDto) {
-    return this.animalsService.updateAnimal(animalId, updateAnimalDto);
+  async updateAnimal(@Param('Id') Id: string, @Request() req, @Body() updateAnimalDto: UpdateAnimalDto) {
+    return this.animalsService.updateAnimal(Id, updateAnimalDto);
   }
 
-  @Delete(':animalId')
+  @Delete(':Id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
     summary: 'Delete an animal',
-    description: 'Deletes an animal',
+    description: 'Deletes an animal by mongoose id',
     responses: {
       200: {
         description: 'Animal deleted successfully',
@@ -139,8 +139,8 @@ export class AnimalsController {
       },
     },
   })
-  async deleteAnimal(@Param('animalId') animalId: string) {
-    return this.animalsService.deleteAnimal(animalId);
+  async deleteAnimal(@Param('Id') Id: string) {
+    return this.animalsService.deleteAnimal(Id);
   }
 
   ////////////////////////// BREEDING //////////////////////////////////////////////

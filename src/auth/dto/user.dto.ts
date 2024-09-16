@@ -5,10 +5,10 @@ export class UserDto {
   @ApiProperty({
     description: 'Full name of the user to be provided required',
     example: 'Ronnie Kakunguwo',
-    required: true
+    required: false
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   fullName?: string;
 
   @ApiProperty({

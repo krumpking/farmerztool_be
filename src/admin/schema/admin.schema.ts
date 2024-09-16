@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 
 export const FarmSchema = new mongoose.Schema({
-  adminId: { type: mongoose.Schema.Types.ObjectId, unique: true, required: true },
+  adminId: { type: String, required: true },
   farmName: { type: String, required: true },
   farmerName:{ type: String, required: true },
   farmerAge:{ type: String, required: false },
