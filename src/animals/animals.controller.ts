@@ -62,12 +62,12 @@ export class AnimalsController {
     return this.animalsService.addAnimal(user.adminId, createAnimalDto);
   }
 
-  @Get(':animalId')
+  @Get(':Id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get an animal by ID',
-    description: 'Retrieves an animal by ID',
+    description: 'Retrieves an animal by ID mongoose id',
     responses: {
       200: {
         description: 'Animal retrieved successfully',
@@ -77,8 +77,8 @@ export class AnimalsController {
       },
     },
   })
-  async getAnimal(@Param('animalId') animalId: string) {
-    return this.animalsService.getAnimal(animalId);
+  async getAnimal(@Param('Id') Id: string) {
+    return this.animalsService.getAnimal(Id);
   }
 
   @Get('all/:adminId')

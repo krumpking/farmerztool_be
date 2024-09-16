@@ -74,12 +74,10 @@ export class AnimalsService {
     }
   }
 
-  async getAnimal(animalId: string): Promise<ResponseDto> {
+  async getAnimal(Id: string): Promise<ResponseDto> {
     try {
       //check if annimal exist
-      const animalExists = await this.animalModel.findOne({
-        animalId: animalId,
-      });
+      const animalExists = await this.animalModel.findById(Id)
 
       if (!animalExists) {
         return ResponseDto.errorResponse("Failed to fetch animal");
@@ -146,7 +144,8 @@ export class AnimalsService {
         return ResponseDto.errorResponse("null animal id")
       }
       const animalExist = await this.animalModel.findOne({
-        animalId: breedingInfo.animalId
+        animalId: breedingInfo.animalId, 
+        adminId: adminId
       });
       if (!animalExist) {
         return ResponseDto.errorResponse("Animal does not exist");
