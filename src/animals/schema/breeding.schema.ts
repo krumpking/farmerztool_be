@@ -16,4 +16,4 @@ export const BreedingInfoSchema = new mongoose.Schema({
   anticipatedBirthDate: { type: String, required: true },
   checklistForBirth: { type: [String], required: true },
   anticipatedHeatDate: { type: String, required: true },
-});
+}, {timestamps: true});

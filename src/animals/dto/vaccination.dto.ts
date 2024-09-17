@@ -2,13 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsArray} from 'class-validator';
 
 export class CreateVaccinationDto {
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({
-    description: 'The ID of the admin who created the vaccination record',
-    example: 'RK',
-  })
-  adminId: string;
 
   @IsString()
   @IsNotEmpty()

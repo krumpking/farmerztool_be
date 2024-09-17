@@ -7,13 +7,19 @@ import {
   Delete,
   Request,
   HttpException,
+  Patch,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { CreateFarmDto } from './dto/create-admin.dto';
 // import { permission } from 'process';
 import { EmployeeDto } from './dto/employee.dto';
 import * as bcrypt from 'bcrypt';
-import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Permissions, Roles } from 'src/roles/roles.decorators';
+import { Role } from 'src/roles/roles.enum';
+import { Permission } from 'src/roles/permissions.enum';
+import { UpdateFarmDto } from './dto/update-farm.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @ApiTags("Admin Routes")
 @ApiBearerAuth()
@@ -26,25 +32,98 @@ export class AdminController {
   }
 
   @Post('farm')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    summary: "Endpoint for creating farm by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with create permission"
+  })
   async addFarm(
     @Body() createFarmDto: CreateFarmDto, @Request() req
   ){
     const user = this.getUserFromRequest(req);
     const adminId = user?.adminId;
-    return this.adminService.addFarm(adminId ,createFarmDto);
+    const userId = user?.id;
+    return this.adminService.addFarm(userId, adminId ,createFarmDto);
   }
 
-  @Get('farm/:adminId')
-  async getFarm(@Param('adminId') adminId: string){
-    return this.adminService.getFarm(adminId);
+  @Get('farms/all/:adminId')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: "Endpoint for getting all farms by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with read permission"
+  })
+  async getFarms(@Param('adminId') adminId: string){
+    return this.adminService.getFarms(adminId);
   }
 
-  @Get('users/:adminId')
+  @Get('farm/:id')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: "Endpoint for getting farm by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with read permission"
+  })
+  async getFarm(@Param('id') id: string){
+    return this.adminService.getFarm(id);
+  }
+
+  @Patch('farm/:id')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: "Endpoint for updating farm by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with update permission"
+  })
+  async updateFarm(
+    @Param('id') id: string,
+    @Body() updateFarmDto: UpdateFarmDto
+  ){
+    return this.adminService.updateFarm(id, updateFarmDto);
+  }
+
+  @Delete('farm/:id')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Delete)
+  @ApiOperation({
+    summary: "Endpoint for deleting farm by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with delete permission"
+  })
+  async deleteFarm(@Param('id') id: string){
+    return this.adminService.deleteFarm(id);
+  }
+
+  @Get('employees/:adminId')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: "Endpoint for getting employees by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with read permission"
+  })
   async getEmployees(@Param('adminId') adminId: string) {
     return this.adminService.getEmployees(adminId);
   }
 
-  @Post('add/user')
+  @Get('employee/:id')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: "Endpoint for getting employee by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with read permission"
+  })
+  async getEmployee(@Param('id') id: string) {
+    return this.adminService.getEmployee(id);
+  }
+
+  @Post('add/employees')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    
+    summary: "Endpoint for adding employees by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with create permission"
+  })
   async addEmployee(
     @Body() employeeDto: EmployeeDto, @Request() req
   ){
@@ -69,15 +148,30 @@ export class AdminController {
     return this.adminService.addEmployee(adminId, employeeDto.password, newUser);
   }
 
-  @Delete('delete/employee')
-  @ApiBody({
-    schema: {
-      properties: {
-        email: {type: "string", example: "user@example.com"}
-      }
-    }
+  @Patch('update/employee/:id')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: "Endpoint for updating employees by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with update permission"
   })
-  async deleteEmployee(@Body('email') email: string){
-    return this.adminService.deleteEmployee(email);
+  async updateEmployee(
+    @Param('id') id: string,
+    @Body() employeeDto: UpdateEmployeeDto
+  ){
+    return this.adminService.updateEmployee(id, employeeDto);
   }
+
+  @Delete('delete/employee/:id')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Delete)
+  @ApiOperation({
+    summary: "Endpoint for deleting employees by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with delete permission"
+  })
+  async deleteEmployee(@Param('id') id: string){
+    return this.adminService.deleteEmployee(id);
+  }
+
+
 }

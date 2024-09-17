@@ -2,13 +2,6 @@ import { IsString, IsNotEmpty, IsArray } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateFeedDto {
-  @ApiProperty({
-    description: 'The ID of the admin who created the feed',
-    example: 'admin-123',
-  })
-  @IsString()
-  @IsNotEmpty()
-  adminId: string;
 
   @ApiProperty({
     description: 'The ID of the user who added the feed',

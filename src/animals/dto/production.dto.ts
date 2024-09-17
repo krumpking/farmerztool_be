@@ -5,19 +5,22 @@ import { ApiProperty } from '@nestjs/swagger';
 class MeatProduction {
   @ApiProperty({ description: 'Current weight', example: 100 })
   @IsNumber()
-  currentWeight: number; // in kg
+  @IsOptional()
+  currentWeight?: number; // in kg
 
   @ApiProperty({ description: 'Estimated slaughter weight', example: 120 })
   @IsNumber()
-  estimatedSlaughterWeight: number; // in kg
+  @IsOptional()
+  estimatedSlaughterWeight?: number; // in kg
 
   @ApiProperty({ description: 'Expected slaughter date', example: '2022-01-01' })
+  @IsDate()
   @Type(() => Date)
-  expectedSlaughterDate: Date;
+  expectedSlaughterDate?: Date;
 
   @ApiProperty({ description: 'Yield', example: 50 })
   @IsNumber()
-  yield: number; // in kg
+  yield?: number; // in kg
 }
 
 class MilkProduction {
@@ -36,6 +39,7 @@ class MilkProduction {
 
 class WoolFurProduction {
   @ApiProperty({ description: 'Shearing date', example: '2022-02-01' })
+  @IsDate()
   @Type(() => Date)
   shearingDate: Date;
 
@@ -72,10 +76,6 @@ class SalesRecord {
 }
 
 export class CreateProductionDto {
-  @ApiProperty({ description: 'Admin ID', example: 'admin-123' })
-  @IsString()
-  adminId: string;
-
   @ApiProperty({ description: 'Added by', example: 'Ronnie Kakunguwo' })
   @IsString()
   addedBy: string;
@@ -88,27 +88,28 @@ export class CreateProductionDto {
   @IsString()
   productionType: string;
 
-  @ApiProperty({ description: 'Meat production details' })
+  @ApiProperty({ description: 'Meat production details', required: false })
   @IsOptional()
   @ValidateNested()
   @Type(() => MeatProduction)
-  meatProduction: MeatProduction;
+  meatProduction?: MeatProduction;
 
-  @ApiProperty({ description: 'Milk production details' })
+  @ApiProperty({ description: 'Milk production details', required: false })
   @IsOptional()
   @ValidateNested()
   @Type(() => MilkProduction)
-  milkProduction: MilkProduction;
+  milkProduction?: MilkProduction;
 
-  @ApiProperty({ description: 'Wool/Fur production details' })
+  @ApiProperty({ description: 'Wool/Fur production details', required: false })
   @IsOptional()
   @ValidateNested()
   @Type(() => WoolFurProduction)
-  woolFurProduction: WoolFurProduction;
+  woolFurProduction?: WoolFurProduction;
 
-  @ApiProperty({ description: 'Sales records', isArray: true })
+  @ApiProperty({ description: 'Sales records', required: false })
+  @IsOptional()
   @IsArray()
   @ValidateNested()
   @Type(() => SalesRecord)
-  salesRecords: SalesRecord;
+  salesRecords?: SalesRecord[] | null;
 }

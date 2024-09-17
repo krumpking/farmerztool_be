@@ -6,5 +6,5 @@ export const AnimalSchema = new mongoose.Schema({
   addedBy: { type: String, required: true },
   date: { type: Date, default: Date.now() },
   animaltype: { type: String, required: true },
-  attr: { type: {}, required: true },
+  attr: { type: Object, required: true },
 }, {timestamps: true});

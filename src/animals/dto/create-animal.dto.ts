@@ -4,7 +4,7 @@ import { IsString, IsNotEmpty, IsObject } from 'class-validator';
 export class CreateAnimalDto {
 
   @ApiProperty({
-    description: 'Unique identifier for the animal',
+    description: 'Unique identifier for the animal added by farmer',
     example: 'ANML-12345'
   })
   @IsString()
@@ -15,11 +15,6 @@ export class CreateAnimalDto {
   @IsString()
   @IsNotEmpty()
   addedBy: string;
-
-  @ApiProperty({ description: 'Admin user ID', example: 'ADMIN-123' })
-  @IsString()
-  @IsNotEmpty()
-  adminId: string;
 
   @ApiProperty({ description: 'Type of animal', example: 'Cow' })
   @IsString()
