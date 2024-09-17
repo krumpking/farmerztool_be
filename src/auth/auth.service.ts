@@ -17,8 +17,8 @@ import {
 import { Employee } from 'src/admin/interfaces/employee.interface';
 import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
-import { UpdateOtp } from './dto/update.dto';
 import { Farm } from 'src/admin/interfaces/farm.interface';
+import { UpdateUserDto } from './dto/update.dto';
 
 
 @Injectable()
@@ -36,6 +36,7 @@ export class AuthService {
   ) {}
 
   async addUser(userDto: UserDto): Promise<ResponseDto> {
+    const permissions = ["create", "read", "update", "delete"];
     const userExist = await this.userModel.findOne({ email: userDto.email });
 
     if (userExist) {
@@ -50,15 +51,16 @@ export class AuthService {
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
+    
 
-    const newUser = new this.userModel({
+    const newUser = await this.userModel.create({
       ...userDto,
-      password: hashedPassword,
-    });
+      role: "Admin",
+      permissions: permissions,
+      password: hashedPassword
+    })
 
-    const savedUser = await newUser.save();
-
-    const createdUser = await this.userModel.findById(savedUser._id);
+    const createdUser = await this.userModel.findById(newUser._id).select("-password");
 
     if (!createdUser) {
       return ResponseDto.errorResponse('Failed to create user');
@@ -87,16 +89,16 @@ export class AuthService {
           const payload = {
             id: employeeExists._id,
             email: employeeExists.email,
-            password: employeeExists.password,
             adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
-            roles: employeeExists
+            roles: employeeExists.role
           };
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
             adminId: employeeExists._id,
             email: employeeExists.email,
+            roles: employeeExists.role,
             permissions: employeeExists.perms,
           };
           return ResponseDto.successResponse('Login successful', userData);
@@ -115,8 +117,8 @@ export class AuthService {
             access_token: await this.jwtService.signAsync(payload),
             adminId: emailExists._id,
             email: emailExists.email,
-            perms: [],
-            roles: emailExists.role,
+            perms: emailExists.permissions,
+            roles: emailExists.role
           };
           return ResponseDto.successResponse('Login successful', userData);
         }
@@ -197,6 +199,8 @@ export class AuthService {
           email: employeeExists.email,
           password: employeeExists.password,
           adminId: employeeExists.adminId,
+          permissions: employeeExists.perms,
+          roles: employeeExists.role
         };
 
         const userData = {
@@ -204,6 +208,7 @@ export class AuthService {
           adminId: employeeExists._id,
           email: employeeExists.email,
           perms: employeeExists.perms,
+          roles: employeeExists.role
         };
 
         return ResponseDto.successResponse('Login successful', userData);
@@ -216,7 +221,6 @@ export class AuthService {
       }
 
       const match = await bcrypt.compare(password, emailExists.password);
-
 
       if (match) {
         const payload = {
@@ -244,7 +248,6 @@ export class AuthService {
   }
 
   async sendOtp(email: string): Promise<ResponseDto> {
-    const response = new ResponseDto();
     const appDir = dirname(require.main.path);
 
     readHTMLFile(
@@ -284,10 +287,8 @@ export class AuthService {
         );
 
         if (!userUpdateOnOTP) {
-          response.success = false;
-          response.message = 'Invalid email';
-          response.data = null;
-          return response;
+          
+          return ResponseDto.errorResponse("Invalid email");
         }
 
         const template = handlebars.compile(html);
@@ -330,10 +331,8 @@ export class AuthService {
       },
     );
 
-    (response.success = true),
-      (response.message = 'OTP sent successfully'),
-      (response.data = null);
-    return response;
+
+    return ResponseDto.successResponse("OTP sent successfully", null);
   }
 
   async updatePassword(
@@ -341,38 +340,28 @@ export class AuthService {
     otp: string,
     newPassowrd: string,
   ): Promise<ResponseDto> {
-    const response = new ResponseDto();
 
     const user = await this.userModel.findOne({ email });
 
     if (!user) {
-      response.success = false;
-      response.message = 'User not found';
-      response.data = null;
-      return response;
+      return ResponseDto.errorResponse('User not found');
     }
 
-    if (newPassowrd.split('').length < 6) {
-      response.success = false;
-      response.message = 'Password should be 6 characters long';
-      return response;
+
+    if (newPassowrd.split("").length < 6) {
+      return ResponseDto.errorResponse('Password should be 6 characters long');
     }
 
     if (user.otp !== otp) {
-      response.success = false;
-      response.message = 'Invalid OTP';
-      response.data = null;
-      return response;
+      return ResponseDto.errorResponse("Invalid OTP");
     }
 
     // now lets check if otp hasnt expired
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     if (user.otpCreatedAt < oneHourAgo) {
-      response.success = false;
-      response.message = 'OTP has expired';
-      response.data = null;
-      return response;
+
+      return ResponseDto.errorResponse("OTP has expired");
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -385,55 +374,37 @@ export class AuthService {
     );
 
     if (!updatePassword) {
-      response.success = false;
-      response.message = 'Failed to update password';
-      response.data = null;
-      return response;
+
+      return ResponseDto.errorResponse("Failed to update password");
     }
 
-    response.success = true;
-    response.message = 'Password updated successfully';
-    response.data = null;
+    return ResponseDto.successResponse('Password updated successfully', null);
+  };
 
-    return response;
-  }
 
-  async updateUser(updateDto: UpdateOtp): Promise<ResponseDto> {
-    const newUser = await this.userModel.findOneAndUpdate(
-      { email: updateDto.email },
-      updateDto,
-      { new: true },
-    );
-    const response = new ResponseDto();
+  async updateUser(id: string, updateDto: UpdateUserDto): Promise<ResponseDto> {
+    const newUser = await this.userModel.findByIdAndUpdate(id, updateDto, { new: true });
+  
     if (!newUser) {
-      response.success = false;
-      response.message = 'User not found';
-      response.data = null;
-      return response;
+      return ResponseDto.errorResponse('User not found');
     }
-    response.success = true;
-    response.message = 'User updated successfully';
-    response.data = null;
-    return response;
+
+    return ResponseDto.successResponse('User updated successfully', newUser);
   }
 
-  async deleteUser(user: UserDto): Promise<any> {
+  async deleteUser(id: string): Promise<ResponseDto> {
     try {
-      // Check if email is already taken before adding user
-      const res = await this.userModel.findOneAndDelete({
-        email: user.email,
-      });
+      const user = await this.userModel.findByIdAndDelete(id)
 
-      // If email exists, return email already exists message and success false, else create user
-      if (res == null) {
-        return null;
+      if (!user) {
+        return ResponseDto.errorResponse("Failed to delete account");
       }
 
-      return {
-        deleted: true,
-      };
+      return ResponseDto.successResponse("Account deleted successfully", null)
     } catch (error) {
-      return null;
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, deleting account")
+      
     }
   }
 }

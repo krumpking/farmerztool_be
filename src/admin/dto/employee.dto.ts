@@ -1,12 +1,17 @@
-import { IsEmail, IsString, IsArray, IsEnum } from 'class-validator';
+import { IsEmail, IsString, IsArray, IsIn} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 enum Roles {
-  Admin,
-  Manager,
-  Finance,
-  AnimalManager,
-  CropManagement
+  Admin = 'Admin',
+  Finance = 'Finance',
+  AnimalManager = 'Animal Manager',
+  CropManagement = 'Crop Management',
+  FarmManager = 'Farm Manager',
+  AssetManager = 'Asset Manager',
+  EggsHatcheryManager = 'Eggs Hatchery Manager',
+  CommunicationManager = 'Communication Manager',
+  FarmWorker = 'Farm Worker',
+  Veterinarian = 'Veterinarian',
 }
 
 export class EmployeeDto {
@@ -29,18 +34,17 @@ export class EmployeeDto {
   @IsString({ each: true })
   @ApiProperty({
     description: 'Permissions',
-    example: ['read', 'write', 'delete'],
+    example: ['read', 'create', 'delete', 'update'],
   })
   perms: string[];
 
 
   @IsString()
-  @IsEnum(Roles)
+  @IsIn(Object.values(Roles))
   @ApiProperty({
-    description: 'Role',
+    description: `Role of the employee. One of: ${Object.values(Roles).join(', ')}`,
     example: 'Admin',
   })
-  role: string;
-
+  role: Roles;
 }
 

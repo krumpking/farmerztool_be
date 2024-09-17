@@ -2,7 +2,6 @@ import {
   IsString, 
   IsDateString, 
   IsArray, 
-  IsOptional, 
   IsIn, 
   IsNotEmpty, 
   IsDefined 
@@ -10,14 +9,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBreedingDto {
-  @ApiProperty({
-    description: 'Admin ID',
-    example: 'admin-123',
-    required: true
-  })
-  @IsString()
-  @IsNotEmpty()
-  adminId: string;
 
   @ApiProperty({
     description: 'Animal ID',
@@ -38,7 +29,7 @@ export class CreateBreedingDto {
   addedBy: string;
 
   @ApiProperty({
-    description: 'Courtship',
+    description: 'Courtship. NB: Can be either Successful or Unsuccessful',
     example: 'Successful',
     required: true
   })
@@ -47,7 +38,7 @@ export class CreateBreedingDto {
   courtship: string;
 
   @ApiProperty({
-    description: 'Mating',
+    description: 'Mating. NB: Can be either Natural or Artificial',
     example: 'Natural',
     required: true
   })
@@ -111,10 +102,10 @@ export class CreateBreedingDto {
   @ApiProperty({
     description: 'Notes',
     example: 'Some notes about the breeding',
-    required: false
+    required: true
   })
-  @IsOptional()
   @IsString()
+  @IsNotEmpty()
   notes: string;
 
   @ApiProperty({

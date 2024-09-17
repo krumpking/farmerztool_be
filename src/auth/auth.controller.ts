@@ -4,16 +4,18 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  Param,
   Patch,
   Post,
+  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserDto } from './dto/user.dto';
 // import * as bcrypt from 'bcrypt';
 import { Public } from './decorators/public.decator';
 import { ResponseDto } from 'src/common/response.dto';
-import { UpdateOtp } from './dto/update.dto';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { UpdateUserDto } from './dto/update.dto';
 
 @ApiTags('Auth Controllers')
 @ApiBearerAuth()
@@ -24,7 +26,12 @@ export class AuthController {
   @Public()
   @Post('register')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Register a new user' })
+
+  @ApiOperation({ 
+    summary: "Register a new user" ,
+    description: "Note that there are 4 fields all required except phone number since there is email, so user can register without phone number. The reason why l removed other fields is that they dont need to be filled by the user but the system will such as roles and permissions"
+  })
+
   async addUser(@Body() userDto: UserDto): Promise<any> {
     const response = await this.authService.addUser(userDto);
 
@@ -38,7 +45,9 @@ export class AuthController {
   @Public()
   @Post('login')
 
-  @ApiOperation({ summary: "Login an existing user" })
+  @ApiOperation({ summary: "Login an existing user",
+    description: "All fields required"
+   })
   @ApiBody({
     schema: {
       properties: {
@@ -114,10 +123,17 @@ export class AuthController {
     return this.authService.verifyUser(email, otp);
   }
 
-  @Patch('update/user')
+  
+  @Patch('update/user/:id')
+
   @ApiOperation({ summary: "Update a user's profile information" })
-  async updateUser(@Body() updateDto: UpdateOtp): Promise<ResponseDto> {
-    return this.authService.updateUser(updateDto);
+  async updateUser(@Param('id') id: string ,@Body() updateDto: UpdateUserDto, @Request() req): Promise<ResponseDto> {
+    const userId = req.user.id;
+    if (userId === id) {
+      return this.authService.updateUser(id, updateDto);
+    } else {
+      return ResponseDto.errorResponse("Cannot update user")
+    }
   }
 
   // @Post('admin/add/user')
@@ -151,24 +167,17 @@ export class AuthController {
   //   }
   // }
 
-  @Delete('adminDeleteUser')
+  @Delete('delete/user/:id')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Delete a user by admin' })
-  async adminDeleteUser(@Body('user') user: UserDto): Promise<ResponseDto> {
-    const _user = await this.authService.deleteUser(user);
 
-    if (_user == null) {
-      return {
-        data: null,
-        message: 'Email already exists',
-        success: false,
-      };
+  @ApiOperation({ summary: "Delete a user account" })
+  async adminDeleteUser(@Param('id') id: string, @Request() req):Promise<ResponseDto> {
+    const userId = req.user.id;
+    if(userId === id){
+      return await this.authService.deleteUser(id);
+
     } else {
-      return {
-        data: _user,
-        message: 'User was registered successfully',
-        success: true,
-      };
+      return ResponseDto.errorResponse("Cannot delete user")
     }
   }
 }

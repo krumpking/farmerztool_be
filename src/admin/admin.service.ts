@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateFarmDto } from './dto/create-admin.dto';
-import { Farm } from './entities/admin.entity';
 import { Model } from 'mongoose';
 import { EMPLOYEE_MODEL, FARM_MODEL } from './constants/admin.constants';
 import { Employee } from './interfaces/employee.interface';
@@ -12,6 +11,9 @@ import handlebars from 'handlebars';
 import { USER_MODEL } from 'src/auth/constants/auth.constants';
 import { User } from 'src/auth/interfaces/user.interface';
 import { ResponseDto } from 'src/common/response.dto';
+import { Farm } from './interfaces/farm.interface';
+import { UpdateFarmDto } from './dto/update-farm.dto';
+import { UpdateEmployeeDto } from './dto/update-employee.dto';
 
 @Injectable()
 export class AdminService {
@@ -24,57 +26,87 @@ export class AdminService {
     private userModel: Model<User>,
   ) { }
 
-  async addFarm(adminId: string, farm: CreateFarmDto): Promise<ResponseDto> {
+  async addFarm(userId: string, adminId: string, farm: CreateFarmDto): Promise<ResponseDto> {
     try {
       // Check if farm name is already taken before adding farm
-      const farmExists = await this.farmModel.find({
-        $and: [{adminId: adminId}, {farmerName: farm.farmerName}, {farmName: farm.farmName}]
-      });
-      farmExists
-      if (farmExists.length > 0) {
-        // if farm exists upadate the farm
-        const updatedFarm = this.farmModel.findOneAndUpdate(
-          {adminId},
-          farm,
-          { new: true },
-        );
-        return ResponseDto.successResponse("Farm updated", updatedFarm);
-      } else {
-        const farmInstance = new this.farmModel({
-          adminId: adminId,
-          ...farm
-        });
-        const farmSaved = await farmInstance.save();
-
-        const createdFarm = await this.farmModel.findById(farmSaved._id);
-
-        if(!createdFarm){
-          return ResponseDto.errorResponse("Failed to create farm");
-        }
-
-        return ResponseDto.successResponse("New farm created", createdFarm);
+      const farmExists = await this.farmModel.findOne({
+        farmName: farm.farmName,
+        farmerName: farm.farmerName,
+        adminId: adminId,
+      });; 
+      if (farmExists) {
+        return ResponseDto.errorResponse('Farm already exists');
       }
+
+      const newFarm = await this.farmModel.create({
+        ...farm,
+        adminId: adminId,
+        createdBy: userId,
+      });
+
+      const createdFarm = await this.farmModel.findById(newFarm._id);
+
+      if (!createdFarm) {
+        return ResponseDto.errorResponse("Failed to create farm");
+      }
+
+      return ResponseDto.successResponse("Farm created", createdFarm);
+
+
+
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Something went wrong, failed to create farm");
     }
   }
 
-  async getFarm(adminId: string): Promise<ResponseDto> {
+  async getFarms(adminId: string): Promise<ResponseDto> {
     try {
-      // Check if farm exist
-      const farmExists = await this.farmModel.find({
+      const farms = await this.farmModel.find({
         adminId: adminId,
       });
-
-      if (farmExists.length > 0) {
-        
-        return ResponseDto.successResponse("Farm fetched", farmExists);
-      } else {
+      if (!farms || farms.length === 0) {
         return ResponseDto.errorResponse("No farm available");
       }
+      return ResponseDto.successResponse("Fetched farms", farms);
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong, trying to fetch farms");
+    }
+  }
+
+  async getFarm(id: string): Promise<ResponseDto> {
+    try {
+      const farm = await this.farmModel.findById(id);
+      if (!farm) {
+        return ResponseDto.errorResponse("No farm available");
+      }
+      return ResponseDto.successResponse("Fetched farm", farm);
     } catch (error) {
       return ResponseDto.errorResponse("Something went wrong, trying to fetch farm");
+    }
+  }
+
+  async updateFarm(id: string, updateFarmDto: UpdateFarmDto): Promise<ResponseDto> {
+    try {
+      const farm = await this.farmModel.findByIdAndUpdate(id, updateFarmDto, { new: true });
+      if (!farm) {
+        return ResponseDto.errorResponse("No farm available to update");
+      }
+      return ResponseDto.successResponse("Farm updated", farm);
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong, failed to update farm");
+    }
+  }
+
+  async deleteFarm(id: string): Promise<ResponseDto>{
+    try {
+      const farm = await this.farmModel.findByIdAndDelete(id);
+      if (!farm) {
+        return ResponseDto.errorResponse("No farm available to delete");
+      }
+      return ResponseDto.successResponse("Farm deleted", farm);
+    } catch (error) {
+      return ResponseDto.errorResponse("Something went wrong, failed to delete farm");
     }
   }
 
@@ -85,12 +117,11 @@ export class AdminService {
         adminId: adminId,
       });
 
-      if (employeesExists.length > 0) {
-
-        return ResponseDto.successResponse("Fetched employess", employeesExists);
-      } else {
+      if (!employeesExists || employeesExists.length === 0) {
         return ResponseDto.errorResponse("No employees available");
       }
+
+      return ResponseDto.successResponse("Fetched employees", employeesExists);
     } catch (error) {
       return ResponseDto.errorResponse("Something went wrong, trying to fetch employees");
     }
@@ -105,23 +136,12 @@ export class AdminService {
       if (emailExists) {
         return ResponseDto.errorResponse("User already exists");
       } else {
-        const employeeExists = await this.employeeModel.find({
+        const employeeExists = await this.employeeModel.findOne({
           email: employee.email,
         });
 
-        if (employeeExists.length > 0) {
-          
-          const updatedEmployee = await this.employeeModel.findOneAndUpdate(
-            { email: employee.email },
-            employee,
-            { new: true },
-          );
-
-          if (!updatedEmployee) {
-            return ResponseDto.errorResponse("Employee exists,but failed to update");
-          }
-
-          return ResponseDto.successResponse("Employee updated", updatedEmployee);
+        if (employeeExists) {
+          return ResponseDto.errorResponse("Employee exists");
         } else {
 
           const createdEmployeeInstance = new this.employeeModel({
@@ -131,7 +151,7 @@ export class AdminService {
 
           const employ = await createdEmployeeInstance.save();
 
-          const employeeCreated = await this.employeeModel.findById(employ._id);
+          const employeeCreated = await this.employeeModel.findById(employ._id).select("-password");
 
           if(!employeeCreated){
             return ResponseDto.errorResponse("Failed to create employee");
@@ -210,25 +230,65 @@ export class AdminService {
     }
   }
 
-  async deleteEmployee(employee: string): Promise<ResponseDto> {
+  async getEmployee(id: string): Promise<ResponseDto> {
     try {
-      const employeeExists = await this.employeeModel.find({
-        email: employee,
-      });
+      const employeeExists = await this.employeeModel.findById(id);
 
-      if (employeeExists.length > 0) {
-        const deletedEmployee = await this.employeeModel.findOneAndDelete({ email: employee });
-
-        if(!deletedEmployee){
-          return ResponseDto.errorResponse("Failed to delete employ")
-        }
-
-        return ResponseDto.successResponse("Employee deleted", "");
-      } else {
-        return ResponseDto.errorResponse("No employee available");
+      if(!employeeExists){
+        return ResponseDto.errorResponse("Employee does not exist");
       }
+
+      return ResponseDto.successResponse("Fetched employee", employeeExists);
+
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong, failed to delete employee");
+      console.log(error);
+      return ResponseDto.errorResponse("Failed to fetch employee");
     }
+  }
+  
+
+  async updateEmployee(id: string , updateEmployeeDto: UpdateEmployeeDto): Promise<ResponseDto>{
+    try {
+      const employeeExists = await this.employeeModel.findById(id);
+
+      if(!employeeExists){
+        return ResponseDto.errorResponse("Employee does not exist");
+      }
+
+      const updatedEmployee = await this.employeeModel.findByIdAndUpdate(id, updateEmployeeDto, {new: true});
+
+      if(!updatedEmployee){
+        return ResponseDto.errorResponse("Failed to update employee");
+      }
+
+      return ResponseDto.successResponse("Employee updated", updatedEmployee);
+
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Failed to update employee");
+    }
+  }
+
+  async deleteEmployee(id: string): Promise<ResponseDto> {
+    try {
+      const employeeExists = await this.employeeModel.findById(id);
+
+      if(!employeeExists){
+        return ResponseDto.errorResponse("Employee does not exist");
+      }
+
+      const deletedEmployee = await this.employeeModel.findByIdAndDelete(id);
+
+      if(!deletedEmployee){
+        return ResponseDto.errorResponse("Failed to delete employee");
+      }
+
+      return ResponseDto.successResponse("Employee deleted", deletedEmployee);
+
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Failed to delete employee");
+    }
+   
   }
 }
