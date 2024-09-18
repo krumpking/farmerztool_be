@@ -259,7 +259,7 @@ export class AdminService {
         return ResponseDto.errorResponse("Failed to update employee");
       }
 
-      return ResponseDto.successResponse("Employee updated", null);
+      return ResponseDto.successResponse("Employee updated", updatedEmployee);
 
     } catch (error) {
       console.log(error);

@@ -126,7 +126,7 @@ export class AuthController {
   
   @Patch('update/user/:id')
 
-  @ApiOperation({ summary: "Update a user's profile information" })
+  @ApiOperation({ summary: "Update a user's profile information, for the logged user" })
   async updateUser(@Param('id') id: string ,@Body() updateDto: UpdateUserDto, @Request() req): Promise<ResponseDto> {
     const userId = req.user.id;
     if (userId === id) {
@@ -170,7 +170,7 @@ export class AuthController {
   @Delete('delete/user/:id')
   @HttpCode(HttpStatus.OK)
 
-  @ApiOperation({ summary: "Delete a user account" })
+  @ApiOperation({ summary: "Delete a user account, logged user to be deleted here" })
   async adminDeleteUser(@Param('id') id: string, @Request() req):Promise<ResponseDto> {
     const userId = req.user.id;
     if(userId === id){
