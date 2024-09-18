@@ -11,14 +11,6 @@ import { IsArray, IsDate, IsNumber, IsObject, IsString, ValidateNested } from 'c
 
 export class GrowthRecord {
   @ApiProperty({
-    description: 'Date updated',
-    example: '2024-07-26T14:30:00.000Z',
-  })
-  @IsDate()
-  @Type(() => Date)
-  dateUpdated: Date;
-
-  @ApiProperty({
     description: 'Growth stage of the crop',
     example: 'Seedling',
   })

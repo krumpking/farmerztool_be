@@ -1,10 +1,6 @@
 import * as mongoose from "mongoose";
 
 const growthRecords = new mongoose.Schema({
-  dateUpdated: {
-    type: Date,
-    default: Date.now()
-  },
   growthStage: {
     type: String,
     required: true
@@ -20,11 +16,9 @@ const growthRecords = new mongoose.Schema({
 }, {timestamps: true});
 
 export const CropSchema = new mongoose.Schema({
-  //crop name should be unique
   cropName: {
     type: String,
     required: true,
-    unique: true
   },
   cropType: {
     type: String,
