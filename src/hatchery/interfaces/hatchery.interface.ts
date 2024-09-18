@@ -1,6 +1,7 @@
 import { Document } from 'mongoose';
 
 export interface EggRecord extends Document {
+  adminId: string;
   animalType: string;
   maleBreed: string;
   femaleBreed: string;

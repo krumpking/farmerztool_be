@@ -383,7 +383,9 @@ export class AuthService {
 
 
   async updateUser(id: string, updateDto: UpdateUserDto): Promise<ResponseDto> {
-    const newUser = await this.userModel.findByIdAndUpdate(id, updateDto, { new: true });
+    const updatedDto = {...updateDto};
+    delete updatedDto.password;
+    const newUser = await this.userModel.findByIdAndUpdate(id, updatedDto, { new: true }).select("-password");
   
     if (!newUser) {
       return ResponseDto.errorResponse('User not found');

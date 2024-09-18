@@ -16,5 +16,6 @@ export interface Farm extends Document {
   readonly animals?: string[];
   readonly crops?: string[];
   readonly employees?: string[];
+  readonly hatchery?: string[];
   readonly createdBy: string;
 }
