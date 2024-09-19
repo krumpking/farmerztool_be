@@ -1,6 +1,11 @@
 import * as mongoose from "mongoose";
 
 export const HatcherySchema = new mongoose.Schema({
+  adminId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   animalType: {
     type: String,
     required: true
@@ -81,10 +86,9 @@ export const HatcherySchema = new mongoose.Schema({
     required: true
   },
   attr: {
-    type: mongoose.Schema.Types.Mixed,
-    required: function() {
-      return this.eggsUse === 'Internal Incubation' ? { internalAttr: true } : { customerAttr: true };
+    type: Object,
+    required: true
     }
-  }
+  
 }, { timestamps: true });
 

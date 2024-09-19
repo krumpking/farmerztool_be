@@ -13,7 +13,7 @@ import { AdminService } from './admin.service';
 import { CreateFarmDto } from './dto/create-admin.dto';
 // import { permission } from 'process';
 import { EmployeeDto } from './dto/employee.dto';
-import * as bcrypt from 'bcrypt';
+// import * as bcrypt from 'bcrypt';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, Roles } from 'src/roles/roles.decorators';
 import { Role } from 'src/roles/roles.enum';
@@ -94,6 +94,36 @@ export class AdminController {
     return this.adminService.deleteFarm(id);
   }
 
+  @Post('add/employees')
+  @Roles(Role.Admin, Role.FarmManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    
+    summary: "Endpoint for adding employees by admin",
+    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with create permission"
+  })
+  async addEmployee(
+    @Body() employeeDto: EmployeeDto, @Request() req
+  ){
+    const user = this.getUserFromRequest(req);
+
+    if((employeeDto.password.trim()).length < 6){
+      throw new HttpException("Password should be at least 6 characters", 421);
+    }
+   
+
+    const newUser: EmployeeDto = {
+      email: employeeDto.email,
+      password: employeeDto.password,
+      perms: employeeDto.perms,
+      role: employeeDto.role
+    };
+
+    const adminId = user.adminId;
+
+    return this.adminService.addEmployee(adminId, employeeDto.password, newUser);
+  }
+
   @Get('employees/:adminId')
   @Roles(Role.Admin, Role.FarmManager)
   @Permissions(Permission.Read)
@@ -116,37 +146,6 @@ export class AdminController {
     return this.adminService.getEmployee(id);
   }
 
-  @Post('add/employees')
-  @Roles(Role.Admin, Role.FarmManager)
-  @Permissions(Permission.Create)
-  @ApiOperation({
-    
-    summary: "Endpoint for adding employees by admin",
-    description: "NB: Admin is the user who creates Account using registration path. Automitically he has all the priviledges. This path is only accessible to admins with create permission"
-  })
-  async addEmployee(
-    @Body() employeeDto: EmployeeDto, @Request() req
-  ){
-    const user = this.getUserFromRequest(req);
-
-    if((employeeDto.password.trim()).length < 6){
-      throw new HttpException("Password should be at least 6 characters", 421);
-    }
-    const saltOrRounds = 10;
-
-    const hash = await bcrypt.hash(employeeDto.password, saltOrRounds);
-
-    const newUser: EmployeeDto = {
-      email: employeeDto.email,
-      password: hash,
-      perms: employeeDto.perms,
-      role: employeeDto.role
-    };
-
-    const adminId = user.adminId;
-
-    return this.adminService.addEmployee(adminId, employeeDto.password, newUser);
-  }
 
   @Patch('update/employee/:id')
   @Roles(Role.Admin, Role.FarmManager)

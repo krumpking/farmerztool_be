@@ -25,5 +25,11 @@ export const FarmSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Employee"
   }],
+  hatcheries: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Hatchery"
+    }
+  ],
   createdBy: {type: mongoose.Schema.Types.ObjectId, ref: "User"}
 }, {timestamps: true});

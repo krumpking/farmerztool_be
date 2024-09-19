@@ -1,5 +1,6 @@
 import { IsString, IsNumber, IsDate, IsBoolean, IsEnum, IsObject } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateHatcheryDto {
   @ApiProperty({
@@ -28,6 +29,7 @@ export class CreateHatcheryDto {
     example: '2022-01-01T00:00:00.000Z',
   })
   @IsDate()
+  @Type(() => Date)
   eggCollectionDate: Date;
 
   @ApiProperty({
@@ -112,6 +114,7 @@ export class CreateHatcheryDto {
     example: '2022-01-15T00:00:00.000Z',
   })
   @IsDate()
+  @Type(() => Date)
   shelfLifeExpirationDate: Date;
 
   @ApiProperty({

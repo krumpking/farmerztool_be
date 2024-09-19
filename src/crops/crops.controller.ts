@@ -48,16 +48,10 @@ export class CropsController {
   })
   async addCrop(@Body() createCropDto: CreateCropDto, @Request() req) {
     const user = this.getUserFromRequest(req);
-  
-    
-    // const check = user.roles === "Admin";
-    if (true) {
-      const adminId = user.adminId;
+    const adminId = user.adminId;
       
-      return this.cropsService.addCrop(adminId ,createCropDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+    return this.cropsService.addCrop(adminId ,createCropDto);
+    
   }
 
   @Get()

@@ -1,4 +1,5 @@
 import * as mongoose from 'mongoose';
+import * as bcrypt from 'bcrypt';
 
 export const EmployeeSchema = new mongoose.Schema({
   email: {
@@ -33,4 +34,13 @@ export const EmployeeSchema = new mongoose.Schema({
       'Veterinarian'], required: true
   },
 }, { timestamps: true });
+
+
+EmployeeSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  this.password = await bcrypt.hash(this.password, 10);
+  
+  next();
+});
 

@@ -30,12 +30,10 @@ export class AdminService {
     try {
       // Check if farm name is already taken before adding farm
       const farmExists = await this.farmModel.findOne({
-        farmName: farm.farmName,
-        farmerName: farm.farmerName,
         adminId: adminId,
       });; 
       if (farmExists) {
-        return ResponseDto.errorResponse('Farm already exists');
+        return ResponseDto.errorResponse('You already have a farm');
       }
 
       const newFarm = await this.farmModel.create({
@@ -104,7 +102,7 @@ export class AdminService {
       if (!farm) {
         return ResponseDto.errorResponse("No farm available to delete");
       }
-      return ResponseDto.successResponse("Farm deleted", farm);
+      return ResponseDto.successResponse("Farm deleted", null);
     } catch (error) {
       return ResponseDto.errorResponse("Something went wrong, failed to delete farm");
     }
@@ -255,7 +253,7 @@ export class AdminService {
         return ResponseDto.errorResponse("Employee does not exist");
       }
 
-      const updatedEmployee = await this.employeeModel.findByIdAndUpdate(id, updateEmployeeDto, {new: true});
+      const updatedEmployee = (await this.employeeModel.findByIdAndUpdate(id, updateEmployeeDto, {new: true}))
 
       if(!updatedEmployee){
         return ResponseDto.errorResponse("Failed to update employee");
@@ -283,7 +281,7 @@ export class AdminService {
         return ResponseDto.errorResponse("Failed to delete employee");
       }
 
-      return ResponseDto.successResponse("Employee deleted", deletedEmployee);
+      return ResponseDto.successResponse("Employee deleted", null);
 
     } catch (error) {
       console.log(error);
