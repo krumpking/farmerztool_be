@@ -26,10 +26,6 @@ export class CreateFinancialDto {
   @IsString()
   cropType: string;
 
-  @ApiProperty({ description: 'ID of the administrator who created the record', example: 'admin-123' })
-  @IsString()
-  adminId: string;
-
   @ApiProperty({ description: 'Size of the area where the crop is grown', example: 100.00 })
   @IsNumber()
   areaSize: number;

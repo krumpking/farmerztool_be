@@ -40,15 +40,6 @@ export class CreateIrrigationDto {
 
   @ApiProperty({
     type: 'string',
-    description: 'The admin ID associated with this irrigation',
-    example: 'admin123'
-  })
-  @IsString()
-  @IsNotEmpty()
-  adminId: string;
-
-  @ApiProperty({
-    type: 'string',
     description: 'Optional notes about this irrigation',
     example: 'This is a test irrigation',
     required: false

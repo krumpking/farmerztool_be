@@ -33,13 +33,6 @@ export class CreateFertiliserPesticideDTO {
   addedBy: string;
 
   @ApiProperty({
-    description: 'Admin ID',
-    example: 'admin123',
-  })
-  @IsString()
-  adminId: string;
-
-  @ApiProperty({
     description: 'Notes',
     example: 'Some notes about the record',
   })
