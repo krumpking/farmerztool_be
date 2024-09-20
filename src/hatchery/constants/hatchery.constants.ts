@@ -1,1 +1,2 @@
 export const HATCHERY_MODEL = 'HATCHERY_MODEL';
+export const REMINDER_MODEL = 'REMINDER_MODEL';

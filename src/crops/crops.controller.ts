@@ -123,12 +123,8 @@ export class CropsController {
 })
 async addIrrigation(@Param('id') id: string, @Body() createIrrigatioDto: CreateIrrigationDto, @Request() req){
   const user = this.getUserFromRequest(req);
-  const check = user.roles === "Admin";
-  if(check){
-    return this.cropsService.addIrrigation(id, createIrrigatioDto);
-  } else {
-    throw new HttpException("Unauthorised", 401);
-  }
+  const adminId = user.adminId;
+  return this.cropsService.addIrrigation(adminId,id, createIrrigatioDto);
 }
 
 @Get('irrigation/:id')
@@ -169,14 +165,8 @@ async getAllFarmIrrigations(@Param('adminId') adminId: string){
   summary: "Update a specific irrigation record",
   description: "Update a specific irrigation record using its mongoose.ObjectId _id",
 })
-async updateIrrigation(@Param('id') id: string, @Body() updateIrrigationDto: UpdateIrrigationDto, @Request() req){
-  const user = this.getUserFromRequest(req);
-  const check = user.roles === "Admin";
-    if (check) {
-      return this.cropsService.updateIrrigation(id, updateIrrigationDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+async updateIrrigation(@Param('id') id: string, @Body() updateIrrigationDto: UpdateIrrigationDto){
+  return this.cropsService.updateIrrigation(id, updateIrrigationDto);
 }
 
 @Delete('irrigation/:id')
@@ -186,14 +176,8 @@ async updateIrrigation(@Param('id') id: string, @Body() updateIrrigationDto: Upd
   summary: "Deletes a specific irrigation record",
   description: "Deletes a specific irrigation record using its mongoose.ObjectId _id",
 })
-async deleteIrrigation(@Param('id') id: string, @Request() req){
-  const user = this.getUserFromRequest(req);
-  const check = user.roles === "Admin";
-    if (check) {
-      return this.cropsService.deleteIrrigation(id);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+async deleteIrrigation(@Param('id') id: string){
+  return this.cropsService.deleteIrrigation(id);
 }
 
 
@@ -208,12 +192,8 @@ async deleteIrrigation(@Param('id') id: string, @Request() req){
 })
 async addFertiliserPesticide(@Param('id') id: string, @Body() createFertPestDto: CreateFertiliserPesticideDTO, @Request() req){
   const user = this.getUserFromRequest(req);
-  const check = user.roles === "Admin";
-  if(check){
-    return this.cropsService.addFertiliserPesticide(id, createFertPestDto);
-  } else {
-    throw new HttpException("Unauthorised", 401);
-  }
+  const adminId = user.adminId;
+  return this.cropsService.addFertiliserPesticide(adminId, id, createFertPestDto);
 }
 
 @Get(':adminId/fertilizer-pestcide-applications/farm')
@@ -256,13 +236,8 @@ async getSpecificFertPestRecordById(@Param('id') id: string){
   summary: "Update a specific fertilizer-pestcide-applicationsrecord",
   description: "Update a specific fertilizer-pestcide-applications record using its mongoose.ObjectId _id",
 })
-async updateFertPestRecordById(@Param('id') id: string, @Body() updateFertPestDto: UpdateFertiliserPesticideDTO, @Request() req){
-  const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.updateFertPestRecordById(id, updateFertPestDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+async updateFertPestRecordById(@Param('id') id: string, @Body() updateFertPestDto: UpdateFertiliserPesticideDTO){
+  return this.cropsService.updateFertPestRecordById(id, updateFertPestDto);
 }
 
 @Delete('fertilizer-pestcide-applications/:id')
@@ -272,13 +247,8 @@ async updateFertPestRecordById(@Param('id') id: string, @Body() updateFertPestDt
   summary: "Deletes a specific fertilizer-pestcide-applications record",
   description: "Deletes a specific fertilizer-pestcide-applications record using its mongoose.ObjectId _id",
 })
-async deleteFertPestRecordById(@Param('id') id: string, @Request() req){
-  const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.deleteFertPestRecordById(id);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+async deleteFertPestRecordById(@Param('id') id: string){
+  return this.cropsService.deleteFertPestRecordById(id);
 }
 
 
@@ -292,12 +262,9 @@ async deleteFertPestRecordById(@Param('id') id: string, @Request() req){
   description: "Adds financial record for a crop using crop id",
 })
 async addFinancial(@Param('id') id: string, @Body() createFinancialDto: CreateFinancialDto, @Request() req){
-  const check = req.user.roles === "Admin";
-  if(check){
-    return this.cropsService.createFinancialRecord(id, createFinancialDto);
-  } else {
-    throw new HttpException("Unauthorised", 401);
-  }
+  const user = this.getUserFromRequest(req);
+  const adminId = user.adminId;
+  return this.cropsService.createFinancialRecord(adminId, id, createFinancialDto);
 }
 
 @Get(':adminId/financial')
@@ -339,13 +306,8 @@ async getSpecificFinancialRecordById(@Param('id') id: string){
   summary: "Update a specific financial record",
   description: "Update a specific financial record using its mongoose.ObjectId _id",
 })
-async updateFinancialRecordById(@Param('id') id: string, @Body() updateFinancialDto: UpdateFinancialDto, @Request() req){
-  const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.updateFinancialRecordById(id, updateFinancialDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+async updateFinancialRecordById(@Param('id') id: string, @Body() updateFinancialDto: UpdateFinancialDto){
+  return this.cropsService.updateFinancialRecordById(id, updateFinancialDto);
 }
 
 @Delete('financial/:id')
@@ -355,13 +317,8 @@ async updateFinancialRecordById(@Param('id') id: string, @Body() updateFinancial
   summary: "Deletes a specific financial record",
   description: "Deletes a specific financial record using its mongoose.ObjectId _id",
 })
-async deleteFinancialRecordById(@Param('id') id: string, @Request() req){
-  const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.deleteFinancialRecordById(id);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+async deleteFinancialRecordById(@Param('id') id: string){
+  return this.cropsService.deleteFinancialRecordById(id);
 }
 
 
@@ -376,17 +333,11 @@ async deleteFinancialRecordById(@Param('id') id: string, @Request() req){
 })
 async addActivity(@Param('id') id: string, @Body() createActivityDto: CropActivityDto, @Request() req){
   const user = this.getUserFromRequest(req);
-  const check = user.roles === "Admin";
-  if(check){
-    const adminId = user.adminId;
-    
-    return this.cropsService.createActivityRecord(id, adminId, createActivityDto);
-  } else {
-    throw new HttpException("Unauthorised", 401);
-  }
+  const adminId = user.adminId;
+  return this.cropsService.createActivityRecord(id, adminId, createActivityDto);
 }
 
-@Get(':adminId/activity')
+@Get('activity/:adminId/all')
 @Roles(Role.Admin, Role.CropManager)
 @Permissions(Permission.Read)
 @ApiOperation({
@@ -402,12 +353,13 @@ async getAllActivityForFarm(@Param('adminId') adminId: string){
 @Roles(Role.Admin, Role.CropManager)
 @Permissions(Permission.Read)
 @ApiOperation({
-  summary: "Get all activity records for a crop",
+  summary: "Get all activity records for a crop using its _id",
   description: "Get all activity records for a crop using crop id",
 })
 async getAllActivityForCrop(@Param('id') id: string){
   return this.cropsService.getAllActivityRecordsForCrop(id);
 }
+
 
 @Get('activity/:id')
 @Roles(Role.Admin, Role.CropManager)
@@ -427,13 +379,8 @@ async getSpecificActivityRecordById(@Param('id') id: string){
   summary: "Update a specific activity record",
   description: "Update a specific activity record using its mongoose.ObjectId _id",
 })
-async updateActivityRecordById(@Param('id') id: string, @Body() updateActivityDto: UpdateActivityDto, @Request() req){
-  const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.updateActivityRecordById(id, updateActivityDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+async updateActivityRecordById(@Param('id') id: string, @Body() updateActivityDto: UpdateActivityDto){
+  return this.cropsService.updateActivityRecordById(id, updateActivityDto);
 }
 
 @Delete('activity/:id')
@@ -443,14 +390,8 @@ async updateActivityRecordById(@Param('id') id: string, @Body() updateActivityDt
   summary: "Deletes a specific activity record",
   description: "Deletes a specific activity record using its mongoose.ObjectId _id",
 })
-async deleteActivityRecordById(@Param('id') id: string, @Request() req){
-  const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.deleteActivityRecordById(id);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
-
+async deleteActivityRecordById(@Param('id') id: string){
+  return this.cropsService.deleteActivityRecordById(id);
 }
 
   ////////////////////////////////////PestDiseaseIssue////////////////////////////////
@@ -464,16 +405,11 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
   })
   async addPestDiseaseIssue(@Param('id') id: string, @Body() createPestDiseaseIssueDto: CreatePestDiseaseIssueDto, @Request() req){
     const user = this.getUserFromRequest(req);
-    const check = user.roles === "Admin";
-    if(check){
-      const adminId = user.adminId;
+    const adminId = user.adminId;
       return this.cropsService.createPestDiseaseIssue(id, adminId, createPestDiseaseIssueDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
   }
 
-  @Get(':adminId/pest-disease-issue')
+  @Get('pest-disease-issue/:adminId/all')
   @Roles(Role.Admin, Role.CropManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -489,7 +425,7 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
   @Roles(Role.Admin, Role.CropManager)
   @Permissions(Permission.Read)
   @ApiOperation({
-    summary: "Get all pest disease issues for a crop",
+    summary: "Get all pest disease issues for a crop using its _id",
     description: "Get all pest disease issues for a crop using crop id",
   })
   async getAllPestDiseaseIssuesForCrop(@Param('id') id: string){
@@ -514,13 +450,8 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
     summary: "Update a specific pest disease issue",
     description: "Update a specific pest disease issue using its mongoose.ObjectId _id",
   })
-  async updatePestDiseaseIssueById(@Param('id') id: string, @Body() updatePestDiseaseIssueDto: UpdatePestDiseaseIssueDto, @Request() req){
-    const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.updatePestDiseaseIssueById(id, updatePestDiseaseIssueDto);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+  async updatePestDiseaseIssueById(@Param('id') id: string, @Body() updatePestDiseaseIssueDto: UpdatePestDiseaseIssueDto){
+    return this.cropsService.updatePestDiseaseIssueById(id, updatePestDiseaseIssueDto);
   }
 
   @Delete('pest-disease-issue/:id')
@@ -530,14 +461,8 @@ async deleteActivityRecordById(@Param('id') id: string, @Request() req){
     summary: "Deletes a specific pest disease issue",
     description: "Deletes a specific pest disease issue using its mongoose.ObjectId _id",
   })
-  async deletePestDiseaseIssueById(@Param('id') id: string, @Request() req){
-    const check = req.user.roles === "Admin";
-    if (check) {
-      return this.cropsService.deletePestDiseaseIssueById(id);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
-
+  async deletePestDiseaseIssueById(@Param('id') id: string){
+    return this.cropsService.deletePestDiseaseIssueById(id);
   }
 
 
