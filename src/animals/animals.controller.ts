@@ -170,7 +170,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get breeding information for an animal',
-    description: 'Retrieves breeding information for an animal',
+    description: 'Retrieves breeding information for an animal using the animalId not mongoose_id or adminId. ANIMALID PLEASE',
     responses: {
       200: {
         description: 'Breeding information retrieved successfully',
@@ -189,9 +189,10 @@ export class AnimalsController {
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
-    summary: 'Get all breeding information for an admin',
+    summary: 'Get all breeding information for an admin using adminID',
     description: 'Retrieves all breeding information for an admin',
     responses: {
+
       200: {
         description: 'Breeding information retrieved successfully',
       },
@@ -207,12 +208,12 @@ export class AnimalsController {
     }
   }
 
-  @Patch('breeding/:animalId')
+  @Patch('breeding/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Update breeding information for an animal',
-    description: 'Updates breeding information for an animal',
+    description: 'Updates breeding information for an animal using mongoose_id',
     responses: {
       200: {
         description: 'Breeding information updated successfully',
@@ -222,8 +223,8 @@ export class AnimalsController {
       },
     },
   })
-  async updateBreeding(@Param('animalId') animalId: string, @Request() req, @Body() updateBreedingDto: UpdateBreedingDto) {
-    return this.animalsService.updateBreedingInfo(updateBreedingDto);
+  async updateBreeding(@Param('id') animalId: string, @Request() req, @Body() updateBreedingDto: UpdateBreedingDto) {
+    return this.animalsService.updateBreedingInfo(animalId,updateBreedingDto);
   }
 
   @Delete('breeding/:animalId')

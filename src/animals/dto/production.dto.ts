@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsDate, IsArray, ValidateNested, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsDate, ValidateNested, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -108,8 +108,7 @@ export class CreateProductionDto {
 
   @ApiProperty({ description: 'Sales records', required: false })
   @IsOptional()
-  @IsArray()
   @ValidateNested()
   @Type(() => SalesRecord)
-  salesRecords?: SalesRecord[] | null;
+  salesRecords?: SalesRecord;
 }
