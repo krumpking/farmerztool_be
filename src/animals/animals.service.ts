@@ -180,16 +180,16 @@ export class AnimalsService {
   async getAnimalBreedingInfo(adminId: string, animalId: string): Promise<ResponseDto> {
     try {
       // check animal brreding info
-      const animalExists = await this.breedingModel.findOne({
+      const breeding = await this.breedingModel.find({
         animalId: animalId,
         adminId: adminId
       });
 
-      if (!animalExists) {
+      if (!breeding || breeding.length === 0) {
         return ResponseDto.errorResponse("Breeding information not found");
       }
 
-      return ResponseDto.successResponse("Breeding information fetched", animalExists)
+      return ResponseDto.successResponse("Breeding information fetched", breeding)
     } catch (error) {
       return ResponseDto.errorResponse("Something went wrong. Breeding information not found");
     }
@@ -207,16 +207,15 @@ export class AnimalsService {
     }
   }
 
-  async updateBreedingInfo(breedingInfo: UpdateBreedingDto): Promise<ResponseDto> {
+  async updateBreedingInfo(animalId: string, breedingInfo: UpdateBreedingDto): Promise<ResponseDto> {
     try {
-      if (breedingInfo.animalId === null) {
-        return ResponseDto.errorResponse("null animal id");
-      }
-      const existingBreedingInfo = await this.breedingModel.findOneAndUpdate({ animalId: breedingInfo.animalId }, breedingInfo, { new: true }).exec();
-      if (!existingBreedingInfo) {
+      const updateInfo = {...breedingInfo};
+      delete updateInfo.animalId;
+      const updatedBreeding = await this.breedingModel.findByIdAndUpdate(animalId, updateInfo, {new: true}).exec();
+      if (!updatedBreeding) {
         return ResponseDto.errorResponse("Breeding information not found");
       }
-      return ResponseDto.successResponse("Breeding information updated", existingBreedingInfo);
+      return ResponseDto.successResponse("Breeding information updated", updatedBreeding);
     } catch (error) {
       return ResponseDto.errorResponse("Something went wrong. Failed to update breeding information");
     }
@@ -224,11 +223,11 @@ export class AnimalsService {
 
   async deleteBreedingInfo(animalId: string): Promise<ResponseDto> {
     try {
-      const existingBreedingInfo = await this.breedingModel.findOneAndDelete({ animalId: animalId });
+      const existingBreedingInfo = await this.breedingModel.findByIdAndDelete(animalId);
       if (!existingBreedingInfo) {
         return ResponseDto.errorResponse("Breeding information not found");
       }
-      return ResponseDto.successResponse("Breeding information deleted", " ");
+      return ResponseDto.successResponse("Breeding information deleted", null);
     } catch (error) {
       return ResponseDto.errorResponse("Something went wrong. Failed to delete breeding information");
     }

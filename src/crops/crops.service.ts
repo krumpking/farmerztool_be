@@ -1,4 +1,4 @@
-import { Injectable, Inject} from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CreateCropDto } from './dto/create-crop.dto';
 import { UpdateCropDto } from './dto/update-crop.dto';
 import { ACTIVITY_MODEL, CROP_MODEL, FERTILIZER_PESTICIDE_MODEL, FINANCIAL_MODE, IRRIGATION_MODEL, PEST_DISEASE_MODEL } from './constants/crop.constants';
@@ -37,29 +37,29 @@ export class CropsService {
     @Inject(FINANCIAL_MODE) private financialModel: Model<Financial>,
     @Inject(ACTIVITY_MODEL) private activityModel: Model<CropActivity>,
     @Inject(PEST_DISEASE_MODEL) private pestdiseaseModel: Model<PestDiseaseIssue>
-  ) {}
+  ) { }
 
   /////////////////////////// CROPS /////////////////////////////
 
-  async addCrop(adminId: string ,createCropDto: CreateCropDto): Promise<ResponseDto>{
+  async addCrop(adminId: string, createCropDto: CreateCropDto): Promise<ResponseDto> {
     try {
       //check farm using adminId in dto
-      const farm = await this.farmModel.findOne({adminId});
-      if(!farm){
+      const farm = await this.farmModel.findOne({ adminId });
+      if (!farm) {
         return ResponseDto.errorResponse("Farm not found")
       }
       // check if the crop is not already there using cropname
       const existingCrop = await this.cropModel.findOne({
         $and: [
-          {adminId: adminId},
-          {cropName: createCropDto.cropName},
-          {cropType: createCropDto.cropType},
-          {location: createCropDto.location},
-          {plantingType: createCropDto.plantingType},
-          {anticipatedHarvestDate: createCropDto.anticipatedHarvestDate}
+          { adminId: adminId },
+          { cropName: createCropDto.cropName },
+          { cropType: createCropDto.cropType },
+          { location: createCropDto.location },
+          { plantingType: createCropDto.plantingType },
+          { anticipatedHarvestDate: createCropDto.anticipatedHarvestDate }
         ]
       });
-      if(existingCrop){
+      if (existingCrop) {
         return ResponseDto.errorResponse("Crop already exists, please try again");
       }
 
@@ -70,13 +70,13 @@ export class CropsService {
 
       const createdCrop = await this.cropModel.findById(crop._id);
 
-      if(!createdCrop){
+      if (!createdCrop) {
         return ResponseDto.errorResponse("Failed to create crop record");
       }
 
-      const addCropToFarm = await this.farmModel.findByIdAndUpdate(farm._id, {$push: {crops: createdCrop._id}});
+      const addCropToFarm = await this.farmModel.findByIdAndUpdate(farm._id, { $push: { crops: createdCrop._id } });
 
-      if(!addCropToFarm){
+      if (!addCropToFarm) {
         await this.cropModel.findByIdAndDelete(crop._id);
         return ResponseDto.errorResponse("Failed to add Crop to farm");
       }
@@ -89,16 +89,16 @@ export class CropsService {
   }
 
 
-  async getCrops(adminId: string): Promise<ResponseDto>{
+  async getCrops(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({adminId});
-      if(!farm){
+      const farm = await this.farmModel.findOne({ adminId });
+      if (!farm) {
         return ResponseDto.errorResponse("Farm not found");
       }
 
-      const crops = await this.cropModel.find({adminId: adminId, _id: {$in: farm.crops}});
+      const crops = await this.cropModel.find({ adminId: adminId, _id: { $in: farm.crops } });
 
-      if(!crops || crops.length === 0){
+      if (!crops || crops.length === 0) {
         return ResponseDto.errorResponse("No available crops at the moment");
       }
 
@@ -110,10 +110,10 @@ export class CropsService {
   }
 
 
-  async getCrop(id: string): Promise<ResponseDto>{
+  async getCrop(id: string): Promise<ResponseDto> {
     try {
       const crop = await this.cropModel.findById(id);
-      if(!crop){
+      if (!crop) {
         return ResponseDto.errorResponse("Failed to fetch crop");
       }
       return ResponseDto.successResponse(`${crop?.cropName} fetched`, crop);
@@ -123,10 +123,10 @@ export class CropsService {
     }
   }
 
-  async updateCrop(id: string, updateCropDto: UpdateCropDto): Promise<ResponseDto>{
+  async updateCrop(id: string, updateCropDto: UpdateCropDto): Promise<ResponseDto> {
     try {
-      const updatedCrop = await this.cropModel.findByIdAndUpdate(id, updateCropDto, {new: true}).exec();
-      if(!updateCropDto){
+      const updatedCrop = await this.cropModel.findByIdAndUpdate(id, updateCropDto, { new: true }).exec();
+      if (!updateCropDto) {
         return ResponseDto.errorResponse("Crop not found");
       }
 
@@ -137,10 +137,10 @@ export class CropsService {
     }
   }
 
-  async deleteCrop(id: string): Promise<ResponseDto>{
+  async deleteCrop(id: string): Promise<ResponseDto> {
     try {
       const deletedCrop = await this.cropModel.findByIdAndDelete(id);
-      if(!deletedCrop){
+      if (!deletedCrop) {
         return ResponseDto.errorResponse("Failed to delete crop");
       }
 
@@ -153,23 +153,24 @@ export class CropsService {
 
   ////////////////////// IRRIGATION //////////////////////////////
 
-  async addIrrigation(id: string, createIrrigationDto: CreateIrrigationDto): Promise<ResponseDto>{
+  async addIrrigation(adminId: string, id: string, createIrrigationDto: CreateIrrigationDto): Promise<ResponseDto> {
     try {
       // after fetching a specific crop that id can be passed to the irrigation url
       const crop = await this.cropModel.findById(id);
 
-      if(!crop){
+      if (!crop) {
         return ResponseDto.errorResponse("Cannot find crop");
       }
 
       const irrigation = await this.irrigationModel.create({
+        ...createIrrigationDto,
         crop: id,
-        ...createIrrigationDto
+        adminId
       });
 
       const createdIrrigation = await this.irrigationModel.findById(irrigation._id).populate('crop');
 
-      if(!createdIrrigation){
+      if (!createdIrrigation) {
         return ResponseDto.errorResponse("Failed to create irrigation record");
       }
 
@@ -181,10 +182,10 @@ export class CropsService {
     }
   }
 
-  async getIrrigationRecordById (id: string): Promise<ResponseDto>{
+  async getIrrigationRecordById(id: string): Promise<ResponseDto> {
     try {
       const irrigation = await this.irrigationModel.findById(id).populate('crop');
-      if(!irrigation){
+      if (!irrigation) {
         return ResponseDto.errorResponse("Failed to fetch irrigation record");
       }
 
@@ -195,18 +196,16 @@ export class CropsService {
     }
   }
 
-  async getIrrigationsForCrop(id: string): Promise<ResponseDto>{
+  async getIrrigationsForCrop(id: string): Promise<ResponseDto> {
     try {
-      console.log(id);
-      
       const crop = await this.cropModel.findById(id);
 
-      if(!crop){
+      if (!crop) {
         return ResponseDto.errorResponse("Failed to fetch crop")
       }
-      const irrigations = await this.irrigationModel.find({crop: id}).populate('crop');
+      const irrigations = await this.irrigationModel.find({ crop: id }).populate('crop');
 
-      if(!irrigations || irrigations.length === 0){
+      if (!irrigations || irrigations.length === 0) {
         return ResponseDto.errorResponse("No available irrigations at the moment for " + crop?.cropName);
       }
 
@@ -217,11 +216,11 @@ export class CropsService {
     }
   }
 
-  async getAllFarmIrrigations(adminId: string): Promise<ResponseDto>{
+  async getAllFarmIrrigations(adminId: string): Promise<ResponseDto> {
     try {
-      const irrigations = await this.irrigationModel.find({adminId}).populate('crop');
+      const irrigations = await this.irrigationModel.find({ adminId }).populate('crop');
 
-      if(!irrigations || irrigations.length === 0){
+      if (!irrigations || irrigations.length === 0) {
         return ResponseDto.errorResponse("No available irrigation records")
       }
 
@@ -233,11 +232,11 @@ export class CropsService {
     }
   }
 
-  async updateIrrigation(id: string, updateIrrigationDto: UpdateIrrigationDto): Promise<ResponseDto>{
+  async updateIrrigation(id: string, updateIrrigationDto: UpdateIrrigationDto): Promise<ResponseDto> {
     try {
-      const updatedIrrigation = await this.irrigationModel.findByIdAndUpdate(id, updateIrrigationDto, {new: true}).exec();
+      const updatedIrrigation = await this.irrigationModel.findByIdAndUpdate(id, updateIrrigationDto, { new: true }).exec();
 
-      if(!updatedIrrigation){
+      if (!updatedIrrigation) {
         return ResponseDto.errorResponse("Failed to update irrigation")
       }
 
@@ -248,11 +247,11 @@ export class CropsService {
     }
   }
 
-  async deleteIrrigation(id: string): Promise<ResponseDto>{
+  async deleteIrrigation(id: string): Promise<ResponseDto> {
     try {
       const deletedIrrigation = await this.irrigationModel.findByIdAndDelete(id).exec();
 
-      if(!deletedIrrigation){
+      if (!deletedIrrigation) {
         return ResponseDto.errorResponse("Failed to delete irrigation")
       }
 
@@ -266,26 +265,27 @@ export class CropsService {
 
   ///////////////////////  FERTLISER AND PESTICIDE ////////////////////////
 
-  async addFertiliserPesticide(id: string, createFertlizerPesticideDto: CreateFertiliserPesticideDTO): Promise<ResponseDto>{
+  async addFertiliserPesticide(adminId: string, id: string, createFertlizerPesticideDto: CreateFertiliserPesticideDTO): Promise<ResponseDto> {
     try {
 
-      const farm = await this.farmModel.findOne({adminId: createFertlizerPesticideDto.adminId});
-      if(!farm){
+      const farm = await this.farmModel.findOne({ adminId });
+      if (!farm) {
         return ResponseDto.errorResponse("Invalid adminId");
       }
       const crop = await this.cropModel.findById(id);
-      if(!crop){
+      if (!crop) {
         return ResponseDto.errorResponse("Cannot find crop");
       }
 
       const fert_pest = await this.fertilizer_pesticideModel.create({
+        ...createFertlizerPesticideDto,
         crop: id,
-        ...createFertlizerPesticideDto
+        adminId
       });
 
       const createdFertPest = await this.fertilizer_pesticideModel.findById(fert_pest._id);
 
-      if(!createdFertPest){
+      if (!createdFertPest) {
         return ResponseDto.errorResponse("Failed to add " + createFertlizerPesticideDto.recordType + " record");
       }
 
@@ -296,15 +296,15 @@ export class CropsService {
     }
   }
 
-  async getAllFertPestApplicationsForFarm(adminId: string): Promise<ResponseDto>{
+  async getAllFertPestApplicationsForFarm(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({adminId});
-      if(!farm){
+      const farm = await this.farmModel.findOne({ adminId });
+      if (!farm) {
         return ResponseDto.errorResponse("Invalid adminId");
       }
 
-      const fert_pest = await this.fertilizer_pesticideModel.find({adminId});
-      if(!fert_pest || fert_pest.length === 0){
+      const fert_pest = await this.fertilizer_pesticideModel.find({ adminId });
+      if (!fert_pest || fert_pest.length === 0) {
         return ResponseDto.errorResponse("No available records");
       }
 
@@ -316,17 +316,17 @@ export class CropsService {
     }
   }
 
-  async getAllFertPestApplicationsForCrop(id: string): Promise<ResponseDto>{
+  async getAllFertPestApplicationsForCrop(id: string): Promise<ResponseDto> {
     try {
       const crop = await this.cropModel.findById(id);
-      
-      if(!crop){
+
+      if (!crop) {
         return ResponseDto.errorResponse("Crop not found");
       }
 
-      const records = await this.fertilizer_pesticideModel.find({crop: crop._id});
+      const records = await this.fertilizer_pesticideModel.find({ crop: crop._id });
 
-      if(!records || records.length === 0){
+      if (!records || records.length === 0) {
         return ResponseDto.errorResponse("No available records");
       }
 
@@ -337,10 +337,10 @@ export class CropsService {
     }
   }
 
-  async getSpecificFertPestRecordById(id: string): Promise<ResponseDto>{
+  async getSpecificFertPestRecordById(id: string): Promise<ResponseDto> {
     try {
       const record = await this.fertilizer_pesticideModel.findById(id);
-      if(!record){
+      if (!record) {
         return ResponseDto.errorResponse("Record not found");
       }
 
@@ -351,11 +351,11 @@ export class CropsService {
     }
   }
 
-  async updateFertPestRecordById(id: string, updateFertPestDto: UpdateFertiliserPesticideDTO): Promise<ResponseDto>{
+  async updateFertPestRecordById(id: string, updateFertPestDto: UpdateFertiliserPesticideDTO): Promise<ResponseDto> {
     try {
-      const updatedRecord = await this.fertilizer_pesticideModel.findByIdAndUpdate(id, updateFertPestDto, {new: true}).exec();
+      const updatedRecord = await this.fertilizer_pesticideModel.findByIdAndUpdate(id, updateFertPestDto, { new: true }).exec();
 
-      if(!updatedRecord){
+      if (!updatedRecord) {
         return ResponseDto.errorResponse("Failed to update record");
       }
 
@@ -366,11 +366,11 @@ export class CropsService {
     }
   }
 
-  async deleteFertPestRecordById(id: string): Promise<ResponseDto>{
+  async deleteFertPestRecordById(id: string): Promise<ResponseDto> {
     try {
       const deleteRecord = await this.fertilizer_pesticideModel.findByIdAndDelete(id).exec();
 
-      if(!deleteRecord){
+      if (!deleteRecord) {
         return ResponseDto.errorResponse("Failed to delete record");
       }
 
@@ -384,21 +384,23 @@ export class CropsService {
 
   ///////////////////// FINANCIAL ///////////////////////////////////////////
 
-  async createFinancialRecord(id: string,createFinancialDto: CreateFinancialDto): Promise<ResponseDto>{
+  async createFinancialRecord(adminId: string, id: string, createFinancialDto: CreateFinancialDto): Promise<ResponseDto> {
     try {
       const crop = await this.cropModel.findById(id);
-      if(!crop){
+      if (!crop) {
         return ResponseDto.errorResponse("Crop not found");
       }
 
       const financial = await this.financialModel.create({
+       
+        ...createFinancialDto,
         crop: id,
-        ...createFinancialDto
+        adminId
       });
 
       const createdFinancial = await this.financialModel.findById(financial._id).populate("crop");
 
-      if(!createdFinancial){
+      if (!createdFinancial) {
         return ResponseDto.errorResponse("Failed to create financial record");
       }
 
@@ -409,15 +411,15 @@ export class CropsService {
     }
   }
 
-  async getAllFinancialRecordsForFarm(adminId: string): Promise<ResponseDto>{
+  async getAllFinancialRecordsForFarm(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({adminId});
-      if(!farm){
+      const farm = await this.farmModel.findOne({ adminId });
+      if (!farm) {
         return ResponseDto.errorResponse("Invalid adminId");
       }
 
-      const financial = await this.financialModel.find({adminId});
-      if(!financial){
+      const financial = await this.financialModel.find({ adminId });
+      if (!financial) {
         return ResponseDto.errorResponse("No available records");
       }
 
@@ -428,17 +430,17 @@ export class CropsService {
     }
   }
 
-  async getAllFinancialRecordsForCrop(id: string): Promise<ResponseDto>{
+  async getAllFinancialRecordsForCrop(id: string): Promise<ResponseDto> {
     try {
       const crop = await this.cropModel.findById(id);
-      
-      if(!crop){
+
+      if (!crop) {
         return ResponseDto.errorResponse("Crop not found");
       }
 
-      const records = await this.financialModel.find({crop: crop._id});
+      const records = await this.financialModel.find({ crop: crop._id });
 
-      if(!records || records.length === 0){
+      if (!records || records.length === 0) {
         return ResponseDto.errorResponse("No available records");
       }
 
@@ -449,10 +451,10 @@ export class CropsService {
     }
   }
 
-  async getSpecificFinancialRecordById(id: string): Promise<ResponseDto>{
+  async getSpecificFinancialRecordById(id: string): Promise<ResponseDto> {
     try {
       const financialRecord = await this.financialModel.findById(id);
-      if(!financialRecord){
+      if (!financialRecord) {
         return ResponseDto.errorResponse("Record not found");
       }
 
@@ -463,12 +465,12 @@ export class CropsService {
     }
   }
 
-  async updateFinancialRecordById(id: string, updateFinancialDto: UpdateFinancialDto): Promise<ResponseDto>{
+  async updateFinancialRecordById(id: string, updateFinancialDto: UpdateFinancialDto): Promise<ResponseDto> {
     try {
-      const updatedRecord = await this.financialModel.findByIdAndUpdate(id, updateFinancialDto, {new: true}).exec();
+      const updatedRecord = await this.financialModel.findByIdAndUpdate(id, updateFinancialDto, { new: true }).exec();
 
 
-      if(!updatedRecord){
+      if (!updatedRecord) {
         return ResponseDto.errorResponse("Failed to update record");
       }
 
@@ -479,11 +481,11 @@ export class CropsService {
     }
   }
 
-  async deleteFinancialRecordById(id: string): Promise<ResponseDto>{
+  async deleteFinancialRecordById(id: string): Promise<ResponseDto> {
     try {
       const deleteRecord = await this.financialModel.findByIdAndDelete(id).exec();
 
-      if(!deleteRecord){
+      if (!deleteRecord) {
         return ResponseDto.errorResponse("Failed to delete record");
       }
 
@@ -499,40 +501,40 @@ export class CropsService {
 
   ////////////////////ACTIVITY//////////////////////////////////////
 
-  async createActivityRecord(id: string, adminId: string, createActivityDto: CropActivityDto): Promise<ResponseDto>{
+  async createActivityRecord(id: string, adminId: string, createActivityDto: CropActivityDto): Promise<ResponseDto> {
     try {
       const crop = await this.cropModel.findById(id);
-      if(!crop){
+      if (!crop) {
         return ResponseDto.errorResponse("Crop not found");
       }
 
       const activityExists = await this.activityModel.findOne({
         $and: [
-          {adminId: adminId},
-          {amountQuantity: createActivityDto.amountQuantity},
-          {activityType: createActivityDto.activityType},
-          {method: createActivityDto.method},
-          {price: createActivityDto.price},
-          {time: createActivityDto.time},
-          {IoTDeviceData: createActivityDto.IoTDeviceData},
-          {squareFootage: createActivityDto.squareFootage},
-          {date: createActivityDto.date}
+          { adminId: adminId },
+          { amountQuantity: createActivityDto.amountQuantity },
+          { activityType: createActivityDto.activityType },
+          { method: createActivityDto.method },
+          { price: createActivityDto.price },
+          { time: createActivityDto.time },
+          { IoTDeviceData: createActivityDto.IoTDeviceData },
+          { squareFootage: createActivityDto.squareFootage },
+          { date: createActivityDto.date }
         ]
       })
 
-      if(activityExists){
+      if (activityExists) {
         return ResponseDto.errorResponse("An activity matching this one already exists")
       }
 
       const activity = await this.activityModel.create({
+        ...createActivityDto,
         cropId: crop._id,
-        adminId: adminId,
-        ...createActivityDto
+        adminId: adminId
       });
 
       const createdActivity = await this.activityModel.findById(activity._id).populate("cropId");
 
-      if(!createdActivity){
+      if (!createdActivity) {
         return ResponseDto.errorResponse("Failed to create activity record");
       }
 
@@ -543,15 +545,16 @@ export class CropsService {
     }
   }
 
-  async getAllActivityRecordsForFarm(adminId: string): Promise<ResponseDto>{
+  async getAllActivityRecordsForFarm(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({adminId});
-      if(!farm){
+      
+      const farm = await this.farmModel.findOne({ adminId });
+      if (!farm) {
         return ResponseDto.errorResponse("Invalid adminId");
       }
 
-      const activity = await this.activityModel.find({adminId});
-      if(!activity || activity.length === 0){
+      const activity = await this.activityModel.find({ adminId });
+      if (!activity || activity.length === 0) {
         return ResponseDto.errorResponse("No available records");
       }
 
@@ -562,19 +565,19 @@ export class CropsService {
     }
   }
 
-  async getAllActivityRecordsForCrop(id: string): Promise<ResponseDto>{
+  async getAllActivityRecordsForCrop(id: string): Promise<ResponseDto> {
     try {
       const crop = await this.cropModel.findById(id);
-      
-      if(!crop){
-        
+
+      if (!crop) {
+
         return ResponseDto.errorResponse("Crop not found");
       }
 
-      const records = await this.activityModel.find({cropId: crop._id});
-      
+      const records = await this.activityModel.find({ cropId: crop._id });
 
-      if(!records || records.length === 0){
+
+      if (!records || records.length === 0) {
         return ResponseDto.errorResponse("No available records");
       }
 
@@ -585,10 +588,10 @@ export class CropsService {
     }
   }
 
-  async getSpecificActivityRecordById(id: string): Promise<ResponseDto>{
+  async getSpecificActivityRecordById(id: string): Promise<ResponseDto> {
     try {
       const activityRecord = await this.activityModel.findById(id);
-      if(!activityRecord){
+      if (!activityRecord) {
         return ResponseDto.errorResponse("Record not found");
       }
 
@@ -599,11 +602,11 @@ export class CropsService {
     }
   }
 
-  async updateActivityRecordById(id: string, updateActivityDto: UpdateActivityDto): Promise<ResponseDto>{
+  async updateActivityRecordById(id: string, updateActivityDto: UpdateActivityDto): Promise<ResponseDto> {
     try {
-      const updatedRecord = await this.activityModel.findByIdAndUpdate(id, updateActivityDto, {new: true}).exec();
+      const updatedRecord = await this.activityModel.findByIdAndUpdate(id, updateActivityDto, { new: true }).exec();
 
-      if(!updatedRecord){
+      if (!updatedRecord) {
         return ResponseDto.errorResponse("Failed to update record");
       }
 
@@ -614,11 +617,11 @@ export class CropsService {
     }
   }
 
-  async deleteActivityRecordById(id: string): Promise<ResponseDto>{
+  async deleteActivityRecordById(id: string): Promise<ResponseDto> {
     try {
       const deleteRecord = await this.activityModel.findByIdAndDelete(id).exec();
 
-      if(!deleteRecord){
+      if (!deleteRecord) {
         return ResponseDto.errorResponse("Failed to delete record");
       }
 
@@ -635,11 +638,11 @@ export class CropsService {
 
   ////////////////////////////////////PestDiseaseIssue////////////////////////////////
 
-  async createPestDiseaseIssue(id: string, adminId: string, createPestDiseaseIssueDto: CreatePestDiseaseIssueDto): Promise<ResponseDto>{
+  async createPestDiseaseIssue(id: string, adminId: string, createPestDiseaseIssueDto: CreatePestDiseaseIssueDto): Promise<ResponseDto> {
     try {
 
       const crop = await this.cropModel.findById(id);
-      if(!crop){
+      if (!crop) {
         return ResponseDto.errorResponse("Crop not found");
       }
 
@@ -652,19 +655,19 @@ export class CropsService {
         notes: createPestDiseaseIssueDto.notes
       });
 
-      if(pestDiseaseIssueExists){
+      if (pestDiseaseIssueExists) {
         return ResponseDto.errorResponse("Pest disease issue already exists");
       }
 
       const pestDiseaseIssue = await this.pestdiseaseModel.create({
+        ...createPestDiseaseIssueDto,
         cropId: crop._id,
-        adminId: adminId,
-        ...createPestDiseaseIssueDto
+        adminId
       });
 
       const createPestDisease = await this.pestdiseaseModel.findById(pestDiseaseIssue._id);
 
-      if(!createPestDisease){
+      if (!createPestDisease) {
         return ResponseDto.errorResponse("Failed to create pest disease issue");
       }
 
@@ -676,14 +679,14 @@ export class CropsService {
     }
   }
 
-  async getAllPestDiseaseIssueForFarm(adminId: string): Promise<ResponseDto>{
+  async getAllPestDiseaseIssueForFarm(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({adminId});
-      if(!farm){
+      const farm = await this.farmModel.findOne({ adminId });
+      if (!farm) {
         return ResponseDto.errorResponse("Farm not found");
       }
-      const pestDisease = await this.pestdiseaseModel.find({adminId}).populate("cropId");
-      if(!pestDisease || pestDisease.length === 0){
+      const pestDisease = await this.pestdiseaseModel.find({ adminId }).populate("cropId");
+      if (!pestDisease || pestDisease.length === 0) {
         return ResponseDto.errorResponse("No available records");
       }
 
@@ -694,16 +697,16 @@ export class CropsService {
     }
   }
 
-  async getAllPestDiseaseIssueForCrop(id: string): Promise<ResponseDto>{
+  async getAllPestDiseaseIssueForCrop(id: string): Promise<ResponseDto> {
     try {
       const crop = await this.cropModel.findById(id);
-      if(!crop){
+      if (!crop) {
         return ResponseDto.errorResponse("Crop not found");
       }
 
-      const pestDisease = await this.pestdiseaseModel.find({cropId: id});
+      const pestDisease = await this.pestdiseaseModel.find({ cropId: id });
 
-      if(!pestDisease || pestDisease.length === 0){
+      if (!pestDisease || pestDisease.length === 0) {
         return ResponseDto.errorResponse("No available records");
       }
 
@@ -714,10 +717,10 @@ export class CropsService {
     }
   }
 
-  async getPestDiseaseIssueById(id: string): Promise<ResponseDto>{
+  async getPestDiseaseIssueById(id: string): Promise<ResponseDto> {
     try {
       const pestDisease = await this.pestdiseaseModel.findById(id);
-      if(!pestDisease){
+      if (!pestDisease) {
         return ResponseDto.errorResponse("Pest disease not found");
       }
 
@@ -728,11 +731,11 @@ export class CropsService {
     }
   }
 
-  async updatePestDiseaseIssueById(id: string, updatePestDiseaseIssueDto: UpdatePestDiseaseIssueDto): Promise<ResponseDto>{
+  async updatePestDiseaseIssueById(id: string, updatePestDiseaseIssueDto: UpdatePestDiseaseIssueDto): Promise<ResponseDto> {
     try {
-      const updatedRecord = await this.pestdiseaseModel.findByIdAndUpdate(id, updatePestDiseaseIssueDto, {new: true}).exec();
+      const updatedRecord = await this.pestdiseaseModel.findByIdAndUpdate(id, updatePestDiseaseIssueDto, { new: true }).exec();
 
-      if(!updatedRecord){
+      if (!updatedRecord) {
         return ResponseDto.errorResponse("Failed to update record");
       }
 
@@ -743,13 +746,13 @@ export class CropsService {
       return ResponseDto.errorResponse("Something went wrong, updating pest disease issue")
     }
   }
-  
 
-  async deletePestDiseaseIssueById(id: string): Promise<ResponseDto>{
+
+  async deletePestDiseaseIssueById(id: string): Promise<ResponseDto> {
     try {
       const deleteRecord = await this.pestdiseaseModel.findByIdAndDelete(id).exec();
 
-      if(!deleteRecord){
+      if (!deleteRecord) {
         return ResponseDto.errorResponse("Failed to delete record");
       }
 
@@ -763,8 +766,8 @@ export class CropsService {
   }
 
 
-  
-  
+
+
 
 
 }

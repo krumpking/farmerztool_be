@@ -5,5 +5,14 @@ export interface Employee extends Document {
   readonly password: string;
   readonly adminId: string;
   readonly perms: string[];
-  readonly role?: "Admin" | "Manager" | "Finance" | "Animal Manager" | "Crop Management";
+  readonly role?: 'Admin' |
+  'Finance' |
+  'Animal Manager' |
+  'Crop Management' |
+  'Farm Manager' |
+  'Asset Manager' |
+  'Eggs Hatchery Manager' |
+  'Communication Manager' |
+  'Farm Worker' |
+  'Veterinarian';
 }
