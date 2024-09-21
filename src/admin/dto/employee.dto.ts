@@ -30,6 +30,20 @@ export class EmployeeDto {
   })
   password: string;
 
+  @IsString()
+  @ApiProperty({
+    description: 'Employee full name',
+    example: 'Ronnie Kakunguwo',
+  })
+  fullName?: string;
+
+  @IsString()
+  @ApiProperty({
+    description: 'Phone number',
+    example: '+2637877768777',
+  })
+  phoneNumber: string;
+
   @IsArray()
   @IsString({ each: true })
   @ApiProperty({

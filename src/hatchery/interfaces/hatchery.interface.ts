@@ -21,6 +21,8 @@ export interface EggRecord extends Document {
   batchNumber: string;
   source: 'Livestock' | 'Customer';
   eggsUse: 'Internal Incubation' | 'Customer Incubation';
+  hatchingDate: Date;
+  rejectionStatus: boolean;
   attr: {
     [key: string]: any;
   };

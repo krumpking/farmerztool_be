@@ -85,6 +85,14 @@ export const HatcherySchema = new mongoose.Schema({
     enum: ['Internal Incubation', 'Customer Incubation'],
     required: true
   },
+  hatchingDate: { // track when eggs hatched
+    type: Date,
+    required: false
+  },
+  rejectionStatus: { // Track if eggs were rejected
+    type: Boolean,
+    default: false
+  },
   attr: {
     type: Object,
     required: true

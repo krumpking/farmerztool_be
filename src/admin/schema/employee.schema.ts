@@ -2,10 +2,18 @@ import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 export const EmployeeSchema = new mongoose.Schema({
+  fullName: {
+    type: String,
+    required: false
+  },
   email: {
     type: String,
     unique: true,
     required: true
+  },
+  phoneNumber: {
+    type: String,
+    required: false
   },
   password: {
     type: String,
