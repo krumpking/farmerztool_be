@@ -110,18 +110,10 @@ export class AdminController {
     if((employeeDto.password.trim()).length < 6){
       throw new HttpException("Password should be at least 6 characters", 421);
     }
-   
-
-    const newUser: EmployeeDto = {
-      email: employeeDto.email,
-      password: employeeDto.password,
-      perms: employeeDto.perms,
-      role: employeeDto.role
-    };
-
+  
     const adminId = user.adminId;
 
-    return this.adminService.addEmployee(adminId, employeeDto.password, newUser);
+    return this.adminService.addEmployee(adminId, employeeDto.password, employeeDto);
   }
 
   @Get('employees/:adminId')

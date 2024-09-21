@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { HatcheryService } from './hatchery.service';
 import { CreateHatcheryDto } from './dto/create-hatchery.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -224,7 +224,59 @@ export class HatcheryController {
   async deleteReminder(@Param('id') id: string) {
     return this.eggService.deleteReminder(id);
   }
-  
 
- 
-}
+  //////////////////// KPIs///////////////////////////////
+
+  @Get('kpi/egg-performance')
+  @Roles(Role.Admin, Role.EggsHatcheryManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: "Get egg performance",
+    description: "Get egg performance",
+    responses: {
+      200: {
+        description: 'Egg performance fetched successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getEggPerformance(@Query('eggType') eggType: string, @Query('startDate') startDate: string, @Query('endDate') endDate: string) {
+    const dateRange = {start: new Date(startDate), end: new Date(endDate) };
+    const hatchRate = await this.eggService.getEggHatchRate(eggType, dateRange);
+    const rejectionRate = await this.eggService.getRejectionRate(eggType, dateRange);
+    const daysToHatch = await this.eggService.getDaysToHatch(eggType, dateRange);
+    const hatchAccuracy = await this.eggService.getAccuracyOnHatching(eggType, 21, dateRange); // assuming 21 days for chicks
+
+    return {
+      hatchRate,
+      rejectionRate,
+      daysToHatch,
+      hatchAccuracy
+    };
+    
+  }
+
+  @Get('kpi/customer-performance')
+  @Roles(Role.Admin, Role.EggsHatcheryManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: "Get customer performance",
+    description: "Get customer performance",
+    responses: {
+      200: {
+        description: 'Customer performance fetched successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+    })
+    async getCustomerPerformance(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
+      const dateRange = { start: new Date(startDate), end: new Date(endDate) };
+      return await this.eggService.getCustomerSuccessRate(dateRange);
+    }
+
+  }
+  
