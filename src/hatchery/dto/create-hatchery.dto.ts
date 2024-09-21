@@ -139,6 +139,21 @@ export class CreateHatcheryDto {
   eggsUse: 'Internal Incubation' | 'Customer Incubation';
 
   @ApiProperty({
+    description: 'The date the eggs were hatched',
+    example: '2022-01-01T00:00:00.000Z',
+  })
+  @IsDate()
+  @Type(() => Date)
+  hatchingDate: Date;
+
+  @ApiProperty({
+    description: 'Whether the eggs were rejected',
+    example: false,
+  })
+  @IsBoolean()
+  rejectionStatus: boolean;
+
+  @ApiProperty({
     description: 'Additional attributes of the eggs',
     example: {
       incubationTemperature: 37.5,

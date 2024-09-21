@@ -279,6 +279,126 @@ export class HatcheryService {
   }
 
 
+  /////////////////////////KPIs///////////////////////////////////////////
+
+
+  // egg rate calculations
+  async getEggHatchRate(eggType: string, dateRange: {start: Date, end: Date}): Promise<number>{
+    const totalEggs = await this.eggModel.countDocuments({
+      animalType: eggType,
+      eggCollectionDate: {
+        $gte: dateRange.start, 
+        $lte: dateRange.end
+      }
+    });
+
+    const totalHatchedEggs = await this.eggModel.countDocuments({
+      animalType: eggType,
+      hatchingDate: {$exists: true},
+      eggCollectionDate: {
+        $gte: dateRange.start, 
+        $lte: dateRange.end
+      },
+    });
+
+    return (totalHatchedEggs / totalEggs) * 100;
+  }
+
+  // rejection rate
+
+  async getRejectionRate(eggType: string, dateRange: {start: Date, end: Date}): Promise<number>{
+    const totalRejections = await this.eggModel.countDocuments({
+      animalType: eggType,
+      rejectionStatus: true,
+      eggCollectionDate: {
+        $gte: dateRange.start, 
+        $lte: dateRange.end
+      }
+    });
+
+    const totalEggs = await this.eggModel.countDocuments({
+      animalType: eggType,
+      eggCollectionDate: {
+        $gte: dateRange.start, 
+        $lte: dateRange.end
+      }
+    });
+
+    return (totalRejections / totalEggs) * 100;
+  }
+
+  // days to hatch
+
+  async getDaysToHatch(eggType: string, dateRange: {start: Date, end: Date}): Promise<number>{
+    const hatchedEggs = await this.eggModel.find({
+      animalType: eggType,
+      hatchingDate: {$exists: true},
+      eggCollectionDate: {
+        $gte: dateRange.start, 
+        $lte: dateRange.end
+      },
+    });
+
+    const totalDays = hatchedEggs.reduce((sum, egg) => {
+      const days = (egg.hatchingDate.getTime() - egg.eggCollectionDate.getTime()) / (1000 * 3600 * 24);
+      return sum + days;
+    }, 0);
+
+    return hatchedEggs.length ? totalDays / hatchedEggs.length : 0;
+    }
+
+    // accuracy on hatching on time
+
+    async getAccuracyOnHatching(eggType: string, expectedDays: number, dateRange: {start: Date, end: Date}): Promise<number>{
+      const hatchedEggs = await this.eggModel.find({
+        animalType: eggType,
+        hatchingDate: {$exists: true},
+        eggCollectionDate: {
+          $gte: dateRange.start, 
+          $lte: dateRange.end
+        },
+      });
+
+      const onTimeHatchCount = hatchedEggs.filter(egg => {
+        const days = (egg.hatchingDate.getTime() - egg.eggCollectionDate.getTime()) / (1000 * 3600 * 24);
+        return days <= expectedDays;
+      }).length;
+
+      return (onTimeHatchCount / hatchedEggs.length) * 100;
+    }
+
+    //customer success rate
+
+    async getCustomerSuccessRate(dateRange: {start: Date, end: Date}): Promise<any>{
+      const customers = await this.eggModel.aggregate([
+        {
+          $match: {
+            eggCollectionDate: {
+              $gte: dateRange.start,
+              $lte: dateRange.end
+            }, source: 'Customer'
+          }
+        },
+        {
+          $group: {
+            _id: '$adminId',
+            totalEggs: { $sum: `$eggQuantity` },
+            successfulHatches: {$sum: {$cond: [{ $ifNull: [`$hatchingDate`, false]}, 1, 0]}}
+          }
+        },
+        {
+          $project: {
+            adminId: `$_id`,
+            successRate: { $multiply: [{ $divide: ['$successfulHatches', '$totalEggs'] }, 100] },
+            _id: 0
+          }
+        }
+      ]);
+
+      return customers;
+    }
+
+
 
 
 }
