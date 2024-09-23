@@ -6,7 +6,7 @@ interface MeatProduction {
   readonly currentWeight: number; // in kg
   readonly estimatedSlaughterWeight: number; // in kg
   readonly expectedSlaughterDate: Date;
-  readonly yield: number; // in kg
+  readonly totalYield: number; // in kg
 }
 
 interface MilkProduction {

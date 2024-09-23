@@ -4,7 +4,7 @@ const meatProductionSchema = new mongoose.Schema({
   currentWeight: { type: Number, required: true },
   estimatedSlaughterWeight: { type: Number, required: true },
   expectedSlaughterDate: { type: Date, required: true },
-  yield: { type: Number, required: true }
+  totalYield: { type: Number, required: true }
 });
 
 const milkProductionSchema = new mongoose.Schema({
