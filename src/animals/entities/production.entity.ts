@@ -2,7 +2,7 @@ class MeatProduction {
   currentWeight: number; // in kg
   estimatedSlaughterWeight: number; // in kg
   expectedSlaughterDate: Date;
-  yield: number; // in kg
+  totalYield: number; // in kg
 }
 
 class MilkProduction {

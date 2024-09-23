@@ -20,7 +20,7 @@ class MeatProduction {
 
   @ApiProperty({ description: 'Yield', example: 50 })
   @IsNumber()
-  yield?: number; // in kg
+  totalYield?: number; // in kg
 }
 
 class MilkProduction {
