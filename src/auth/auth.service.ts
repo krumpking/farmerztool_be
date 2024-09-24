@@ -33,7 +33,7 @@ export class AuthService {
     private employeeModel: Model<Employee>,
     @Inject(FARM_MODEL)
     private farmModel: Model<Farm>,
-  ) {}
+  ) { }
 
   async addUser(userDto: UserDto): Promise<ResponseDto> {
     const permissions = ["create", "read", "update", "delete"];
@@ -51,7 +51,7 @@ export class AuthService {
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
-    
+
 
     const newUser = await this.userModel.create({
       ...userDto,
@@ -67,7 +67,7 @@ export class AuthService {
     }
 
 
-    await this.userModel.findByIdAndUpdate(createdUser._id, {adminId: createdUser._id}, {new: true}).exec();
+    await this.userModel.findByIdAndUpdate(createdUser._id, { adminId: createdUser._id }, { new: true }).exec();
 
     return ResponseDto.successResponse("User created successfully", createdUser);
 
@@ -177,9 +177,9 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<ResponseDto> {
 
-    const emailExists = await this.userModel.findOne({ email});
+    const emailExists = await this.userModel.findOne({ email });
     if (!emailExists) {
-      const employeeExists = await this.employeeModel.findOne({ email});
+      const employeeExists = await this.employeeModel.findOne({ email }).select("-password");
 
 
       if (!employeeExists) {
@@ -190,10 +190,11 @@ export class AuthService {
         return ResponseDto.errorResponse('Password not found');
       }
 
-   const match = await bcrypt.compare(password, employeeExists.password);
+      const match = await bcrypt.compare(password, employeeExists.password);
 
 
       if (match) {
+        const loggedUser = await this.employeeModel.findById(employeeExists._id).select("-password");
         const payload = {
           id: employeeExists._id,
           email: employeeExists.email,
@@ -205,10 +206,7 @@ export class AuthService {
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
-          adminId: employeeExists._id,
-          email: employeeExists.email,
-          perms: employeeExists.perms,
-          roles: employeeExists.role
+          loggedUser
         };
 
         return ResponseDto.successResponse('Login successful', userData);
@@ -223,21 +221,19 @@ export class AuthService {
       const match = await bcrypt.compare(password, emailExists.password);
 
       if (match) {
+        const loggedUser = await this.userModel.findById(emailExists._id).select("-password");
         const payload = {
           id: emailExists._id,
           email: emailExists.email,
           roles: emailExists.role,
           adminId: emailExists._id,
           permissions: emailExists.permissions,
-          
+
         };
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
-          adminId: emailExists._id,
-          email: emailExists.email,
-          perms: emailExists.permissions,
-          roles: emailExists.role
+         loggedUser
         };
 
         return ResponseDto.successResponse('Login successful', userData);
@@ -287,7 +283,7 @@ export class AuthService {
         );
 
         if (!userUpdateOnOTP) {
-          
+
           return ResponseDto.errorResponse("Invalid email");
         }
 
@@ -383,10 +379,10 @@ export class AuthService {
 
 
   async updateUser(id: string, updateDto: UpdateUserDto): Promise<ResponseDto> {
-    const updatedDto = {...updateDto};
+    const updatedDto = { ...updateDto };
     delete updatedDto.password;
     const newUser = await this.userModel.findByIdAndUpdate(id, updatedDto, { new: true }).select("-password");
-  
+
     if (!newUser) {
       return ResponseDto.errorResponse('User not found');
     }
@@ -406,7 +402,7 @@ export class AuthService {
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Something went wrong, deleting account")
-      
+
     }
   }
 }
