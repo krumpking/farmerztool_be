@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { AnimalsModule } from './animals/animals.module';
 import { CropsModule } from './crops/crops.module';
 import { HatcheryModule } from './hatchery/hatchery.module';
+import { AssetsModule } from './assets/assets.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { HatcheryModule } from './hatchery/hatchery.module';
     AnimalsModule,
     CropsModule,
     HatcheryModule,
+    AssetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
