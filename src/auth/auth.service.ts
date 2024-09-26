@@ -200,7 +200,7 @@ export class AuthService {
 
     const emailExists = await this.userModel.findOne({ email });
     if (!emailExists) {
-      const employeeExists = await this.employeeModel.findOne({ email }).select("-password");
+      const employeeExists = await this.employeeModel.findOne({ email });
 
 
       if (!employeeExists) {

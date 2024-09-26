@@ -63,6 +63,8 @@ export class HatcheryController {
   })
   async getEggs(@Request() req) {
     const user = this.getUserFromRequest(req)
+    console.log(user);
+    
     return this.eggService.getEggs(user.adminId);
   }
 
