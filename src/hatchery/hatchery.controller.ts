@@ -273,9 +273,11 @@ export class HatcheryController {
       },
     },
     })
-    async getCustomerPerformance(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
+    async getCustomerPerformance(@Query('startDate') startDate: string, @Query('endDate') endDate: string, @Request() req) {
+      const adminId = this.getUserFromRequest(req).adminId;
+
       const dateRange = { start: new Date(startDate), end: new Date(endDate) };
-      return await this.eggService.getCustomerSuccessRate(dateRange);
+      return await this.eggService.getCustomerSuccessRate(adminId,dateRange);
     }
 
   }

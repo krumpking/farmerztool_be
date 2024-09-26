@@ -65,6 +65,7 @@ export class AssetsController {
   })
   async getAllAssetsForAdmin(@Request() req) {
     const user = this.getUserFromRequest(req);
+    
     return this.assetsService.getAllAssetsForAdmin(user.adminId);
   }
 

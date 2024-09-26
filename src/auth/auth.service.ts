@@ -89,17 +89,23 @@ export class AuthService {
           const payload = {
             id: employeeExists._id,
             email: employeeExists.email,
+            fullName: employeeExists.fullName,
+            phoneNumber: employeeExists.phoneNumber,
             adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
             roles: employeeExists.role
+
           };
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
-            adminId: employeeExists._id,
+            id: employeeExists._id,
             email: employeeExists.email,
-            roles: employeeExists.role,
+            fullName: employeeExists.fullName,
+            phoneNumber: employeeExists.phoneNumber,
+            adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
+            roles: employeeExists.role
           };
           return ResponseDto.successResponse('Login successful', userData);
         }
@@ -111,14 +117,29 @@ export class AuthService {
             roles: emailExists.role,
             adminId: emailExists._id,
             permissions: emailExists.permissions,
+            fullName: emailExists.fullName,
+            phoneNumber: emailExists.phoneNumber,
+            position: emailExists.position,
+            farmArea: emailExists.farmArea,
+            verified: emailExists.verified,
+            otp: emailExists.otp,
+            otpCreatedAt: emailExists.otpCreatedAt
           };
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
-            adminId: emailExists._id,
+            id: emailExists._id,
             email: emailExists.email,
-            perms: emailExists.permissions,
-            roles: emailExists.role
+            roles: emailExists.role,
+            adminId: emailExists._id,
+            permissions: emailExists.permissions,
+            fullName: emailExists.fullName,
+            phoneNumber: emailExists.phoneNumber,
+            position: emailExists.position,
+            farmArea: emailExists.farmArea,
+            verified: emailExists.verified,
+            otp: emailExists.otp,
+            otpCreatedAt: emailExists.otpCreatedAt
           };
           return ResponseDto.successResponse('Login successful', userData);
         }
@@ -194,11 +215,11 @@ export class AuthService {
 
 
       if (match) {
-        const loggedUser = await this.employeeModel.findById(employeeExists._id).select("-password");
         const payload = {
           id: employeeExists._id,
           email: employeeExists.email,
-          password: employeeExists.password,
+          fullName: employeeExists.fullName,
+          phoneNumber: employeeExists.phoneNumber,
           adminId: employeeExists.adminId,
           permissions: employeeExists.perms,
           roles: employeeExists.role
@@ -206,7 +227,13 @@ export class AuthService {
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
-          loggedUser
+          id: employeeExists._id,
+          email: employeeExists.email,
+          fullName: employeeExists.fullName,
+          phoneNumber: employeeExists.phoneNumber,
+          adminId: employeeExists.adminId,
+          permissions: employeeExists.perms,
+          roles: employeeExists.role
         };
 
         return ResponseDto.successResponse('Login successful', userData);
@@ -221,19 +248,35 @@ export class AuthService {
       const match = await bcrypt.compare(password, emailExists.password);
 
       if (match) {
-        const loggedUser = await this.userModel.findById(emailExists._id).select("-password");
         const payload = {
           id: emailExists._id,
           email: emailExists.email,
           roles: emailExists.role,
           adminId: emailExists._id,
           permissions: emailExists.permissions,
-
+          fullName: emailExists.fullName,
+          phoneNumber: emailExists.phoneNumber,
+          position: emailExists.position,
+          farmArea: emailExists.farmArea,
+          verified: emailExists.verified,
+          otp: emailExists.otp,
+          otpCreatedAt: emailExists.otpCreatedAt
         };
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
-         loggedUser
+          id: emailExists._id,
+          email: emailExists.email,
+          roles: emailExists.role,
+          adminId: emailExists._id,
+          permissions: emailExists.permissions,
+          fullName: emailExists.fullName,
+          phoneNumber: emailExists.phoneNumber,
+          position: emailExists.position,
+          farmArea: emailExists.farmArea,
+          verified: emailExists.verified,
+          otp: emailExists.otp,
+          otpCreatedAt: emailExists.otpCreatedAt
         };
 
         return ResponseDto.successResponse('Login successful', userData);
