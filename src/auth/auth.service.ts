@@ -19,7 +19,7 @@ import { EmailClient, KnownEmailSendStatus } from '@azure/communication-email';
 import { ResponseDto } from 'src/common/response.dto';
 import { Farm } from 'src/admin/interfaces/farm.interface';
 import { UpdateUserDto } from './dto/update.dto';
-
+import { SignInDTO } from './dto/signin.dto';
 
 @Injectable()
 export class AuthService {
@@ -66,10 +66,19 @@ export class AuthService {
       return ResponseDto.errorResponse('Failed to create user');
     }
 
+    await this.userModel
+      .findByIdAndUpdate(
+        createdUser._id,
+        { adminId: createdUser._id },
+        { new: true },
+      )
+      .exec();
+
 
     await this.userModel.findByIdAndUpdate(createdUser._id, { adminId: createdUser._id }, { new: true }).exec();
 
     return ResponseDto.successResponse("User created successfully", createdUser);
+
 
   }
 
@@ -194,6 +203,9 @@ export class AuthService {
     }
   }
 
+  async login(loginDto: SignInDTO): Promise<ResponseDto> {
+    let email = loginDto.email;
+    let password = loginDto.password;
 
 
   async login(email: string, password: string): Promise<ResponseDto> {
@@ -212,7 +224,6 @@ export class AuthService {
       }
 
       const match = await bcrypt.compare(password, employeeExists.password);
-
 
       if (match) {
         const payload = {
@@ -261,6 +272,7 @@ export class AuthService {
           verified: emailExists.verified,
           otp: emailExists.otp,
           otpCreatedAt: emailExists.otpCreatedAt
+
         };
 
         const userData = {
@@ -277,6 +289,7 @@ export class AuthService {
           verified: emailExists.verified,
           otp: emailExists.otp,
           otpCreatedAt: emailExists.otpCreatedAt
+          
         };
 
         return ResponseDto.successResponse('Login successful', userData);
