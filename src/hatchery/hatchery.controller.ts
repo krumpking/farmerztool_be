@@ -242,12 +242,12 @@ export class HatcheryController {
       },
     },
   })
-  async getEggPerformance(@Query('eggType') eggType: string, @Query('startDate') startDate: string, @Query('endDate') endDate: string) {
+  async getEggPerformance(@Query('animalType') animalType: string, @Query('startDate') startDate: string, @Query('endDate') endDate: string) {
     const dateRange = {start: new Date(startDate), end: new Date(endDate) };
-    const hatchRate = await this.eggService.getEggHatchRate(eggType, dateRange);
-    const rejectionRate = await this.eggService.getRejectionRate(eggType, dateRange);
-    const daysToHatch = await this.eggService.getDaysToHatch(eggType, dateRange);
-    const hatchAccuracy = await this.eggService.getAccuracyOnHatching(eggType, 21, dateRange); // assuming 21 days for chicks
+    const hatchRate = await this.eggService.getEggHatchRate(animalType, dateRange);
+    const rejectionRate = await this.eggService.getRejectionRate(animalType, dateRange);
+    const daysToHatch = await this.eggService.getDaysToHatch(animalType, dateRange);
+    const hatchAccuracy = await this.eggService.getAccuracyOnHatching(animalType, 21, dateRange); // assuming 21 days for chicks
 
     return {
       hatchRate,
@@ -273,9 +273,11 @@ export class HatcheryController {
       },
     },
     })
-    async getCustomerPerformance(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
+    async getCustomerPerformance(@Query('startDate') startDate: string, @Query('endDate') endDate: string, @Request() req) {
+      const adminId = this.getUserFromRequest(req).adminId;
+
       const dateRange = { start: new Date(startDate), end: new Date(endDate) };
-      return await this.eggService.getCustomerSuccessRate(dateRange);
+      return await this.eggService.getCustomerSuccessRate(adminId,dateRange);
     }
 
   }

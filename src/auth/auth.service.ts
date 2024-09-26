@@ -33,7 +33,7 @@ export class AuthService {
     private employeeModel: Model<Employee>,
     @Inject(FARM_MODEL)
     private farmModel: Model<Farm>,
-  ) {}
+  ) { }
 
   async addUser(userDto: UserDto): Promise<ResponseDto> {
     const permissions = ["create", "read", "update", "delete"];
@@ -51,7 +51,7 @@ export class AuthService {
 
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = await bcrypt.hash(userDto.password, salt);
-    
+
 
     const newUser = await this.userModel.create({
       ...userDto,
@@ -74,10 +74,12 @@ export class AuthService {
       )
       .exec();
 
-    return ResponseDto.successResponse(
-      'User created successfully',
-      createdUser,
-    );
+
+    await this.userModel.findByIdAndUpdate(createdUser._id, { adminId: createdUser._id }, { new: true }).exec();
+
+    return ResponseDto.successResponse("User created successfully", createdUser);
+
+
   }
 
   async generateAccessTokenForVerifiedUser(
@@ -96,17 +98,23 @@ export class AuthService {
           const payload = {
             id: employeeExists._id,
             email: employeeExists.email,
+            fullName: employeeExists.fullName,
+            phoneNumber: employeeExists.phoneNumber,
             adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
             roles: employeeExists.role
+
           };
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
-            adminId: employeeExists._id,
+            id: employeeExists._id,
             email: employeeExists.email,
-            roles: employeeExists.role,
+            fullName: employeeExists.fullName,
+            phoneNumber: employeeExists.phoneNumber,
+            adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
+            roles: employeeExists.role
           };
           return ResponseDto.successResponse('Login successful', userData);
         }
@@ -118,14 +126,29 @@ export class AuthService {
             roles: emailExists.role,
             adminId: emailExists._id,
             permissions: emailExists.permissions,
+            fullName: emailExists.fullName,
+            phoneNumber: emailExists.phoneNumber,
+            position: emailExists.position,
+            farmArea: emailExists.farmArea,
+            verified: emailExists.verified,
+            otp: emailExists.otp,
+            otpCreatedAt: emailExists.otpCreatedAt
           };
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
-            adminId: emailExists._id,
+            id: emailExists._id,
             email: emailExists.email,
-            perms: emailExists.permissions,
-            roles: emailExists.role
+            roles: emailExists.role,
+            adminId: emailExists._id,
+            permissions: emailExists.permissions,
+            fullName: emailExists.fullName,
+            phoneNumber: emailExists.phoneNumber,
+            position: emailExists.position,
+            farmArea: emailExists.farmArea,
+            verified: emailExists.verified,
+            otp: emailExists.otp,
+            otpCreatedAt: emailExists.otpCreatedAt
           };
           return ResponseDto.successResponse('Login successful', userData);
         }
@@ -184,9 +207,13 @@ export class AuthService {
     let email = loginDto.email;
     let password = loginDto.password;
 
+
+  async login(email: string, password: string): Promise<ResponseDto> {
+
     const emailExists = await this.userModel.findOne({ email });
     if (!emailExists) {
-      const employeeExists = await this.employeeModel.findOne({ email });
+      const employeeExists = await this.employeeModel.findOne({ email }).select("-password");
+
 
       if (!employeeExists) {
         return ResponseDto.errorResponse('User not found');
@@ -202,7 +229,8 @@ export class AuthService {
         const payload = {
           id: employeeExists._id,
           email: employeeExists.email,
-          password: employeeExists.password,
+          fullName: employeeExists.fullName,
+          phoneNumber: employeeExists.phoneNumber,
           adminId: employeeExists.adminId,
           permissions: employeeExists.perms,
           roles: employeeExists.role
@@ -210,9 +238,12 @@ export class AuthService {
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
-          adminId: employeeExists._id,
+          id: employeeExists._id,
           email: employeeExists.email,
-          perms: employeeExists.perms,
+          fullName: employeeExists.fullName,
+          phoneNumber: employeeExists.phoneNumber,
+          adminId: employeeExists.adminId,
+          permissions: employeeExists.perms,
           roles: employeeExists.role
         };
 
@@ -234,14 +265,31 @@ export class AuthService {
           roles: emailExists.role,
           adminId: emailExists._id,
           permissions: emailExists.permissions,
+          fullName: emailExists.fullName,
+          phoneNumber: emailExists.phoneNumber,
+          position: emailExists.position,
+          farmArea: emailExists.farmArea,
+          verified: emailExists.verified,
+          otp: emailExists.otp,
+          otpCreatedAt: emailExists.otpCreatedAt
+
         };
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
-          adminId: emailExists._id,
+          id: emailExists._id,
           email: emailExists.email,
-          perms: emailExists.permissions,
           roles: emailExists.role,
+          adminId: emailExists._id,
+          permissions: emailExists.permissions,
+          fullName: emailExists.fullName,
+          phoneNumber: emailExists.phoneNumber,
+          position: emailExists.position,
+          farmArea: emailExists.farmArea,
+          verified: emailExists.verified,
+          otp: emailExists.otp,
+          otpCreatedAt: emailExists.otpCreatedAt
+          
         };
 
         return ResponseDto.successResponse('Login successful', userData);
@@ -291,7 +339,7 @@ export class AuthService {
         );
 
         if (!userUpdateOnOTP) {
-          
+
           return ResponseDto.errorResponse("Invalid email");
         }
 
@@ -387,10 +435,10 @@ export class AuthService {
 
 
   async updateUser(id: string, updateDto: UpdateUserDto): Promise<ResponseDto> {
-    const updatedDto = {...updateDto};
+    const updatedDto = { ...updateDto };
     delete updatedDto.password;
     const newUser = await this.userModel.findByIdAndUpdate(id, updatedDto, { new: true }).select("-password");
-  
+
     if (!newUser) {
       return ResponseDto.errorResponse('User not found');
     }
@@ -410,7 +458,7 @@ export class AuthService {
     } catch (error) {
       console.log(error);
       return ResponseDto.errorResponse("Something went wrong, deleting account")
-      
+
     }
   }
 }

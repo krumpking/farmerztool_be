@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsString, IsNumber, IsDate, IsUrl, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsUrl } from 'class-validator';
 
 export class CreateMobilePaymentDto {
   @ApiProperty({
@@ -16,15 +15,6 @@ export class CreateMobilePaymentDto {
   })
   @IsNumber()
   amount: number;
-
-  @ApiProperty({
-    description: 'The date and time the payment was created',
-    example: '2023-02-20T14:30:00.000Z',
-  })
-  @IsDate()
-  @IsOptional()
-  @Type(() => Date)
-  createdAt: Date;
 
   @ApiProperty({
     description: 'A brief description of the payment',

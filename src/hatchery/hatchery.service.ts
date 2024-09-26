@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EggRecord } from './interfaces/hatchery.interface';
 import { HATCHERY_MODEL, REMINDER_MODEL } from './constants/hatchery.constants';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateHatcheryDto } from './dto/create-hatchery.dto';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateHatcheryDto } from './dto/update-hatchery.dto';
@@ -369,33 +369,46 @@ export class HatcheryService {
 
     //customer success rate
 
-    async getCustomerSuccessRate(dateRange: {start: Date, end: Date}): Promise<any>{
-      const customers = await this.eggModel.aggregate([
+    async getCustomerSuccessRate(
+      adminId: string,
+      dateRange: { start: Date; end: Date }
+    ): Promise<{ successRate: number }> {
+      const customer = await this.eggModel.aggregate([
         {
           $match: {
+            adminId: new Types.ObjectId(adminId),
             eggCollectionDate: {
               $gte: dateRange.start,
               $lte: dateRange.end
-            }, source: 'Customer'
+            },
+            source: 'Customer'
           }
         },
         {
           $group: {
-            _id: '$adminId',
-            totalEggs: { $sum: `$eggQuantity` },
-            successfulHatches: {$sum: {$cond: [{ $ifNull: [`$hatchingDate`, false]}, 1, 0]}}
+            _id: null,
+            totalEggs: { $sum: '$eggQuantity' },
+            successfulHatches: {
+              $sum: { $cond: [{ $ifNull: ['$hatchingDate', false] }, 1, 0] }
+            }
           }
         },
         {
           $project: {
-            adminId: `$_id`,
-            successRate: { $multiply: [{ $divide: ['$successfulHatches', '$totalEggs'] }, 100] },
+            successRate: {
+              $multiply: [{ $divide: ['$successfulHatches', '$totalEggs'] }, 100]
+            },
             _id: 0
           }
         }
       ]);
-
-      return customers;
+    
+      // Check if any result was returned, handle case where there is no data
+      if (!customer || customer.length === 0) {
+        return { successRate: 0 }; // If no records found, return 0 success rate
+      }
+    
+      return { successRate: customer[0].successRate };
     }
 
 
