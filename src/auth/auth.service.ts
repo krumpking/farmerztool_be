@@ -72,9 +72,11 @@ export class AuthService {
     }, { new: true }).select("-password").exec();
 
 
+
     if (!updatedUser) {
       return ResponseDto.errorResponse('Failed to create user');
     }
+
 
     return ResponseDto.successResponse("User created successfully", updatedUser);
 
