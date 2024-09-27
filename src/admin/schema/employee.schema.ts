@@ -2,34 +2,19 @@ import * as mongoose from 'mongoose';
 import * as bcrypt from 'bcrypt';
 
 export const EmployeeSchema = new mongoose.Schema({
-  fullName: {
-    type: String,
-    required: false
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: true
-  },
-  phoneNumber: {
-    type: String,
-    required: false
-  },
-  password: {
-    type: String,
-    required: true
-  },
+  fullName: { type: String, required: false, default: '' },
+  email: { type: String, unique: true, required: true },
+  phoneNumber: { type: String, required: false, default: '' },
+  password: { type: String, required: true },
   adminId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  perms: {
-    type: [String],
-    required: true
-  },
+  perms: { type: [String], required: true },
   role: {
-    type: String, enum: [
+    type: String, 
+    enum: [
       'Admin',
       'Finance',
       'Animal Manager',
@@ -39,7 +24,9 @@ export const EmployeeSchema = new mongoose.Schema({
       'Eggs Hatchery Manager',
       'Communication Manager',
       'Farm Worker',
-      'Veterinarian'], required: true
+      'Veterinarian'
+    ], 
+    required: true
   },
 }, { timestamps: true });
 

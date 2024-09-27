@@ -67,9 +67,18 @@ export class AuthService {
     }
 
 
-    await this.userModel.findByIdAndUpdate(createdUser._id, { adminId: createdUser._id }, { new: true }).exec();
+    const updatedUser = await this.userModel.findByIdAndUpdate(createdUser._id, {
+      $set: { adminId: createdUser._id }
+    }, { new: true }).select("-password").exec();
 
-    return ResponseDto.successResponse("User created successfully", createdUser);
+
+
+    if (!updatedUser) {
+      return ResponseDto.errorResponse('Failed to create user');
+    }
+
+
+    return ResponseDto.successResponse("User created successfully", updatedUser);
 
   }
 
