@@ -100,7 +100,7 @@ export class AuthService {
             phoneNumber: employeeExists.phoneNumber,
             adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
-            roles: employeeExists.role
+            role: employeeExists.role
 
           };
 
@@ -112,7 +112,7 @@ export class AuthService {
             phoneNumber: employeeExists.phoneNumber,
             adminId: employeeExists.adminId,
             permissions: employeeExists.perms,
-            roles: employeeExists.role
+            role: employeeExists.role
           };
           return ResponseDto.successResponse('Login successful', userData);
         }
@@ -121,7 +121,7 @@ export class AuthService {
           const payload = {
             id: emailExists._id,
             email: emailExists.email,
-            roles: emailExists.role,
+            role: emailExists.role,
             adminId: emailExists._id,
             permissions: emailExists.permissions,
             fullName: emailExists.fullName,
@@ -137,7 +137,7 @@ export class AuthService {
             access_token: await this.jwtService.signAsync(payload),
             id: emailExists._id,
             email: emailExists.email,
-            roles: emailExists.role,
+            role: emailExists.role,
             adminId: emailExists._id,
             permissions: emailExists.permissions,
             fullName: emailExists.fullName,
@@ -229,7 +229,7 @@ export class AuthService {
           phoneNumber: employeeExists.phoneNumber,
           adminId: employeeExists.adminId,
           permissions: employeeExists.perms,
-          roles: employeeExists.role
+          role: employeeExists.role
         };
 
         const userData = {
@@ -240,7 +240,7 @@ export class AuthService {
           phoneNumber: employeeExists.phoneNumber,
           adminId: employeeExists.adminId,
           permissions: employeeExists.perms,
-          roles: employeeExists.role
+          role: employeeExists.role
         };
 
         return ResponseDto.successResponse('Login successful', userData);
@@ -258,7 +258,7 @@ export class AuthService {
         const payload = {
           id: emailExists._id,
           email: emailExists.email,
-          roles: emailExists.role,
+          role: emailExists.role,
           adminId: emailExists._id,
           permissions: emailExists.permissions,
           fullName: emailExists.fullName,
@@ -274,7 +274,7 @@ export class AuthService {
           access_token: await this.jwtService.signAsync(payload),
           id: emailExists._id,
           email: emailExists.email,
-          roles: emailExists.role,
+          role: emailExists.role,
           adminId: emailExists._id,
           permissions: emailExists.permissions,
           fullName: emailExists.fullName,
