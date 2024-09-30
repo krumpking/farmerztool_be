@@ -18,13 +18,13 @@ export class RolesGuard implements CanActivate {
         const user = request.user;
 
         // Check if user has at least one of the allowed roles
-        const hasRole = roles ? roles.some(role => user.roles.includes(role)) : true;
+        const hasRole = roles ? roles.some(role => user.role.includes(role)) : true;
 
         // Check if user has at least one of the required permissions
         const hasPermission = permissions ? permissions.some(permission => user.permissions.includes(permission)) : true;
 
         // If there are permissions to check
-        if (roles && !roles.some(role => user.roles.includes(role))) {
+        if (roles && !roles.some(role => user.role.includes(role))) {
             throw new ForbiddenException('Sorry, you don’t have the right role to access this resource.');
         }
 

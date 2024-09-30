@@ -31,28 +31,28 @@ export class PaymentsService {
     @Inject(USER_MODEL) private userModel: Model<User>,
   ) { }
 
-  // async addSub(payment: CreatePaymentDto): Promise<any> {
-  //   try {
-  //     const createdPayment = new this.paymentModel(payment);
+  async addSub(payment: CreatePaymentDto): Promise<any> {
+    try {
+      const createdPayment = new this.paymentModel(payment);
 
-  //     var newPayment = await createdPayment.save();
+      var newPayment = await createdPayment.save();
 
-  //     return newPayment;
-  //   } catch (error) {
-  //     return null;
-  //   }
-  // }
+      return newPayment;
+    } catch (error) {
+      return null;
+    }
+  }
 
-  // async findAll(adminId: string): Promise<Payment[]> {
-  //   try {
-  //   return this.paymentModel
-  //     .find({ adminId: adminId })
-  //     .sort({ _id: -1 })
-  //     .exec();
-  //     } catch (error) {
-  //     return null;
-  //   }
-  // }
+  async findAll(adminId: string): Promise<Payment[]> {
+    try {
+    return this.paymentModel
+      .find({ adminId: adminId })
+      .sort({ _id: -1 })
+      .exec();
+      } catch (error) {
+      return null;
+    }
+  }
 
 
   async initiateMobilePayment(payment: CreateMobilePaymentDto): Promise<ResponseDto> {
