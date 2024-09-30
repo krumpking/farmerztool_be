@@ -106,7 +106,7 @@ export class AuthService {
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
-            id: employeeExists._id,
+            _id: employeeExists._id,
             email: employeeExists.email,
             fullName: employeeExists.fullName,
             phoneNumber: employeeExists.phoneNumber,
@@ -135,7 +135,7 @@ export class AuthService {
 
           const userData = {
             access_token: await this.jwtService.signAsync(payload),
-            id: emailExists._id,
+            _id: emailExists._id,
             email: emailExists.email,
             role: emailExists.role,
             adminId: emailExists._id,
@@ -234,7 +234,7 @@ export class AuthService {
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
-          id: employeeExists._id,
+          _id: employeeExists._id,
           email: employeeExists.email,
           fullName: employeeExists.fullName,
           phoneNumber: employeeExists.phoneNumber,
@@ -272,7 +272,7 @@ export class AuthService {
 
         const userData = {
           access_token: await this.jwtService.signAsync(payload),
-          id: emailExists._id,
+          _id: emailExists._id,
           email: emailExists.email,
           role: emailExists.role,
           adminId: emailExists._id,
