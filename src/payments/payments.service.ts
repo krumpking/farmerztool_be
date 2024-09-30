@@ -1,23 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-// import { CreatePaymentDto } from './dto/create-payment.dto';
+import { CreatePaymentDto } from './dto/create-payment.dto';
 import { CreateMobilePaymentDto } from './dto/mobile-payment.dto';
 import { Model } from 'mongoose';
-import { PAYMENT_MODEL, PAYMENT_ID, PAYNOW_KEY } from './constants/payment.contact';
+import { PAYMENT_MODEL,PAYMENT_ID ,PAYNOW_KEY } from './constants/payment.contact';
 import { Payment } from './interfaces/payment.interface';
 import { Paynow } from "paynow";
 import axios from "axios";
-import { ResponseDto } from 'src/common/response.dto';
-import { EMPLOYEE_MODEL } from 'src/admin/constants/admin.constants';
-import { Employee } from 'src/admin/interfaces/employee.interface';
-import { USER_MODEL } from 'src/auth/constants/auth.constants';
-import { User } from 'src/auth/interfaces/user.interface';
-
-interface PaynowResponse {
-  success: boolean;
-  instructions: string;
-  pollUrl: string;
-  error?: string;
-}
 
 const paynow = new Paynow(PAYMENT_ID, PAYNOW_KEY);
 
@@ -27,9 +15,7 @@ export class PaymentsService {
   constructor(
     @Inject(PAYMENT_MODEL)
     private paymentModel: Model<Payment>,
-    @Inject(EMPLOYEE_MODEL) private employeeModel: Model<Employee>,
-    @Inject(USER_MODEL) private userModel: Model<User>,
-  ) { }
+  ) {}
 
   async addSub(payment: CreatePaymentDto): Promise<any> {
     try {
@@ -55,79 +41,85 @@ export class PaymentsService {
   }
 
 
-  async initiateMobilePayment(payment: CreateMobilePaymentDto): Promise<ResponseDto> {
+  async initiateMobilePayment(payment :CreateMobilePaymentDto): Promise<any> {
 
 
     try {
       paynow.returnUrl = "http://farmerztool.com/return?gateway=paynow&merchantReference=1234";
-      paynow.resultUrl = "http://farmerztool.com/gateways/paynow/update";
+      paynow.resultUrl = "http://farmerztool.com/gateways/paynow/update"; 
+    
 
-      const pay = paynow.createPayment("Invoice 1", "kakunguwo.ron@gmail.com");
+      let pay = paynow.createPayment("Invoice 1", "tafaraushe97@gmail.com");
 
-      pay.add("sub", payment.amount)
+      
+pay.add("subscription", payment.amount);
 
 
-      paynow.sendMobile(pay, '0777000000', 'ecocash')
-  .then((response: PaynowResponse) => {
-    if (response && response.success) {
-      const instructions = response.instructions;
-      const pollUrl = response.pollUrl;
-      console.log(instructions);
-      console.log(pollUrl);
-    } else {
-      console.log(response.error);
-    }
-  })
-  .catch((error: Error) => {
-    console.error('Error sending mobile payment:', error);
-  });
 
-    } catch (error) {
+            var res = await paynow.sendMobile(
+    
+    // The payment to send to Paynow
+    pay, 
+
+    // The phone number making payment
+    payment.phoneNumber,
+    
+    // The mobile money method to use. 
+    'ecocash' 
+
+);
+           
+
+      if(res.success){
+      
+        return res.pollUrl;
+      } else {
+        return null;
+      }
+
+    }catch (error) {
       console.error(error);
       return null;
     }
   }
 
 
-  async confirmPayment(payment: CreateMobilePaymentDto): Promise<any> {
+  async confirmPayment (payment :CreateMobilePaymentDto): Promise<any> {
 
 
 
 
-    try {
+ try {
+  
+  var results = await axios.get(payment.pollUrl);
+ 
+  if(results != null){
+if(results.data.includes("status=Paid")){
+      var newPayment = {
+      adminId: payment.adminId,
+  amount: payment.amount,
+  
+  description: payment.description
+    };
+      const createdPayment = new this.paymentModel(newPayment);
 
-      const results = await axios.get(payment.pollUrl);
+      var confirmedPayment = await createdPayment.save();
 
-      if (results != null) {
-        if (results.data.includes("status=Paid")) {
-          const newPayment = {
-            adminId: payment.adminId,
-            amount: payment.amount,
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
 
-            description: payment.description
-          };
-          const createdPayment = new this.paymentModel(newPayment);
+    
 
-          const confirmedPayment = await createdPayment.save();
-
-          console.log(confirmedPayment);
-          
-
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-
-
-
-
+    
     } catch (error) {
       return false;
     }
 
 
-  }
+}
 }

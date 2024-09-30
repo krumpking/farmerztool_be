@@ -1,11 +1,12 @@
 import {
   Controller,
+  Get,
   Post,
   Body,
   Param,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
-// import { CreatePaymentDto } from './dto/create-payment.dto';
+import { CreatePaymentDto } from './dto/create-payment.dto';
 import { CreateMobilePaymentDto } from './dto/mobile-payment.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -19,7 +20,21 @@ export class PaymentsController {
 
   @Post('/initiate/mobile')
   async create(@Body() payment: CreateMobilePaymentDto) {
-    return this.paymentsService.initiateMobilePayment(payment);
+    const _addSub = await this.paymentsService.initiateMobilePayment(payment);
+
+    if (_addSub == null) {
+      return {
+        data: null,
+        message: 'There was an error initialising payment',
+        success: false,
+      };
+    } else {
+      return {
+        data: _addSub,
+        message: 'Payment initiated successfully',
+        success: true,
+      };
+    }
   }
 
 
@@ -80,7 +95,7 @@ export class PaymentsController {
       };
     }
 
-    const lastPaymentDate = new Date(_addSub[0].createdAt); // Assuming _addSub has a lastPaymentDate field
+    const lastPaymentDate = new Date(_addSub[0].date); // Assuming _addSub has a lastPaymentDate field
  
     const currentDate = new Date();
     const diffTime = Math.abs(
