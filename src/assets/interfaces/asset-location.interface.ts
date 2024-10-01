@@ -21,6 +21,7 @@ interface AssetLocationHistory {
   }
 export interface AssetLocation extends Document {
   assetId: string;
+  adminId: string;
   locationHistory: AssetLocationHistory[];
   userAssignment: AssetUserAssignment | null;
   usageLogs: AssetUsageLog[];

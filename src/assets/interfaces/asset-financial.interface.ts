@@ -8,6 +8,7 @@ export interface Cost {
   }
 export interface AssetFinancial extends Document {
   assetId: string;
+  adminId: string;
   purchasePrice: number;
   depreciationValue: number;
   depreciationTimePeriod: string;

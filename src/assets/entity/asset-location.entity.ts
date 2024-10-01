@@ -18,6 +18,8 @@ class AssetLocationHistory {
     usageNotes?: string;
   }
 export class AssetDocument {
+  assetId: string;
+  adminId: string;
   locationHistory: AssetLocationHistory[];
   userAssignment: AssetUserAssignment | null;
   usageLogs: AssetUsageLog[];

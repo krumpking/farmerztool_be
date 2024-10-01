@@ -43,7 +43,7 @@ export class AssetsController {
       },
     },
   })
-  async createAsset(@Body() createAssetDto: CreateAssetDTO, @Request() req){
+  async createAsset(@Body() createAssetDto: CreateAssetDTO, @Request() req) {
     const user = this.getUserFromRequest(req);
     return this.assetsService.createAsset(user.adminId, createAssetDto);
   }
@@ -65,7 +65,7 @@ export class AssetsController {
   })
   async getAllAssetsForAdmin(@Request() req) {
     const user = this.getUserFromRequest(req);
-    
+
     return this.assetsService.getAllAssetsForAdmin(user.adminId);
   }
 
@@ -190,6 +190,26 @@ export class AssetsController {
     return this.assetsService.getSpecificInspection(id);
   }
 
+  @Get('inspection/all/farm')
+  @Roles(Role.Admin, Role.AssetManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all inspections for a farm',
+    description: 'Get all inspections for a farm',
+    responses: {
+      200: {
+        description: 'Inspections fetched successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getAllInspectionRecordsForFarm(@Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.assetsService.getAllInspectionRecordsForAdmin(user.adminId);
+  }
+
 
   @Patch('inspection/:id/update')
   @Roles(Role.Admin, Role.AssetManager)
@@ -293,6 +313,27 @@ export class AssetsController {
     return this.assetsService.getSpecificFinancial(id);
   }
 
+  @Get('financial/all/farm')
+  @Roles(Role.Admin, Role.AssetManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all financials for a farm',
+    description: 'Get all financials for a farm',
+    responses: {
+      200: {
+        description: 'Financials fetched successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getAllFinancialRecordsForFarm(@Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.assetsService.getAllFinancialRecordsForAdmin(user.adminId
+    );
+  }
+
 
   @Patch('financial/:id/update')
   @Roles(Role.Admin, Role.AssetManager)
@@ -372,6 +413,26 @@ export class AssetsController {
   })
   async getAllLocationsForAsset(@Param('id') id: string) {
     return this.assetsService.getAllLocationsForAsset(id);
+  }
+
+  @Get('location/all/farm')
+  @Roles(Role.Admin, Role.AssetManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all locations for a farm',
+    description: 'Get all locations for a farm',
+    responses: {
+      200: {
+        description: 'Locations fetched successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getAllLocationsForFarm(@Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.assetsService.getAllLocationsForAdmin(user.adminId);
   }
 
 
