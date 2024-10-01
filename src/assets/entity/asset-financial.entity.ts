@@ -8,6 +8,7 @@ export class Cost {
   }
 export class AssetFinancial {
   assetId: string;
+  adminId: string;
   purchasePrice: number;
   depreciationValue: number;
   depreciationTimePeriod: string;
