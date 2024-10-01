@@ -163,7 +163,20 @@ export class AssetsService {
         }
     }
 
-    async updateInspection(id: string, updateInspectionDto: UpdateAssetInpsectionDto): Promise<ResponseDto>{
+    async getAllInspectionRecordsForAdmin(adminId: string): Promise<ResponseDto> {
+        try {
+            const inspections = await this.assetInspectionModel.find({ adminId });
+            if (!inspections || inspections.length === 0) {
+                return ResponseDto.errorResponse("No inspections found");
+            }
+            return ResponseDto.successResponse("Inspections fetched", inspections);
+        } catch (error) {
+            console.log(error);
+            return ResponseDto.errorResponse("Something went wrong, fetching inspections")
+        }
+    }
+
+    async updateInspection(id: string, updateInspectionDto: UpdateAssetInpsectionDto): Promise<ResponseDto> {
         try {
             const updatedInspection = await this.assetInspectionModel.findByIdAndUpdate(id, updateInspectionDto, { new: true }).exec();
             if (!updatedInspection) {
@@ -229,6 +242,19 @@ export class AssetsService {
         }
     }
 
+    async getAllFinancialRecordsForAdmin(adminId: string): Promise<ResponseDto> {
+        try {
+            const financials = await this.assetFinancialModel.find({ adminId });
+            if (!financials || financials.length === 0) {
+                return ResponseDto.errorResponse("No financials found");
+            }
+            return ResponseDto.successResponse("Financials fetched", financials);
+        } catch (error) {
+            console.log(error);
+            return ResponseDto.errorResponse("Something went wrong, fetching financials")
+        }
+    }
+
 
     async getSpecificFinancial(id: string): Promise<ResponseDto> {
         try {
@@ -244,7 +270,7 @@ export class AssetsService {
     }
 
 
-    async updateFinancial(id: string, updateAssetFinancialDto: UpdateAssetFinancial): Promise<ResponseDto>{
+    async updateFinancial(id: string, updateAssetFinancialDto: UpdateAssetFinancial): Promise<ResponseDto> {
         try {
             const updatedFinancial = await this.assetFinancialModel.findByIdAndUpdate(id, updateAssetFinancialDto, { new: true }).exec();
             if (!updatedFinancial) {
@@ -282,13 +308,13 @@ export class AssetsService {
                 return ResponseDto.errorResponse("User not found");
             }
 
-            const {finishTime, startTime} = createAssetLocationDto?.userAssignment;
+            const { finishTime, startTime } = createAssetLocationDto?.userAssignment;
             const userAssignment = {
                 userId: user._id,
                 startTime: startTime,
                 finishTime: finishTime
             }
-               
+
             const location = await this.assetLocationModel.create({
                 ...createAssetLocationDto,
                 userAssignment: userAssignment,
@@ -319,6 +345,20 @@ export class AssetsService {
         }
     }
 
+    async getAllLocationsForAdmin(adminId: string): Promise<ResponseDto> {
+        try {
+            const locations = await this.assetLocationModel.find({ adminId });
+            if (!locations || locations.length === 0) {
+                return ResponseDto.errorResponse("No locations found");
+            }
+            return ResponseDto.successResponse("Locations fetched", locations);
+        } catch (error) {
+            console.log(error);
+            return ResponseDto.errorResponse("Something went wrong, fetching locations")
+        }
+    }
+
+
 
     async getSpecificLocation(id: string): Promise<ResponseDto> {
         try {
@@ -333,7 +373,7 @@ export class AssetsService {
         }
     }
 
-    async updateLocation(id: string, updateAssetLocationDto: UpdateAssetLocationDto): Promise<ResponseDto>{
+    async updateLocation(id: string, updateAssetLocationDto: UpdateAssetLocationDto): Promise<ResponseDto> {
         try {
             const updatedLocation = await this.assetLocationModel.findByIdAndUpdate(id, updateAssetLocationDto, { new: true }).exec();
             if (!updatedLocation) {
