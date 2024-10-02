@@ -431,6 +431,13 @@ export class HatcheryService {
               _id: "$date",
               eggRecordsCount: { $sum: "$eggQuantity" }
             }
+          },
+          {
+            $project: {
+              _id: 0,
+              date: "$_id",
+              eggRecordsCount: 1
+            }
           }
         ]
       ).exec();
