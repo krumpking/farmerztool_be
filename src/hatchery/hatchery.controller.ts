@@ -282,5 +282,26 @@ export class HatcheryController {
       return await this.eggService.getCustomerSuccessRate(adminId,dateRange);
     }
 
+    @Get('kpi/total-eggs-per-day/farm')
+    @Roles(Role.Admin, Role.EggsHatcheryManager)
+    @Permissions(Permission.Read)
+    @ApiOperation({
+      summary: "Get total eggs per day",
+      description: "Get total eggs per day",
+      responses: {
+        200: {
+          description: 'Total eggs per day fetched successfully',
+        },
+        401: {
+          description: 'Unauthorized',
+        },
+      },
+    })
+    async getTotalEggsPerDay(@Request() req) {
+      const user = this.getUserFromRequest(req);
+      const adminId = user.adminId;
+      return this.eggService.getNumberOfEggsPerDayForAdmin(adminId);
+    }
+
   }
   

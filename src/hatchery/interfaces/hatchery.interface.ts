@@ -26,4 +26,6 @@ export interface EggRecord extends Document {
   attr: {
     [key: string]: any;
   };
+  createdAt: Date;
+  updatedAt: Date;
 }
