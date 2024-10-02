@@ -429,7 +429,7 @@ export class HatcheryService {
           {
             $group: {
               _id: "$date",
-              eggRecordsCount: { $sum: 1 }
+              eggRecordsCount: { $sum: "$eggQuantity" }
             }
           }
         ]
