@@ -150,7 +150,7 @@ export class HatcheryService {
       if (createReminderDTO.reminderDate <= now) {
         return ResponseDto.errorResponse('Reminder date must be in the future')
       }
-      
+
       const existingReminder = await this.reminderModel.findOne({
         adminId,
         ...createReminderDTO,
@@ -160,7 +160,7 @@ export class HatcheryService {
         return ResponseDto.errorResponse("Reminder already exists");
       }
 
-      
+
       const reminder = await this.reminderModel.create({
         ...createReminderDTO,
         adminId,
@@ -182,7 +182,7 @@ export class HatcheryService {
     }
   }
 
-  private async sendAzurePushNotification(reminderData: CreateReminderDTO): Promise<ResponseDto> { 
+  private async sendAzurePushNotification(reminderData: CreateReminderDTO): Promise<ResponseDto> {
     const notificationPayload = {
       data: {
         message: `Reminder: ${reminderData.reminderTitle} is scheduled for ${reminderData.reminderDate.toISOString()} at ${reminderData.reminderTime}`,
@@ -212,7 +212,7 @@ export class HatcheryService {
   async getReminderForCollection(adminId: string): Promise<ResponseDto> {
     try {
 
-      const reminders = await this.reminderModel.find({ adminId}).exec();
+      const reminders = await this.reminderModel.find({ adminId }).exec();
 
       if (!reminders || reminders.length === 0) {
         return ResponseDto.errorResponse("No reminders found")
@@ -283,20 +283,20 @@ export class HatcheryService {
 
 
   // egg rate calculations
-  async getEggHatchRate(eggType: string, dateRange: {start: Date, end: Date}): Promise<number>{
+  async getEggHatchRate(eggType: string, dateRange: { start: Date, end: Date }): Promise<number> {
     const totalEggs = await this.eggModel.countDocuments({
       animalType: eggType,
       eggCollectionDate: {
-        $gte: dateRange.start, 
+        $gte: dateRange.start,
         $lte: dateRange.end
       }
     });
 
     const totalHatchedEggs = await this.eggModel.countDocuments({
       animalType: eggType,
-      hatchingDate: {$exists: true},
+      hatchingDate: { $exists: true },
       eggCollectionDate: {
-        $gte: dateRange.start, 
+        $gte: dateRange.start,
         $lte: dateRange.end
       },
     });
@@ -306,12 +306,12 @@ export class HatcheryService {
 
   // rejection rate
 
-  async getRejectionRate(eggType: string, dateRange: {start: Date, end: Date}): Promise<number>{
+  async getRejectionRate(eggType: string, dateRange: { start: Date, end: Date }): Promise<number> {
     const totalRejections = await this.eggModel.countDocuments({
       animalType: eggType,
       rejectionStatus: true,
       eggCollectionDate: {
-        $gte: dateRange.start, 
+        $gte: dateRange.start,
         $lte: dateRange.end
       }
     });
@@ -319,7 +319,7 @@ export class HatcheryService {
     const totalEggs = await this.eggModel.countDocuments({
       animalType: eggType,
       eggCollectionDate: {
-        $gte: dateRange.start, 
+        $gte: dateRange.start,
         $lte: dateRange.end
       }
     });
@@ -329,12 +329,12 @@ export class HatcheryService {
 
   // days to hatch
 
-  async getDaysToHatch(eggType: string, dateRange: {start: Date, end: Date}): Promise<number>{
+  async getDaysToHatch(eggType: string, dateRange: { start: Date, end: Date }): Promise<number> {
     const hatchedEggs = await this.eggModel.find({
       animalType: eggType,
-      hatchingDate: {$exists: true},
+      hatchingDate: { $exists: true },
       eggCollectionDate: {
-        $gte: dateRange.start, 
+        $gte: dateRange.start,
         $lte: dateRange.end
       },
     });
@@ -345,73 +345,106 @@ export class HatcheryService {
     }, 0);
 
     return hatchedEggs.length ? totalDays / hatchedEggs.length : 0;
-    }
+  }
 
-    // accuracy on hatching on time
+  // accuracy on hatching on time
 
-    async getAccuracyOnHatching(eggType: string, expectedDays: number, dateRange: {start: Date, end: Date}): Promise<number>{
-      const hatchedEggs = await this.eggModel.find({
-        animalType: eggType,
-        hatchingDate: {$exists: true},
-        eggCollectionDate: {
-          $gte: dateRange.start, 
-          $lte: dateRange.end
-        },
-      });
+  async getAccuracyOnHatching(eggType: string, expectedDays: number, dateRange: { start: Date, end: Date }): Promise<number> {
+    const hatchedEggs = await this.eggModel.find({
+      animalType: eggType,
+      hatchingDate: { $exists: true },
+      eggCollectionDate: {
+        $gte: dateRange.start,
+        $lte: dateRange.end
+      },
+    });
 
-      const onTimeHatchCount = hatchedEggs.filter(egg => {
-        const days = (egg.hatchingDate.getTime() - egg.eggCollectionDate.getTime()) / (1000 * 3600 * 24);
-        return days <= expectedDays;
-      }).length;
+    const onTimeHatchCount = hatchedEggs.filter(egg => {
+      const days = (egg.hatchingDate.getTime() - egg.eggCollectionDate.getTime()) / (1000 * 3600 * 24);
+      return days <= expectedDays;
+    }).length;
 
-      return (onTimeHatchCount / hatchedEggs.length) * 100;
-    }
+    return (onTimeHatchCount / hatchedEggs.length) * 100;
+  }
 
-    //customer success rate
+  //customer success rate
 
-    async getCustomerSuccessRate(
-      adminId: string,
-      dateRange: { start: Date; end: Date }
-    ): Promise<{ successRate: number }> {
-      const customer = await this.eggModel.aggregate([
-        {
-          $match: {
-            adminId: new Types.ObjectId(adminId),
-            eggCollectionDate: {
-              $gte: dateRange.start,
-              $lte: dateRange.end
-            },
-            source: 'Customer'
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalEggs: { $sum: '$eggQuantity' },
-            successfulHatches: {
-              $sum: { $cond: [{ $ifNull: ['$hatchingDate', false] }, 1, 0] }
-            }
-          }
-        },
-        {
-          $project: {
-            successRate: {
-              $multiply: [{ $divide: ['$successfulHatches', '$totalEggs'] }, 100]
-            },
-            _id: 0
+  async getCustomerSuccessRate(
+    adminId: string,
+    dateRange: { start: Date; end: Date }
+  ): Promise<{ successRate: number }> {
+    const customer = await this.eggModel.aggregate([
+      {
+        $match: {
+          adminId: new Types.ObjectId(adminId),
+          eggCollectionDate: {
+            $gte: dateRange.start,
+            $lte: dateRange.end
+          },
+          source: 'Customer'
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalEggs: { $sum: '$eggQuantity' },
+          successfulHatches: {
+            $sum: { $cond: [{ $ifNull: ['$hatchingDate', false] }, 1, 0] }
           }
         }
-      ]);
-    
-      // Check if any result was returned, handle case where there is no data
-      if (!customer || customer.length === 0) {
-        return { successRate: 0 }; // If no records found, return 0 success rate
+      },
+      {
+        $project: {
+          successRate: {
+            $multiply: [{ $divide: ['$successfulHatches', '$totalEggs'] }, 100]
+          },
+          _id: 0
+        }
       }
-    
-      return { successRate: customer[0].successRate };
+    ]);
+
+    // Check if any result was returned, handle case where there is no data
+    if (!customer || customer.length === 0) {
+      return { successRate: 0 }; // If no records found, return 0 success rate
     }
 
+    return { successRate: customer[0].successRate };
+  }
 
+
+  async getNumberOfEggsPerDayForAdmin(adminId: string): Promise<ResponseDto> {
+    try {
+      const eggRecords = await this.eggModel.aggregate(
+        [
+          {
+            $match: {
+              adminId: new Types.ObjectId(adminId)
+            }
+          },
+          {
+            $addFields: {
+              date: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
+            }
+          },
+          {
+            $group: {
+              _id: "$date",
+              eggRecordsCount: { $sum: 1 }
+            }
+          }
+        ]
+      ).exec();
+
+      if (!eggRecords || eggRecords.length === 0) {
+        return ResponseDto.errorResponse("No records found")
+      }
+
+      return ResponseDto.successResponse("Egg records fetched", eggRecords);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, while getting egg records")
+    }
+  }
 
 
 }
