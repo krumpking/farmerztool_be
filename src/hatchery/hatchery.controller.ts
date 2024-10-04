@@ -232,7 +232,7 @@ export class HatcheryController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: "Get egg performance",
-    description: "Get egg performance. NB: Please note that here are using query params so we have to do this in the url using postman url= .../kpi/customer-performance?animalType=Chicken&startEnd=2022-01-01&endDate=2024-01-01. NB: date format is %Y-%m-%d",
+    description: "Get egg performance. NB: Please note that here are using query params so we have to do this in the url using postman url= .../kpi/customer-performance?animalType=Chicken&startEnd=2022-01-01&endDate=2024-01-01. NB: date format is %Y-%m-%d OR Use Query Params in Postman",
     responses: {
       200: {
         description: 'Egg performance fetched successfully',
