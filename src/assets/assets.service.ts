@@ -207,7 +207,7 @@ export class AssetsService {
     /////////////////////////ASSET FINANCIAL///////////////////////////////////////
 
 
-    async createAssetFinancial(id: string, createAssetFinancialDto: CreateAssetFinancialDTO): Promise<ResponseDto> {
+    async createAssetFinancial(id: string, adminId: string, createAssetFinancialDto: CreateAssetFinancialDTO): Promise<ResponseDto> {
         try {
             const asset = await this.assetModel.findById(id);
             if (!asset) {
@@ -215,7 +215,8 @@ export class AssetsService {
             }
             const financial = await this.assetFinancialModel.create({
                 ...createAssetFinancialDto,
-                assetId: id
+                assetId: id,
+                adminId
             });
             const createdFinancial = await this.assetFinancialModel.findById(financial._id);
             if (!createdFinancial) {
@@ -319,6 +320,7 @@ export class AssetsService {
                 ...createAssetLocationDto,
                 userAssignment: userAssignment,
                 assetId: id,
+                adminId
             });
             const createdLocation = await this.assetLocationModel.findById(location._id);
             if (!createdLocation) {
