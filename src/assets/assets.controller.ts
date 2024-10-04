@@ -269,8 +269,9 @@ export class AssetsController {
       },
     },
   })
-  async createAssetFinancial(@Param('id') id: string, @Body() createAssetFinancialDto: CreateAssetFinancialDTO) {
-    return this.assetsService.createAssetFinancial(id, createAssetFinancialDto);
+  async createAssetFinancial(@Param('id') id: string, @Body() createAssetFinancialDto: CreateAssetFinancialDTO, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.assetsService.createAssetFinancial(id, user.adminId, createAssetFinancialDto);
   }
 
 
