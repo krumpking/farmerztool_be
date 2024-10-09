@@ -27,7 +27,7 @@ export class CreateAnimalRequestDto {
   age: number;
 
   @ApiProperty({
-    description: 'Health status of the animal',
+    description: 'Health status of the animal. NB include these values: excellent, very good, good, fair, poor',
     enum: ["excellent", "very good", "good", "fair", "poor"],
     example: 'good'
   })
@@ -36,7 +36,7 @@ export class CreateAnimalRequestDto {
   healthStatus: string;
 
   @ApiProperty({
-    description: 'Status of the animal',
+    description: 'Status of the animal.NB: include these values: pending, approved, rejected',
     enum: ["pending", "approved", "rejected"],
     default: "pending",
     example: 'pending'
