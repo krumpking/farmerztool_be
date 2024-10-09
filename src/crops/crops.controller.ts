@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   Request,
-  HttpException,
   UseGuards,
 } from '@nestjs/common';
 import { CropsService } from './crops.service';
@@ -99,7 +98,6 @@ export class CropsController {
   async updateCrop(
     @Param('id') id: string,
     @Body() updateCropDto: UpdateCropDto,
-    @Request() req,
   ) {
     return this.cropsService.updateCrop(id, updateCropDto);
   }
@@ -110,7 +108,7 @@ export class CropsController {
     summary: 'Deletes crop record by id',
     description: 'Deletes crop record by id',
   })
-  async deleteCrop(@Param('id') id: string, @Request() req) {
+  async deleteCrop(@Param('id') id: string) {
     return this.cropsService.deleteCrop(id);
   }
 

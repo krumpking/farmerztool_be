@@ -2,6 +2,7 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import {
   ANIMAL_MODEL,
   ANIMAL_PRODUCTION_MODEL,
+  ANIMAL_REQUEST_MODEL,
   BREEDING_MODEL,
   FEED_MODEL,
   VACCINATION_MODEL
@@ -25,6 +26,9 @@ import { UpdateVaccinationDto } from './dto/updateVaccination.dto';
 import { Production } from './interfaces/production.interface';
 import { CreateProductionDto } from './dto/production.dto';
 import { UpdateProductionDto } from './dto/updateProduction.dto';
+import { AnimalRequest } from './interfaces/animal-request.interface';
+import { CreateAnimalRequestDto } from './dto/animalByEmployeeRequest.dto';
+import { UpdateAnimalRequestDto } from './dto/update-animal-request.dto';
 
 @Injectable()
 export class AnimalsService {
@@ -40,7 +44,9 @@ export class AnimalsService {
     @Inject(USER_MODEL)
     private userModel: Model<UserDto>,
     @Inject(ANIMAL_PRODUCTION_MODEL)
-    private productionModel: Model<Production>
+    private productionModel: Model<Production>,
+    @Inject(ANIMAL_REQUEST_MODEL) 
+    private animalRequestModel: Model<AnimalRequest>
   ) { }
 
 
@@ -546,6 +552,195 @@ export class AnimalsService {
       return ResponseDto.errorResponse("Something went wrong, failed to delete production");
     }
   }
+
+
+  //////////////////////////////ANIMAL REQUEST //////////////////////////////////////
+
+  async addAnimalRequest(adminId: string, createAnimalRequestDto: CreateAnimalRequestDto): Promise<ResponseDto> {
+    try {
+      const existingRequest = await this.animalRequestModel.findOne({
+        ...createAnimalRequestDto
+      })
+
+      if (existingRequest) {
+        return ResponseDto.errorResponse("Request already exist");
+      }
+
+      const animalRequestInstance = await this.animalRequestModel.create({
+        ...createAnimalRequestDto,
+        adminId
+      });
+
+      const createdRequest = await this.animalRequestModel.findById(animalRequestInstance._id)
+
+      if (!createdRequest) {
+        return ResponseDto.errorResponse("Failed to add animal request");
+      }
+
+      return ResponseDto.successResponse("Request added", createdRequest);
+
+
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to add animal request");
+    }
+  }
+
+  async getAllAnimalRequests(adminId: string): Promise<ResponseDto> {
+    try {
+      const requests = await this.animalRequestModel.find({ adminId });
+
+      if (!requests || requests.length === 0) {
+        return ResponseDto.errorResponse("No available requests");
+      }
+      return ResponseDto.successResponse("Requests fetched", requests);
+     } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch requests");
+    }
+  }
+
+  async rejectAnimalRequest(id: string): Promise<ResponseDto>{
+    try{
+      const request = await this.animalRequestModel.findByIdAndUpdate(id, {$set: {status: 'rejected'}}, {new: true});
+      if (!request) {
+        return ResponseDto.errorResponse("Failed to reject request");
+      }
+      return ResponseDto.successResponse("Request rejected", request);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to reject request");
+    }
+  }
+
+  async approveAnimalRequest(id: string): Promise<ResponseDto>{
+    try{
+      const request = await this.animalRequestModel.findByIdAndUpdate(id, {$set: {status: 'approved'}}, {new: true});
+      if (!request) {
+        return ResponseDto.errorResponse("Failed to approve request");
+      }
+      return ResponseDto.successResponse("Request approved", request);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to approve request");
+    }
+  }
+
+  async getRejectedAnimalRequest(adminId: string): Promise<ResponseDto>{
+    try{
+      const request = await this.animalRequestModel.find({adminId, status: 'rejected'});
+      if (!request || request.length === 0) {
+        return ResponseDto.errorResponse("No available requests");
+      }
+      return ResponseDto.successResponse("Request fetched", request);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch request");
+    }
+  }
+
+  async getApprovedAnimalRequest(adminId: string): Promise<ResponseDto>{
+    try{
+      const request = await this.animalRequestModel.find({adminId, status: 'approved'});
+      if (!request || request.length === 0) {
+        return ResponseDto.errorResponse("No available request");
+      }
+      return ResponseDto.successResponse("Request fetched", request);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch request");
+    }
+  }
+
+  async getPendingAnimalRequest(adminId: string): Promise<ResponseDto>{
+    try{
+      
+      const request = await this.animalRequestModel.find({adminId, status: "pending"});
+      if (!request || request.length === 0) {
+        return ResponseDto.errorResponse("No available request");
+      }
+      return ResponseDto.successResponse("Request fetched", request);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch request");
+    }
+  }
+
+  async getSpecificAnimalRequest(Id: string): Promise<ResponseDto> {
+    try {
+      const request = await this.animalRequestModel.findById(Id);
+      if (!request) {
+        return ResponseDto.errorResponse("Failed to fetch request");
+      }
+      return ResponseDto.successResponse("Request fetched", request);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to fetch request");
+    }
+  }
+
+  async addApprovedAnimalToFarmAnimals(id: string): Promise<ResponseDto>{
+    try{
+      const approvedAnimal = await this.animalRequestModel.findOne({
+        _id: id,
+        status: 'approved'
+      });
+      if (!approvedAnimal) {
+        return ResponseDto.errorResponse("Failed to fetch request");
+      }
+
+      console.log(approvedAnimal);
+      
+
+      const animal = await this.animalModel.create({
+        animalId: approvedAnimal.animalId,
+        addedBy: approvedAnimal.addedBy,
+        animaltype: approvedAnimal.animaltype,
+        attr: approvedAnimal.attr,
+        adminId: approvedAnimal.adminId
+
+      });
+
+      const createdAnimal = await this.animalModel.findById(animal._id);
+      if (!createdAnimal) {
+        return ResponseDto.errorResponse("Failed to add animal to farm animals");
+      }
+      return ResponseDto.successResponse("Animal added to farm animals", createdAnimal);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to add animal to farm animals");
+    }
+  }
+
+  async updateAnimalRequest(Id: string, updateAnimalRequestDto: UpdateAnimalRequestDto): Promise<ResponseDto> {
+    try {
+      const updatedRequest = await this.animalRequestModel.findByIdAndUpdate(Id, updateAnimalRequestDto,
+        { new: true });
+
+      if (!updatedRequest) {
+        return ResponseDto.errorResponse("Failed to update request");
+      }
+      return ResponseDto.successResponse("Request updated", updatedRequest);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to update request");
+    }
+  }
+
+  async deleteAnimalRequest(Id: string): Promise<ResponseDto> {
+    try {
+      const deletedRequest = await this.animalRequestModel.findByIdAndDelete(Id);
+      if (!deletedRequest) {
+        return ResponseDto.errorResponse("Failed to delete request");
+      }
+      return ResponseDto.successResponse("Request deleted", null);
+    } catch (error) {
+      console.log(error);
+      return ResponseDto.errorResponse("Something went wrong, failed to delete request");
+    }
+  }
+  
+
 
 
 }

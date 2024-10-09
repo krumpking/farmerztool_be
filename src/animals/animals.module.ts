@@ -3,6 +3,7 @@ import { AnimalsService } from './animals.service';
 import { AnimalsController } from './animals.controller';
 import {
   animalProviders,
+  animalRequestProviders,
   breedingProviders,
   feedProviders,
   productionProviders,
@@ -22,6 +23,7 @@ import { userProviders } from 'src/auth/auth.providers';
     ...vaccinationProviders,
     ...userProviders,
     ...productionProviders,
+    ...animalRequestProviders,
   ],
 })
 export class AnimalsModule {}
