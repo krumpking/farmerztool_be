@@ -75,13 +75,9 @@ export class AuthController {
   async sendOtp(@Body('email') email: string): Promise<ResponseDto> {
     const res = await this.authService.sendOtp(email);
     if (res) {
-      return { data: [], message: 'Otp sent successfully', success: true };
+      return ResponseDto.successResponse('Otp sent successfully', [], 200);
     } else {
-      return {
-        data: null,
-        message: 'There was an error sending otp',
-        success: false,
-      };
+      return ResponseDto.errorResponse('There was an error sending otp', 500);
     }
   }
 

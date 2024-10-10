@@ -4,6 +4,7 @@ import { AnimalSchema } from './schema/animal.schema';
 import {
   ANIMAL_MODEL,
   ANIMAL_PRODUCTION_MODEL,
+  ANIMAL_REQUEST_MODEL,
   BREEDING_MODEL,
   FEED_MODEL,
   VACCINATION_MODEL
@@ -12,6 +13,7 @@ import { BreedingInfoSchema } from './schema/breeding.schema';
 import { FeedSchema } from './schema/feed.schema';
 import { VaccinationSchema } from './schema/vaccination.schema';
 import { AnimalProductionSchema } from './schema/production.schema';
+import { AnimalRequestSchema } from './schema/animalbyEmployee.schema';
 
 
 export const animalProviders = [
@@ -60,3 +62,12 @@ export const productionProviders = [
       inject: [DATABASE_CONNECTION]
     },
 ];
+
+export const animalRequestProviders = [
+  {
+    provide: ANIMAL_REQUEST_MODEL,
+    useFactory: (connection: Connection) =>
+      connection.model('AnimalRequest', AnimalRequestSchema),
+    inject: [DATABASE_CONNECTION],
+  },
+]
