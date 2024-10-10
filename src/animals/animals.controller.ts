@@ -27,6 +27,7 @@ import { Permissions, Roles } from 'src/roles/roles.decorators';
 import { Permission } from 'src/roles/permissions.enum';
 import { CreateAnimalRequestDto } from './dto/animalByEmployeeRequest.dto';
 import { UpdateAnimalRequestDto } from './dto/update-animal-request.dto';
+import { LocationDTO } from './dto/animal-location.dto';
 
 
 
@@ -145,6 +146,85 @@ export class AnimalsController {
     return this.animalsService.deleteAnimal(Id);
   }
 
+
+  ///////////////////////ANIMAL LOCATIONS//////////////////
+
+  @Patch(':id/location/add')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Add location to an animal',
+    description: 'Adds location to an animal by id mongoose id',
+    responses: {
+      200: {
+        description: 'Location added successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async addLocation(@Param('id') id: string, @Body() location: LocationDTO) {
+    return this.animalsService.addLocation(id, location);
+  }
+
+  @Get(':id/locations')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all locations for an animal',
+    description: 'Retrieves all locations for an animal by id mongoose id',
+    responses: {
+      200: {
+        description: 'Location retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getLocations(@Param('id') id: string) {
+    return this.animalsService.getAllLocations(id);
+  }
+
+  @Get(':id/location/:locationId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get specific single location for an animal',
+    description: 'Retrieves location for an animal by id mongoose id ,  locationId is also a mongoose id from location data',
+    responses: {
+      200: {
+        description: 'Location retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
+    return this.animalsService.getSpecificLocation(id,locationId );
+  }
+
+  @Patch(':id/location/:locationId/delete')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Delete location from an animal',
+    description: 'Deletes location from an animal by id mongoose id, locationId is also a mongoose id from location data',
+    responses: {
+      200: {
+        description: 'Location deleted successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async deleteLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
+    return this.animalsService.deleteLocation(id, locationId);
+  }
+
   ////////////////////////// BREEDING //////////////////////////////////////////////
 
   @Post('breeding/add')
@@ -226,7 +306,7 @@ export class AnimalsController {
     },
   })
   async updateBreeding(@Param('id') animalId: string, @Request() req, @Body() updateBreedingDto: UpdateBreedingDto) {
-    return this.animalsService.updateBreedingInfo(animalId,updateBreedingDto);
+    return this.animalsService.updateBreedingInfo(animalId, updateBreedingDto);
   }
 
   @Delete('breeding/:animalId')
@@ -596,7 +676,7 @@ export class AnimalsController {
 
   @Delete('production/:Id')
   @Roles(Role.Admin, Role.AnimalManager)
-@Permissions(Permission.Delete)
+  @Permissions(Permission.Delete)
   @ApiOperation({
     summary: 'Delete production information',
     description: 'Deletes production information',

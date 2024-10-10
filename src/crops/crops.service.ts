@@ -4,7 +4,7 @@ import { UpdateCropDto } from './dto/update-crop.dto';
 import { ACTIVITY_MODEL, CROP_MODEL, FERTILIZER_PESTICIDE_MODEL, FINANCIAL_MODE, IRRIGATION_MODEL, PEST_DISEASE_MODEL } from './constants/crop.constants';
 import { Model } from 'mongoose';
 import { Crop } from './interfaces/crop.interface';
-import { ResponseDto } from 'src/common/response.dto';
+import { ResponseDto, ResponseHandler } from 'src/common/response.dto';
 import { USER_MODEL } from 'src/auth/constants/auth.constants';
 import { User } from 'src/auth/interfaces/user.interface';
 import { Irrigation } from './interfaces/irrigation.interface';
@@ -60,7 +60,7 @@ export class CropsService {
         ]
       });
       if (existingCrop) {
-        return ResponseDto.errorResponse("Crop already exists, please try again");
+        return ResponseHandler.handleBadRequest("Crop already exists, please try again")
       }
 
       const crop = await this.cropModel.create({
