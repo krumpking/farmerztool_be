@@ -7,4 +7,9 @@ export const AnimalSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now() },
   animaltype: { type: String, required: true },
   attr: { type: Object, required: true },
-}, {timestamps: true});
+  locations: [{
+    date: { type: Date, required: true },
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true }
+  }],
+}, { timestamps: true });

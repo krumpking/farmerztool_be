@@ -7,8 +7,8 @@ import {
   Param,
   Delete,
   Request,
-  HttpException,
   UseGuards,
+  Res,
 } from '@nestjs/common';
 import { CropsService } from './crops.service';
 import { CreateCropDto } from './dto/create-crop.dto';
@@ -50,18 +50,20 @@ export class CropsController {
     description: 'Creates new crop record',
     responses: {
       201: {
-        description: 'Animal created successfully',
+        description: 'Crop created successfully',
       },
-      401: {
-        description: 'Unauthorized',
+      400: {
+        description: 'Crop already exists, please try again',
       },
     },
   })
-  async addCrop(@Body() createCropDto: CreateCropDto, @Request() req) {
+  async addCrop(@Body() createCropDto: CreateCropDto, @Request() req, @Res() res) {
     const user = this.getUserFromRequest(req);
     const adminId = user.adminId;
 
-    return this.cropsService.addCrop(adminId, createCropDto);
+    const response = await this.cropsService.addCrop(adminId, createCropDto);
+
+    res.status(response.statusCode).json(response);
   }
 
   @Get()
@@ -99,7 +101,6 @@ export class CropsController {
   async updateCrop(
     @Param('id') id: string,
     @Body() updateCropDto: UpdateCropDto,
-    @Request() req,
   ) {
     return this.cropsService.updateCrop(id, updateCropDto);
   }
@@ -110,7 +111,7 @@ export class CropsController {
     summary: 'Deletes crop record by id',
     description: 'Deletes crop record by id',
   })
-  async deleteCrop(@Param('id') id: string, @Request() req) {
+  async deleteCrop(@Param('id') id: string) {
     return this.cropsService.deleteCrop(id);
   }
 

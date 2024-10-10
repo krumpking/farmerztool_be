@@ -25,6 +25,9 @@ import { RolesGuard } from 'src/roles/roles.guard';
 import { Role } from 'src/roles/roles.enum';
 import { Permissions, Roles } from 'src/roles/roles.decorators';
 import { Permission } from 'src/roles/permissions.enum';
+import { CreateAnimalRequestDto } from './dto/animalByEmployeeRequest.dto';
+import { UpdateAnimalRequestDto } from './dto/update-animal-request.dto';
+import { LocationDTO } from './dto/animal-location.dto';
 
 
 
@@ -143,6 +146,85 @@ export class AnimalsController {
     return this.animalsService.deleteAnimal(Id);
   }
 
+
+  ///////////////////////ANIMAL LOCATIONS//////////////////
+
+  @Patch(':id/location/add')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Add location to an animal',
+    description: 'Adds location to an animal by id mongoose id',
+    responses: {
+      200: {
+        description: 'Location added successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async addLocation(@Param('id') id: string, @Body() location: LocationDTO) {
+    return this.animalsService.addLocation(id, location);
+  }
+
+  @Get(':id/locations')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all locations for an animal',
+    description: 'Retrieves all locations for an animal by id mongoose id',
+    responses: {
+      200: {
+        description: 'Location retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getLocations(@Param('id') id: string) {
+    return this.animalsService.getAllLocations(id);
+  }
+
+  @Get(':id/location/:locationId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get specific single location for an animal',
+    description: 'Retrieves location for an animal by id mongoose id ,  locationId is also a mongoose id from location data',
+    responses: {
+      200: {
+        description: 'Location retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
+    return this.animalsService.getSpecificLocation(id,locationId );
+  }
+
+  @Patch(':id/location/:locationId/delete')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Delete location from an animal',
+    description: 'Deletes location from an animal by id mongoose id, locationId is also a mongoose id from location data',
+    responses: {
+      200: {
+        description: 'Location deleted successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async deleteLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
+    return this.animalsService.deleteLocation(id, locationId);
+  }
+
   ////////////////////////// BREEDING //////////////////////////////////////////////
 
   @Post('breeding/add')
@@ -224,7 +306,7 @@ export class AnimalsController {
     },
   })
   async updateBreeding(@Param('id') animalId: string, @Request() req, @Body() updateBreedingDto: UpdateBreedingDto) {
-    return this.animalsService.updateBreedingInfo(animalId,updateBreedingDto);
+    return this.animalsService.updateBreedingInfo(animalId, updateBreedingDto);
   }
 
   @Delete('breeding/:animalId')
@@ -594,7 +676,7 @@ export class AnimalsController {
 
   @Delete('production/:Id')
   @Roles(Role.Admin, Role.AnimalManager)
-@Permissions(Permission.Delete)
+  @Permissions(Permission.Delete)
   @ApiOperation({
     summary: 'Delete production information',
     description: 'Deletes production information',
@@ -609,6 +691,223 @@ export class AnimalsController {
   })
   async deleteProduction(@Param('Id') Id: string) {
     return this.animalsService.deleteProduction(Id);
+  }
+
+
+  ////////////////////////////ANIMAL REQUEST //////////////////////////////
+
+  @Post('request/add')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    summary: 'Create new animal request',
+    description: 'Creates new animal request',
+    responses: {
+      201: {
+        description: 'Animal request created successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async addAnimalRequest(@Body() createAnimalRequestDto: CreateAnimalRequestDto, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.addAnimalRequest(user?.adminId, createAnimalRequestDto)
+  }
+
+  @Get('request/all/farm')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all animal requests for a farm',
+    description: 'Retrieves all animal requests for a farm',
+    responses: {
+      200: {
+        description: 'Animal requests retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getAllAnimalRequestsInFarm(@Request() req) {
+    const user = this.getUserFromRequest(req)
+    return this.animalsService.getAllAnimalRequests(user?.adminId);
+  }
+
+  @Get('request/:Id')
+  @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get specific animal request',
+    description: 'Retrieves specific animal request',
+    responses: {
+      200: {
+        description: 'Animal request retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getSpecificAnimalRequest(@Param('Id') Id: string) {
+    return this.animalsService.getSpecificAnimalRequest(Id);
+  }
+
+  @Patch('request/:Id')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Update animal request',
+    description: 'Updates animal request',
+    responses: {
+      200: {
+        description: 'Animal request updated successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async updateAnimalRequest(@Param('Id') Id: string, @Body() updateAnimalRequestDto: UpdateAnimalRequestDto) {
+    return this.animalsService.updateAnimalRequest(Id, updateAnimalRequestDto);
+  }
+
+  @Delete('request/:Id')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Delete)
+  @ApiOperation({
+    summary: 'Delete animal request',
+    description: 'Deletes animal request',
+    responses: {
+      200: {
+        description: 'Animal request deleted successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async deleteAnimalRequest(@Param('Id') Id: string) {
+    return this.animalsService.deleteAnimalRequest(Id);
+  }
+
+  @Patch('request/:id/reject')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Reject animal request',
+    description: 'Rejects animal request',
+    responses: {
+      200: {
+        description: 'Animal request rejected successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async rejectAnimalRequest(@Param('id') id: string) {
+    return this.animalsService.rejectAnimalRequest(id);
+  }
+
+  @Patch('request/:id/approve')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Approve animal request',
+    description: 'Approves animal request',
+    responses: {
+      200: {
+        description: 'Animal request approved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async approveAnimalRequest(@Param('id') id: string) {
+    return this.animalsService.approveAnimalRequest(id);
+  }
+
+  @Get('request/rejected/animals')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all rejected animal requests',
+    description: 'Retrieves all rejected animal requests',
+    responses: {
+      200: {
+        description: 'Rejected animal requests retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getAllRejectedRequests(@Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.getRejectedAnimalRequest(user?.adminId);
+  }
+
+  @Get('request/approved/animals')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all approved animal requests',
+    description: 'Retrieves all approved animal requests',
+    responses: {
+      200: {
+        description: 'Approved animal requests retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getAllApprovedRequests(@Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.getApprovedAnimalRequest(user?.adminId);
+  }
+
+  @Get('request/pending/animals')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get all pending animal requests',
+    description: 'Retrieves all pending animal requests',
+    responses: {
+      200: {
+        description: 'Pending animal requests retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getAllPendingRequests(@Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.getPendingAnimalRequest(user?.adminId);
+  }
+
+  @Post('request/:id/add-animal-farm')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Create)
+  @ApiOperation({
+    summary: 'Add animal to farm',
+    description: 'Adds animal to farm',
+    responses: {
+      201: {
+        description: 'Animal added to farm successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async addAnimalToFarm(@Param('id') id: string) {
+    return this.animalsService.addApprovedAnimalToFarmAnimals(id);
   }
 
 
