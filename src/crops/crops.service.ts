@@ -90,9 +90,7 @@ export class CropsService {
       const addCropToFarm = await this.farmModel.findByIdAndUpdate(farm._id, {
         $push: { crops: createdCrop._id },
       });
-      console.log(addCropToFarm);
-      console.log(addCropToFarm);
-      console.log(addCropToFarm);
+     
       if (!addCropToFarm) {
         await this.cropModel.findByIdAndDelete(crop._id);
         return ResponseDto.errorResponse('Failed to add Crop to farm');
@@ -390,7 +388,7 @@ export class CropsService {
   ): Promise<ResponseDto> {
     try {
       const farm = await this.farmModel.findOne({ adminId })
-      .populate('crop');;
+      .populate('crop');
       if (!farm) {
         return ResponseDto.errorResponse('Invalid adminId');
       }
@@ -535,7 +533,8 @@ export class CropsService {
 
   async getAllFinancialRecordsForFarm(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({ adminId });
+      const farm = await this.farmModel.findOne({ adminId })
+      .populate('crop');
       if (!farm) {
         return ResponseDto.errorResponse('Invalid adminId');
       }
@@ -698,7 +697,8 @@ export class CropsService {
 
   async getAllActivityRecordsForFarm(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({ adminId });
+      const farm = await this.farmModel.findOne({ adminId })
+      .populate('crop');
       if (!farm) {
         return ResponseDto.errorResponse('Invalid adminId');
       }
@@ -855,7 +855,8 @@ export class CropsService {
 
   async getAllPestDiseaseIssueForFarm(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({ adminId });
+      const farm = await this.farmModel.findOne({ adminId })
+      .populate('crop');
       if (!farm) {
         return ResponseDto.errorResponse('Farm not found');
       }
