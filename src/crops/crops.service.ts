@@ -389,7 +389,8 @@ export class CropsService {
     adminId: string,
   ): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({ adminId });
+      const farm = await this.farmModel.findOne({ adminId })
+      .populate('crop');;
       if (!farm) {
         return ResponseDto.errorResponse('Invalid adminId');
       }
