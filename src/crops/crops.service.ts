@@ -828,7 +828,8 @@ export class CropsService {
 
       const pestDiseaseIssue = await this.pestdiseaseModel.create({
         ...createPestDiseaseIssueDto,
-        cropId: crop._id,
+        cropId  : crop._id,
+        crop:crop,
         adminId,
       });
 
