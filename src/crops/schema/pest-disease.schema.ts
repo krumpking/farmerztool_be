@@ -2,7 +2,7 @@ import {Schema } from 'mongoose';
 
 
 export const pestDiseaseIssueSchema: Schema = new Schema({
-  cropId: {
+  crop: {
     type: Schema.Types.ObjectId,
     ref: 'Crop',
     required: true
