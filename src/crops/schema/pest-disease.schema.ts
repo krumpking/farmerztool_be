@@ -7,6 +7,10 @@ export const pestDiseaseIssueSchema: Schema = new Schema({
     ref: 'Crop',
     required: true
   },
+  cropId: {
+    type: Schema.Types.ObjectId,
+    required: true
+  },
   adminId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
