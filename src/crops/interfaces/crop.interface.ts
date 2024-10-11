@@ -23,4 +23,9 @@ export interface Crop extends Document {
     weatherConditionsNotes: string;
   }[];
   soilType: string;
+  irrigations: string[];
+  fertPest: string[];
+  financials: string[];
+  activities: string[];
+  pestDiseasesIssue: string[];
 }
