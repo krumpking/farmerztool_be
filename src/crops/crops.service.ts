@@ -678,7 +678,7 @@ export class CropsService {
 
       const createdActivity = await this.activityModel
         .findById(activity._id)
-        .populate('cropId');
+        .populate('crop');
 
       if (!createdActivity) {
         return ResponseDto.errorResponse('Failed to create activity record');
