@@ -90,7 +90,7 @@ export class CropsService {
       const addCropToFarm = await this.farmModel.findByIdAndUpdate(farm._id, {
         $push: { crops: createdCrop._id },
       });
-     
+      
       if (!addCropToFarm) {
         await this.cropModel.findByIdAndDelete(crop._id);
         return ResponseDto.errorResponse('Failed to add Crop to farm');
@@ -210,6 +210,8 @@ export class CropsService {
       if (!createdIrrigation) {
         return ResponseDto.errorResponse('Failed to create irrigation record');
       }
+
+      await this.cropModel.findByIdAndUpdate(crop._id, {$push: {irrigations: createdIrrigation._id}});
 
       return ResponseDto.successResponse(
         'Irrigation record created',
@@ -369,6 +371,8 @@ export class CropsService {
         );
       }
 
+      await this.cropModel.findByIdAndUpdate(id, {$push: {fertPest: createdFertPest._id}});
+
       return ResponseDto.successResponse(
         `Created ${createFertlizerPesticideDto.recordType} record`,
         createdFertPest,
@@ -518,6 +522,10 @@ export class CropsService {
       if (!createdFinancial) {
         return ResponseDto.errorResponse('Failed to create financial record');
       }
+
+      await this.cropModel.findByIdAndUpdate(id, {
+        $push: { financials: createdFinancial._id },
+      });
 
       return ResponseDto.successResponse(
         'Financial record created successfully',
@@ -671,17 +679,23 @@ export class CropsService {
 
       const activity = await this.activityModel.create({
         ...createActivityDto,
-        cropId: crop._id,
+        crop: crop._id,
         adminId: adminId,
       });
 
       const createdActivity = await this.activityModel
         .findById(activity._id)
-        .populate('cropId');
+        .populate('crop');
 
       if (!createdActivity) {
         return ResponseDto.errorResponse('Failed to create activity record');
       }
+
+      await this.cropModel
+        .findByIdAndUpdate(crop._id, {
+          $push: { activities: createdActivity._id },
+        })
+        .exec();
 
       return ResponseDto.successResponse(
         'Activity record created successfully',
@@ -725,7 +739,7 @@ export class CropsService {
         return ResponseDto.errorResponse('Crop not found');
       }
 
-      const records = await this.activityModel.find({ cropId: crop._id });
+      const records = await this.activityModel.find({ crop: crop._id });
 
       if (!records || records.length === 0) {
         return ResponseDto.errorResponse('No available records');
@@ -814,7 +828,7 @@ export class CropsService {
       }
 
       const pestDiseaseIssueExists = await this.pestdiseaseModel.findOne({
-        cropId: id,
+        crop: id,
         adminId: id,
         issueType: createPestDiseaseIssueDto.issueType,
         severity: createPestDiseaseIssueDto.severity,
@@ -828,8 +842,7 @@ export class CropsService {
 
       const pestDiseaseIssue = await this.pestdiseaseModel.create({
         ...createPestDiseaseIssueDto,
-        cropId  : crop._id,
-        crop:crop,
+        crop: crop._id,
         adminId,
       });
 
@@ -840,6 +853,10 @@ export class CropsService {
       if (!createPestDisease) {
         return ResponseDto.errorResponse('Failed to create pest disease issue');
       }
+
+      await this.cropModel.findByIdAndUpdate(id, {
+        $push: { pestDiseasesIssue: createPestDisease._id },
+      });
 
       return ResponseDto.successResponse(
         'Pest disease issue created successfully',
@@ -881,7 +898,7 @@ export class CropsService {
         return ResponseDto.errorResponse('Crop not found');
       }
 
-      const pestDisease = await this.pestdiseaseModel.find({ cropId: id });
+      const pestDisease = await this.pestdiseaseModel.find({ crop: id });
 
       if (!pestDisease || pestDisease.length === 0) {
         return ResponseDto.errorResponse('No available records');

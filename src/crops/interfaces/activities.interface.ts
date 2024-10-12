@@ -11,7 +11,7 @@ export interface CropActivity extends Document {
     time: string;
     responseFromCrop: string;
     IoTDeviceData: string;
-    cropId: Schema.Types.ObjectId;
+    crop: Schema.Types.ObjectId;
     adminId: Schema.Types.ObjectId;
     squareFootage: number;
     tonnage: number;

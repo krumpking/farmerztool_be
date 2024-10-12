@@ -11,7 +11,7 @@ export const activitySchema = new Schema({
     time: { type: String, required: true },
     responseFromCrop: { type: String, required: true },
     IoTDeviceData: { type: String, required: false },
-    cropId: { type: Schema.Types.ObjectId, ref: 'Crop', required: true },
+    crop: { type: Schema.Types.ObjectId, ref: 'Crop', required: true },
     adminId: { type: Schema.Types.ObjectId, ref: 'Admin', required: true },
     squareFootage: { type: Number, required: true },
     tonnage: { type: Number, required: true }
