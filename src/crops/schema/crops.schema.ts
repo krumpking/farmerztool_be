@@ -1,5 +1,6 @@
 import * as mongoose from "mongoose";
 
+
 const growthRecords = new mongoose.Schema({
   growthStage: {
     type: String,
@@ -73,5 +74,43 @@ export const CropSchema = new mongoose.Schema({
   soilType: {
     type: String,
     required: true
+  },
+
+  irrigations: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Irrigation"
+  }],
+
+  fertPest: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "FertiliserPesticide"
+  }],
+
+  financials: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "CropFinancial"
+  }],
+
+  activities: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "CropActivity"
+  }],
+
+  pestDiseasesIssue: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "PestDiseaseIssue"
+  }]
+});
+
+
+
+CropSchema.pre('findOneAndDelete', async function(next) {
+  try {
+    const cropId = this.getQuery()._id;
+    const modelNames = ['Irrigation', 'FertiliserPesticide', 'CropFinancial', 'CropActivity', 'PestDiseaseIssue'];
+    const models = modelNames.map((modelName) => mongoose.model(modelName));
+    await Promise.all(models.map((model) => model.deleteMany({ crop: cropId })));
+  } catch (error) {
+    next(error);
   }
 });
