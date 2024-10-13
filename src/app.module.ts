@@ -10,6 +10,7 @@ import { AnimalsModule } from './animals/animals.module';
 import { CropsModule } from './crops/crops.module';
 import { HatcheryModule } from './hatchery/hatchery.module';
 import { AssetsModule } from './assets/assets.module';
+import { RemindersModule } from './reminders/reminders.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AssetsModule } from './assets/assets.module';
     CropsModule,
     HatcheryModule,
     AssetsModule,
+    RemindersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

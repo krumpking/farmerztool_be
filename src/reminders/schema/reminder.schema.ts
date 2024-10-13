@@ -1,7 +1,6 @@
 import * as mongoose from "mongoose";
 
 export const reminderSchema = new mongoose.Schema({
-  collectionName: { type: String, required: true },
   reminderTitle: { type: String, required: true },
   reminderCategory: { type: String, required: true },
   reminderNotes: { type: String },
