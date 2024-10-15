@@ -6,7 +6,6 @@ import {
   Body,
   Param,
   Request,
-  HttpException,
   Patch,
   UseGuards,
 } from '@nestjs/common';
@@ -84,7 +83,7 @@ export class AnimalsController {
     return this.animalsService.getAnimal(Id);
   }
 
-  @Get('all/:adminId')
+  @Get('all')
   @Roles(Role.Admin, Role.FarmManager, Role.AnimalManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -99,13 +98,9 @@ export class AnimalsController {
       },
     },
   })
-  async getAllAnimals(@Param('adminId') adminId: string, @Request() req) {
+  async getAllAnimals( @Request() req) {
     const user = this.getUserFromRequest(req);
-    if (user?.adminId === adminId) {
-      return this.animalsService.getAllMyAnimals(adminId);
-    } else {
-      throw new HttpException("Unauthorised", 401);
-    }
+    return this.animalsService.getAllMyAnimals(user?.adminId);
   }
 
   @Patch(':Id')
@@ -227,7 +222,7 @@ export class AnimalsController {
 
   ////////////////////////// BREEDING //////////////////////////////////////////////
 
-  @Post('breeding/add')
+  @Post(':id/breeding/add')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Create)
   @ApiOperation({
@@ -242,12 +237,11 @@ export class AnimalsController {
       },
     },
   })
-  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Request() req) {
-    const user = this.getUserFromRequest(req);
-    return this.animalsService.addBreedingInfo(user.adminId, createBreedingDto);
+  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Param('id') id: string ) {
+    return this.animalsService.addBreedingInfo(id, createBreedingDto);
   }
 
-  @Get('breeding/:animalId')
+  @Get('breeding/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -262,9 +256,8 @@ export class AnimalsController {
       },
     },
   })
-  async getBreedingInfo(@Param('animalId') animalId: string, @Request() req) {
-    const user = this.getUserFromRequest(req);
-    return this.animalsService.getAnimalBreedingInfo(user?.adminId, animalId);
+  async getBreedingInfo(@Param('id') Id: string) {
+    return this.animalsService.getAnimalBreedingInfo(Id);
   }
 
   @Get('breeding/all/:adminId')
@@ -330,7 +323,7 @@ export class AnimalsController {
 
   ////////////////// FEEDING /////////////////////////////////////////////////////////
 
-  @Post('feeding/add/info')
+  @Post(':id/feeding/add/info')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Create)
   @ApiOperation({
@@ -345,9 +338,8 @@ export class AnimalsController {
       },
     },
   })
-  async createFeeding(@Body() createFeedingDto: CreateFeedDto, @Request() req) {
-    const user = this.getUserFromRequest(req);
-    return this.animalsService.addFeed(user.adminId, createFeedingDto);
+  async createFeeding(@Body() createFeedingDto: CreateFeedDto, @Param('id') id: string) {
+    return this.animalsService.addFeed(id, createFeedingDto);
   }
 
   @Get('feeding/:id')
@@ -369,12 +361,12 @@ export class AnimalsController {
     return this.animalsService.getFeedingInfo(id);
   }
 
-  @Get('feeding/animal/:animalId')
+  @Get('feeding/animal/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get feeding information for an animal',
-    description: 'Retrieves feeding information for an animal',
+    description: 'Retrieves feeding information for an animal using animal mongoose _id',
     responses: {
       200: {
         description: 'Feeding information retrieved successfully',
@@ -384,9 +376,8 @@ export class AnimalsController {
       },
     },
   })
-  async getFeedingInfoByAnimalId(@Param('animalId') animalId: string, @Request() req) {
-    const user = this.getUserFromRequest(req)
-    return this.animalsService.getAnimalFeedingInfo(animalId, user?.adminId);
+  async getFeedingInfoByAnimalId(@Param('id') id: string) {
+    return this.animalsService.getAnimalFeedingInfo(id);
   }
 
   @Get('feeding/all/:adminId')
@@ -452,12 +443,12 @@ export class AnimalsController {
 
   /////////////////////////VACCINATION/////////////////////////////////////////////
 
-  @Post('vaccination/add')
+  @Post(':id/vaccination/add')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Create)
   @ApiOperation({
     summary: 'Create new vaccination information',
-    description: 'Creates new vaccination information',
+    description: 'Creates new vaccination information using animal mongoose _id',
     responses: {
       201: {
         description: 'Vaccination information created successfully',
@@ -467,12 +458,11 @@ export class AnimalsController {
       },
     },
   })
-  async addVaccination(@Body() createVaccinationDto: CreateVaccinationDto, @Request() req) {
-    const user = this.getUserFromRequest(req)
-    return this.animalsService.addVaccination(user?.adminId, createVaccinationDto)
+  async addVaccination(@Body() createVaccinationDto: CreateVaccinationDto, @Param('id') id: string) {
+    return this.animalsService.addVaccination(id, createVaccinationDto)
   }
 
-  @Get('vaccination/all/farm/:adminId')
+  @Get('vaccination/all/farm/')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -487,19 +477,17 @@ export class AnimalsController {
       },
     },
   })
-  async getAllVaccinesInFarm(@Param('adminId') adminId: string, @Request() req) {
-    const user = this.getUserFromRequest(req)
-    if (user?.adminId === adminId) {
-      return this.animalsService.getAllVaccinesInFarm(adminId);
-    }
+  async getAllVaccinesInFarm(@Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.getAllVaccinesInFarm(user?.adminId);
   }
 
-  @Get('vaccination/all/animal/:animalId')
+  @Get('vaccination/all/animal/:id')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all vaccination information for an animal',
-    description: 'Retrieves all vaccination information for an animal',
+    description: 'Retrieves all vaccination information for an animal by mongoose _id',
     responses: {
       200: {
         description: 'Vaccination information retrieved successfully',
@@ -509,9 +497,8 @@ export class AnimalsController {
       },
     },
   })
-  async getAllVaccinesPerAnimal(@Param('animalId') animalId: string, @Request() req) {
-    const user = this.getUserFromRequest(req)
-    return this.animalsService.getAllVaccinesPerAnimal(animalId, user?.adminId);
+  async getAllVaccinesPerAnimal(@Param('id') id: string) {
+    return this.animalsService.getAllVaccinesPerAnimal(id);
   }
 
   @Get('vaccination/:Id')
@@ -573,7 +560,7 @@ export class AnimalsController {
 
   /////////////////////////PRODUCTION//////////////////////////////////////
 
-  @Post('production/add')
+  @Post(':id/production/add')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Create)
   @ApiOperation({
@@ -588,12 +575,11 @@ export class AnimalsController {
       },
     },
   })
-  async addProduction(@Body() createProductionDto: CreateProductionDto, @Request() req) {
-    const user = this.getUserFromRequest(req);
-    return this.animalsService.addProduction(user?.adminId, createProductionDto)
+  async addProduction(@Body() createProductionDto: CreateProductionDto, @Param('id') id: string) {
+    return this.animalsService.addProduction(id, createProductionDto)
   }
 
-  @Get('production/all/farm/:adminId')
+  @Get('production/all/farm')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -608,20 +594,17 @@ export class AnimalsController {
       },
     },
   })
-  async getAllProductionsInFarm(@Param('adminId') adminId: string, @Request() req) {
-    const user = this.getUserFromRequest(req)
-    if (user?.adminId === adminId) {
-      return this.animalsService.getAllProductionsInFarm(adminId);
-    }
-
+  async getAllProductionsInFarm(@Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.getAllProductionsInFarm(user?.adminId);
   }
 
-  @Get('production/all/animal/:animalId')
+  @Get('production/all/animal/:id')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all production information for an animal',
-    description: 'Retrieves all production information for an animal',
+    description: 'Retrieves all production information for an animal by animal mongoose_id',
     responses: {
       200: {
         description: 'Production information retrieved successfully',
@@ -631,12 +614,11 @@ export class AnimalsController {
       },
     },
   })
-  async getAllProductiondPerAnimal(@Param('animalId') animalId: string, @Request() req) {
-    const user = this.getUserFromRequest(req)
-    return this.animalsService.getAllProductionsPerAnimal(animalId, user?.adminId);
+  async getAllProductiondPerAnimal(@Param('id') id: string) {
+    return this.animalsService.getAllProductionsPerAnimal(id);
   }
 
-  @Get('production/:Id')
+  @Get('production/:id')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -651,11 +633,11 @@ export class AnimalsController {
       },
     },
   })
-  async getSpecificProduction(@Param('Id') Id: string) {
+  async getSpecificProduction(@Param('id') Id: string) {
     return this.animalsService.getSpecificProduction(Id);
   }
 
-  @Patch('production/:Id')
+  @Patch('production/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
@@ -670,7 +652,7 @@ export class AnimalsController {
       },
     },
   })
-  async updateProduction(@Param('Id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto) {
+  async updateProduction(@Param('id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto) {
     return this.animalsService.updateProduction(Id, updateVaccinationDto);
   }
 

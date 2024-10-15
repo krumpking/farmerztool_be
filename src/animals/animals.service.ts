@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import {Inject, Injectable } from '@nestjs/common';
 import {
   ANIMAL_MODEL,
   ANIMAL_PRODUCTION_MODEL,
@@ -60,7 +60,7 @@ export class AnimalsService {
 
 
       if (animalExists) {
-        return ResponseDto.errorResponse("Animal already exists");
+        return ResponseHandler.handleBadRequest("Animal already exists");
       }
       const newAnimalInstance = await this.animalModel.create({
         ...createAnimalDto,
@@ -70,14 +70,14 @@ export class AnimalsService {
       const createdAnimal = await this.animalModel.findById(newAnimalInstance._id);
 
       if (!createdAnimal) {
-        return ResponseDto.errorResponse("Failed to create animal record");
+        return ResponseHandler.handleBadRequest("Failed to create animal record");
       }
 
-      return ResponseDto.successResponse("Animal record created successfully", createdAnimal);
+      return ResponseHandler.handleCreated("Animal record created successfully", createdAnimal);
 
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Somethinng went wrong. Failed to create animal record");
+      return ResponseHandler.handleInternalServerError("Somethinng went wrong. Failed to create animal record");
     }
   }
 
@@ -87,12 +87,12 @@ export class AnimalsService {
       const animalExists = await this.animalModel.findById(Id)
 
       if (!animalExists) {
-        return ResponseDto.errorResponse("Failed to fetch animal");
+        return ResponseHandler.handleBadRequest("Failed to fetch animal");
       }
 
-      return ResponseDto.successResponse("Animal found", animalExists);
+      return ResponseHandler.handleOk("Animal found", animalExists);
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong while fetching the animal");
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching the animal");
     }
   }
 
@@ -104,10 +104,10 @@ export class AnimalsService {
       });
 
       if (!animalExists || animalExists.length <= 0) {
-        return ResponseDto.errorResponse("Failed to fetch animals");
+        return ResponseHandler.handleBadRequest("Failed to fetch animals");
       }
 
-      return ResponseDto.successResponse("Animals fetched successfully", animalExists);
+      return ResponseHandler.handleOk("Animals fetched successfully", animalExists);
     } catch (error) {
       return ResponseDto.errorResponse("Something went wrong. Failed to fetch animal");
     }
@@ -118,14 +118,13 @@ export class AnimalsService {
       const animalExist = await this.animalModel.findByIdAndUpdate(Id, updateAnimalDto, { new: true }).exec();
 
       if (!animalExist) {
-        throw new HttpException("Animal not found", 404);
+        return ResponseHandler.handleBadRequest("Animal not found");
       }
 
-      return ResponseDto.successResponse("Animal updated successfully", animalExist);
+      return ResponseHandler.handleOk("Animal updated successfully", animalExist);
     } catch (error) {
       console.log(error);
-
-      return ResponseDto.errorResponse('Something went wrong updating animal')
+      return ResponseHandler.handleInternalServerError('Something went wrong updating animal')
     }
   }
 
@@ -133,11 +132,11 @@ export class AnimalsService {
     try {
       const animal = await this.animalModel.findByIdAndDelete(Id);
       if (!animal) {
-        return ResponseDto.errorResponse("Failed to delete animal");
+        return ResponseHandler.handleBadRequest("Failed to delete animal");
       }
-      return ResponseDto.successResponse("Animal deteted successfully", "")
+      return ResponseHandler.handleNoContent("Animal deteted successfully")
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong deleting animal")
+      return ResponseHandler.handleInternalServerError("Something went wrong deleting animal")
     }
   }
 
@@ -166,10 +165,10 @@ export class AnimalsService {
         return ResponseHandler.handleBadRequest("Failed to fetch locations");
       }
 
-      if (animal.locations.length === 0) {
+      if (!animal.locations || animal.locations.length === 0) {
         return ResponseHandler.handleBadRequest("No available locations");
       }
-      return ResponseDto.successResponse("Locations fetched", animal.locations);
+      return ResponseHandler.handleOk("Locations fetched", animal.locations);
     } catch (error) {
       console.log(error);
       return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch locations");
@@ -190,7 +189,7 @@ export class AnimalsService {
         return ResponseHandler.handleBadRequest("Location not found");
       }
 
-      return ResponseDto.successResponse("Location fetched", location);
+      return ResponseHandler.handleOk("Location fetched", location);
     } catch (error) {
       console.log(error);
       return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch location");
@@ -225,7 +224,7 @@ export class AnimalsService {
         return ResponseHandler.handleBadRequest("Failed to delete location");
       }
 
-      return ResponseDto.successResponse("Location deleted", null);
+      return ResponseHandler.handleNoContent("Location deleted");
     } catch (error) {
       console.log(error);
       return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete location");
@@ -235,60 +234,67 @@ export class AnimalsService {
 
   ////////////////////////////////////// BREEDING //////////////////////////////////////////////
 
-  async addBreedingInfo(adminId: string, breedingInfo: CreateBreedingDto): Promise<ResponseDto> {
+  async addBreedingInfo(id: string, breedingInfo: CreateBreedingDto): Promise<ResponseDto> {
     try {
-      if (breedingInfo.animalId === null) {
-        return ResponseDto.errorResponse("null animal id")
-      }
-      const animalExist = await this.animalModel.findOne({
-        animalId: breedingInfo.animalId,
-        adminId: adminId
-      });
+      const animalExist = await this.animalModel.findById(id);
       if (!animalExist) {
-        return ResponseDto.errorResponse("Animal does not exist");
+        return ResponseHandler.handleNotFound("Animal does not exist");
+      }
+
+      if(animalExist.animalId !== breedingInfo.animalId){
+        return ResponseHandler.handleBadRequest("Invalid animal ID");
       }
 
       const existingBreedingInfo = await this.breedingModel.findOne({
         ...breedingInfo,
-        adminId: adminId
+        adminId: animalExist.adminId,
+        animal: animalExist._id
       });
 
       if (existingBreedingInfo) {
-        return ResponseDto.errorResponse("Breeding information already exist please navigate to the breeding update")
+        return ResponseHandler.handleBadRequest("Breeding information already exists please navigate to the breeding update")
       }
 
       const breedingInstance = await this.breedingModel.create({
         ...breedingInfo,
-        adminId: adminId
+        adminId: animalExist.adminId,
+        animal: animalExist._id,
+        animalType: animalExist.animalType
       })
 
       const createdBreed = await this.breedingModel.findById(breedingInstance._id)
 
       if (!createdBreed) {
-        return ResponseDto.errorResponse("Failed to add breed")
+        return ResponseHandler.handleBadRequest("Failed to add breed")
       }
 
-      return ResponseDto.successResponse("Breed created", createdBreed);
+      await this.animalModel.findByIdAndUpdate(animalExist._id, {
+        $push: {
+          breedings: createdBreed._id
+        }},
+        {new: true}
+      ).exec();
+
+      return ResponseHandler.handleCreated("Breed created", createdBreed);
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to add breeding")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to add breeding")
     }
   }
 
-  async getAnimalBreedingInfo(adminId: string, animalId: string): Promise<ResponseDto> {
+  async getAnimalBreedingInfo(Id: string): Promise<ResponseDto> {
     try {
       // check animal brreding info
       const breeding = await this.breedingModel.find({
-        animalId: animalId,
-        adminId: adminId
+        animal: Id
       });
 
       if (!breeding || breeding.length === 0) {
-        return ResponseDto.errorResponse("Breeding information not found");
+        return ResponseHandler.handleNotFound("Breeding information not found");
       }
 
-      return ResponseDto.successResponse("Breeding information fetched", breeding)
+      return ResponseHandler.handleOk("Breeding information fetched", breeding)
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Breeding information not found");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Breeding information not found");
     }
   }
 
@@ -296,11 +302,11 @@ export class AnimalsService {
     try {
       const allBreedingInfo = await this.breedingModel.find({ adminId }).exec();
       if (!allBreedingInfo || allBreedingInfo.length === 0) {
-        return ResponseDto.errorResponse("No breeding information found");
+        return ResponseHandler.handleNotFound("No breeding information found");
       }
-      return ResponseDto.successResponse("All breeding information fetched", allBreedingInfo);
+      return ResponseHandler.handleOk("All breeding information fetched", allBreedingInfo);
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to fetch all breeding information");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch all breeding information");
     }
   }
 
@@ -310,11 +316,11 @@ export class AnimalsService {
       delete updateInfo.animalId;
       const updatedBreeding = await this.breedingModel.findByIdAndUpdate(animalId, updateInfo, { new: true }).exec();
       if (!updatedBreeding) {
-        return ResponseDto.errorResponse("Breeding information not found");
+        return ResponseHandler.handleNotFound("Breeding information not found");
       }
-      return ResponseDto.successResponse("Breeding information updated", updatedBreeding);
+      return ResponseHandler.handleOk("Breeding information updated", updatedBreeding);
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to update breeding information");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to update breeding information");
     }
   }
 
@@ -322,43 +328,63 @@ export class AnimalsService {
     try {
       const existingBreedingInfo = await this.breedingModel.findByIdAndDelete(animalId);
       if (!existingBreedingInfo) {
-        return ResponseDto.errorResponse("Breeding information not found");
+        return ResponseHandler.handleNotFound("Breeding information not found");
       }
-      return ResponseDto.successResponse("Breeding information deleted", null);
+      return ResponseHandler.handleNoContent("Breeding information deleted");
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to delete breeding information");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to delete breeding information");
     }
   }
 
 
   ////////////////////////////////////FEEDING////////////////////////////////////////////////////////////
 
-  async addFeed(adminId: string, feedInfo: CreateFeedDto): Promise<ResponseDto> {
+  async addFeed(id: string, feedInfo: CreateFeedDto): Promise<ResponseDto> {
     try {
+      
+      const animalExist = await this.animalModel.findById(id);
+      if (!animalExist) {
+        return ResponseDto.errorResponse("Animal does not exist");
+      }
+
+      if(animalExist.animalId !== feedInfo.animalId){
+        return ResponseHandler.handleBadRequest("Invalid animal ID");
+      }
+
       // check feed is exist
       const feedExists = await this.feedingModel.findOne({
         ...feedInfo,
-        adminId
+        adminId: animalExist.adminId,
+        animal: animalExist._id
       });
 
       if (feedExists) {
-        return ResponseDto.errorResponse("Feed already exist")
+        return ResponseHandler.handleBadRequest("Feed already exist")
       }
 
       const feedingInstance = await this.feedingModel.create({
         ...feedInfo,
-        adminId
+        adminId: animalExist.adminId,
+        animal: animalExist._id,
+        animalType: animalExist.animalType
       })
 
       const createdFeed = await this.feedingModel.findById(feedingInstance._id);
 
       if (!createdFeed) {
-        return ResponseDto.errorResponse("Failed to create feed")
+        return ResponseHandler.handleBadRequest("Failed to create feed")
       }
-      return ResponseDto.successResponse("Feed created", createdFeed);
+
+      await this.animalModel.findByIdAndUpdate(
+        animalExist._id,
+        {$push: {feedings: createdFeed._id}},
+        {new: true}
+      ).exec();
+      return ResponseHandler.handleCreated("Feed created", createdFeed);
 
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to create feed")
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to create feed")
     }
   }
 
@@ -366,24 +392,24 @@ export class AnimalsService {
     try {
       const feed = await this.feedingModel.findById(id);
       if (!feed) {
-        return ResponseDto.errorResponse("Failed to fetch feed")
+        return ResponseHandler.handleBadRequest("Failed to fetch feed")
       }
 
-      return ResponseDto.successResponse("Feed fetched", feed);
+      return ResponseHandler.handleOk("Feed fetched", feed);
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to fetch feed")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feed")
     }
   }
 
-  async getAnimalFeedingInfo(animalId: string, adminId: string): Promise<ResponseDto> {
+  async getAnimalFeedingInfo(id: string): Promise<ResponseDto> {
     try {
-      const feed = await this.feedingModel.find({ animalId, adminId });
+      const feed = await this.feedingModel.find({ animal: id});
       if (!feed || feed.length === 0) {
-        return ResponseDto.errorResponse("No feeds found")
+        return ResponseHandler.handleNotFound("No feeds found")
       }
-      return ResponseDto.successResponse("Feeds fetched", feed);
+      return ResponseHandler.handleOk("Feeds fetched", feed);
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to fetch feeds")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feeds")
     }
   }
 
@@ -393,12 +419,12 @@ export class AnimalsService {
       const animalExists = await this.feedingModel.find({ adminId });
 
       if (!animalExists || animalExists.length === 0) {
-        return ResponseDto.errorResponse("No feeding found")
+        return ResponseHandler.handleNotFound("No feeding found")
       }
 
-      return ResponseDto.successResponse("Feeding fetched", animalExists);
+      return ResponseHandler.handleOk("Feeding fetched", animalExists);
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to fetch feeds")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feeds")
     }
   }
 
@@ -406,11 +432,11 @@ export class AnimalsService {
     try {
       const updateFeed = await this.feedingModel.findByIdAndUpdate(id, updateFeedDto, { new: true });
       if (!updateFeed) {
-        return ResponseDto.errorResponse("Failed to update feed")
+        return ResponseHandler.handleBadRequest("Failed to update feed")
       }
-      return ResponseDto.successResponse("Feed Updated", updateFeed);
+      return ResponseHandler.handleOk("Feed Updated", updateFeed);
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to update feed")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to update feed")
     }
   }
 
@@ -418,49 +444,61 @@ export class AnimalsService {
     try {
       const feed = await this.feedingModel.findByIdAndDelete(id);
       if (!feed) {
-        return ResponseDto.errorResponse("Feed not found");
+        return ResponseHandler.handleBadRequest("Feed not found");
       }
-      return ResponseDto.successResponse("Feed deleted successfully", null);
+      return ResponseHandler.handleNoContent("Feed deleted successfully");
     } catch (error) {
-      return ResponseDto.errorResponse("Something went wrong. Failed to delete feed");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to delete feed");
     }
   }
 
 
   ////////////////////VACINATION/////////////////////////////////////////////////////////
 
-  async addVaccination(adminId: string, createVaccinationDto: CreateVaccinationDto): Promise<ResponseDto> {
+  async addVaccination(id: string, createVaccinationDto: CreateVaccinationDto): Promise<ResponseDto> {
     try {
-      const animal = await this.animalModel.findOne({ animalId: createVaccinationDto.animalId });
-      if (!animal) {
+      const animalExist = await this.animalModel.findById(id)
+      if (!animalExist) {
         return ResponseDto.errorResponse("Animal not found");
+      }
+
+      if(animalExist.animalId !== createVaccinationDto.animalId){
+        return ResponseHandler.handleBadRequest("Invalid animal ID");
       }
 
       const existingVaccine = await this.vaccinationModel.findOne({
         ...createVaccinationDto,
-        adminId
+        adminId: animalExist.adminId,
+        animal: animalExist._id
       })
       if (existingVaccine) {
-        return ResponseDto.errorResponse("Vaccine already exist");
+        return ResponseHandler.handleBadRequest("Vaccine already exist");
       }
       const vaccination = await this.vaccinationModel.create({
         ...createVaccinationDto,
-        adminId
+        adminId: animalExist.adminId,
+        animal: animalExist._id,
+        animalType: animalExist.animalType
       });
 
       const createdVaccine = await this.vaccinationModel.findById(vaccination._id);
 
       if (!createdVaccine) {
-        return ResponseDto.errorResponse("Failed to create vaccine");
+        return ResponseHandler.handleBadRequest("Failed to create vaccine");
       }
 
+      await this.animalModel.findByIdAndUpdate(
+        animalExist._id,
+        {$push: {vaccinations: createdVaccine._id}},
+        {new: true}
+      ).exec();
 
-      return ResponseDto.successResponse("Vaccine created", createdVaccine);
+      return ResponseHandler.handleCreated("Vaccine created", createdVaccine);
 
 
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to add vaccine");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to add vaccine");
     }
   }
 
@@ -468,25 +506,25 @@ export class AnimalsService {
     try {
       const vaccines = await this.vaccinationModel.find({ adminId }).exec();
       if (!vaccines || vaccines.length === 0) {
-        return ResponseDto.errorResponse("No available vaccine");
+        return ResponseHandler.handleNotFound("No available vaccine");
       }
-      return ResponseDto.successResponse("Vaccines fetched", vaccines);
+      return ResponseHandler.handleOk("Vaccines fetched", vaccines);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch vaccines");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch vaccines");
     }
   }
 
-  async getAllVaccinesPerAnimal(animalId: string, adminId: string): Promise<ResponseDto> {
+  async getAllVaccinesPerAnimal(id: string): Promise<ResponseDto> {
     try {
-      const vaccines = await this.vaccinationModel.find({ animalId, adminId });
+      const vaccines = await this.vaccinationModel.find({ animal: id});
       if (!vaccines || vaccines.length === 0) {
-        return ResponseDto.errorResponse("No available vaccine");
+        return ResponseHandler.handleNotFound("No available vaccine");
       }
-      return ResponseDto.successResponse("Vaccines fetched", vaccines);
+      return ResponseHandler.handleOk("Vaccines fetched", vaccines);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch vaccines");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch vaccines");
     }
   }
 
@@ -494,12 +532,12 @@ export class AnimalsService {
     try {
       const vaccine = await this.vaccinationModel.findById(Id);
       if (!vaccine) {
-        return ResponseDto.errorResponse("Failed to fetch vaccine");
+        return ResponseHandler.handleBadRequest("Failed to fetch vaccine");
       }
-      return ResponseDto.successResponse("Vaccine fetched", vaccine);
+      return ResponseHandler.handleOk("Vaccine fetched", vaccine);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch vaccine");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch vaccine");
     }
   }
 
@@ -512,12 +550,12 @@ export class AnimalsService {
       );
 
       if (!updatedVaccine) {
-        return ResponseDto.errorResponse("Failed to update vaccine");
+        return ResponseHandler.handleBadRequest("Failed to update vaccine");
       }
-      return ResponseDto.successResponse("Vaccine updated", updatedVaccine);
+      return ResponseHandler.handleOk("Vaccine updated", updatedVaccine);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to update vaccine");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update vaccine");
     }
   }
 
@@ -525,52 +563,65 @@ export class AnimalsService {
     try {
       const deletedVaccine = await this.vaccinationModel.findByIdAndDelete(Id);
       if (!deletedVaccine) {
-        return ResponseDto.errorResponse("Failed to delete vaccine");
+        return ResponseHandler.handleBadRequest("Failed to delete vaccine");
       }
-      return ResponseDto.successResponse("Vaccine deleted", "");
+      return ResponseHandler.handleNoContent("Vaccine deleted");
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to delete vaccine");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete vaccine");
     }
   }
 
   ///////////////////////PRODUCTION///////////////////////////////////////
 
-  async addProduction(adminId: string, createProductionDto: CreateProductionDto): Promise<ResponseDto> {
+  async addProduction(id: string, createProductionDto: CreateProductionDto): Promise<ResponseDto> {
     try {
-      const animal = await this.animalModel.findOne({ animalId: createProductionDto.animalId, adminId });
-      if (!animal) {
+      const animalExist = await this.animalModel.findById(id)
+      if (!animalExist) {
         return ResponseDto.errorResponse("Animal not found");
+      }
+
+      if(animalExist.animalId !== createProductionDto.animalId){
+        return ResponseHandler.handleBadRequest("Invalid animal ID");
       }
 
       const existingProduction = await this.productionModel.findOne({
         ...createProductionDto,
-        adminId,
+        adminId: animalExist.adminId,
+        animal: animalExist._id,
         meatProduction: { $exists: true },
         milkProduction: { $exists: true },
         woolFurProduction: { $exists: true },
         salesRecords: { $exists: true, $ne: [] }
       })
       if (existingProduction) {
-        return ResponseDto.errorResponse("Production already exist");
+        return ResponseHandler.handleBadRequest("Production already exist");
       }
 
 
       const productionInstance = await this.productionModel.create({
         ...createProductionDto,
-        adminId
+        adminId: animalExist.adminId,
+        animal: animalExist._id,
+        animalType: animalExist.animalType
       });
 
       const createdProduction = await this.productionModel.findById(productionInstance._id)
 
       if (!createdProduction) {
-        return ResponseDto.errorResponse("Failed to add animal production");
+        return ResponseHandler.handleBadRequest("Failed to add animal production");
       }
 
-      return ResponseDto.successResponse("Production added", createdProduction);
+      await this.animalModel.findByIdAndUpdate(
+        animalExist._id,
+        {$push: {productions: createdProduction._id}},
+        {new: true}
+      ).exec();
+
+      return ResponseHandler.handleCreated("Production added", createdProduction);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to add animal production");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to add animal production");
     }
   }
 
@@ -579,26 +630,26 @@ export class AnimalsService {
       const productions = await this.productionModel.find({ adminId });
 
       if (!productions || productions.length === 0) {
-        return ResponseDto.errorResponse("No available productions");
+        return ResponseHandler.handleNotFound("No available productions");
       }
-      return ResponseDto.successResponse("Productions fetched", productions);
+      return ResponseHandler.handleOk("Productions fetched", productions);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch productions");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch productions");
     }
   }
 
-  async getAllProductionsPerAnimal(animalId: string, adminId: string): Promise<ResponseDto> {
+  async getAllProductionsPerAnimal(id: string): Promise<ResponseDto> {
     try {
-      const productions = await this.productionModel.find({ animalId, adminId });
+      const productions = await this.productionModel.find({ animal: id});
 
       if (!productions || productions.length === 0) {
-        return ResponseDto.errorResponse("No available productions");
+        return ResponseHandler.handleNotFound("No available productions");
       }
-      return ResponseDto.successResponse("Productions fetched", productions);
+      return ResponseHandler.handleOk("Productions fetched", productions);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch productions");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch productions");
     }
   }
 
@@ -606,12 +657,12 @@ export class AnimalsService {
     try {
       const production = await this.productionModel.findById(Id);
       if (!production) {
-        return ResponseDto.errorResponse("Failed to fetch production");
+        return ResponseHandler.handleBadRequest("Failed to fetch production");
       }
-      return ResponseDto.successResponse("Production fetched", production);
+      return ResponseHandler.handleOk("Production fetched", production);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch production");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch production");
     }
   }
 
@@ -622,12 +673,12 @@ export class AnimalsService {
 
 
       if (!updatedProduction) {
-        return ResponseDto.errorResponse("Failed to update production");
+        return ResponseHandler.handleBadRequest("Failed to update production");
       }
-      return ResponseDto.successResponse("Production updated", updatedProduction);
+      return ResponseHandler.handleOk("Production updated", updatedProduction);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to update production");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update production");
     }
   }
 
@@ -635,12 +686,12 @@ export class AnimalsService {
     try {
       const deletedProduction = await this.productionModel.findByIdAndDelete(Id);
       if (!deletedProduction) {
-        return ResponseDto.errorResponse("Failed to delete production");
+        return ResponseHandler.handleBadRequest("Failed to delete production");
       }
-      return ResponseDto.successResponse("Production deleted", "");
+      return ResponseHandler.handleNoContent("Production deleted");
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to delete production");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete production");
     }
   }
 
@@ -654,7 +705,7 @@ export class AnimalsService {
       })
 
       if (existingRequest) {
-        return ResponseDto.errorResponse("Request already exist");
+        return ResponseHandler.handleBadRequest("Request already exist");
       }
 
       const animalRequestInstance = await this.animalRequestModel.create({
@@ -665,15 +716,15 @@ export class AnimalsService {
       const createdRequest = await this.animalRequestModel.findById(animalRequestInstance._id)
 
       if (!createdRequest) {
-        return ResponseDto.errorResponse("Failed to add animal request");
+        return ResponseHandler.handleBadRequest("Failed to add animal request");
       }
 
-      return ResponseDto.successResponse("Request added", createdRequest);
+      return ResponseHandler.handleCreated("Request added", createdRequest);
 
 
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to add animal request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to add animal request");
     }
   }
 
@@ -682,12 +733,12 @@ export class AnimalsService {
       const requests = await this.animalRequestModel.find({ adminId });
 
       if (!requests || requests.length === 0) {
-        return ResponseDto.errorResponse("No available requests");
+        return ResponseHandler.handleNotFound("No available requests");
       }
-      return ResponseDto.successResponse("Requests fetched", requests);
+      return ResponseHandler.handleOk("Requests fetched", requests);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch requests");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch requests");
     }
   }
 
@@ -695,12 +746,12 @@ export class AnimalsService {
     try {
       const request = await this.animalRequestModel.findByIdAndUpdate(id, { $set: { status: 'rejected' } }, { new: true });
       if (!request) {
-        return ResponseDto.errorResponse("Failed to reject request");
+        return ResponseHandler.handleBadRequest("Failed to reject request");
       }
-      return ResponseDto.successResponse("Request rejected", request);
+      return ResponseHandler.handleOk("Request rejected", request);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to reject request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to reject request");
     }
   }
 
@@ -708,12 +759,12 @@ export class AnimalsService {
     try {
       const request = await this.animalRequestModel.findByIdAndUpdate(id, { $set: { status: 'approved' } }, { new: true });
       if (!request) {
-        return ResponseDto.errorResponse("Failed to approve request");
+        return ResponseHandler.handleBadRequest("Failed to approve request");
       }
-      return ResponseDto.successResponse("Request approved", request);
+      return ResponseHandler.handleOk("Request approved", request);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to approve request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to approve request");
     }
   }
 
@@ -721,12 +772,12 @@ export class AnimalsService {
     try {
       const request = await this.animalRequestModel.find({ adminId, status: 'rejected' });
       if (!request || request.length === 0) {
-        return ResponseDto.errorResponse("No available requests");
+        return ResponseHandler.handleNotFound("No available requests");
       }
-      return ResponseDto.successResponse("Request fetched", request);
+      return ResponseHandler.handleOk("Request fetched", request);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch request");
     }
   }
 
@@ -734,12 +785,12 @@ export class AnimalsService {
     try {
       const request = await this.animalRequestModel.find({ adminId, status: 'approved' });
       if (!request || request.length === 0) {
-        return ResponseDto.errorResponse("No available request");
+        return ResponseHandler.handleNotFound("No available request");
       }
-      return ResponseDto.successResponse("Request fetched", request);
+      return ResponseHandler.handleOk("Request fetched", request);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch request");
     }
   }
 
@@ -748,12 +799,12 @@ export class AnimalsService {
 
       const request = await this.animalRequestModel.find({ adminId, status: "pending" });
       if (!request || request.length === 0) {
-        return ResponseDto.errorResponse("No available request");
+        return ResponseHandler.handleNotFound("No available request");
       }
-      return ResponseDto.successResponse("Request fetched", request);
+      return ResponseHandler.handleOk("Request fetched", request);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch request");
     }
   }
 
@@ -761,12 +812,12 @@ export class AnimalsService {
     try {
       const request = await this.animalRequestModel.findById(Id);
       if (!request) {
-        return ResponseDto.errorResponse("Failed to fetch request");
+        return ResponseHandler.handleBadRequest("Failed to fetch request");
       }
-      return ResponseDto.successResponse("Request fetched", request);
+      return ResponseHandler.handleOk("Request fetched", request);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to fetch request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch request");
     }
   }
 
@@ -777,7 +828,7 @@ export class AnimalsService {
         status: 'approved'
       });
       if (!approvedAnimal) {
-        return ResponseDto.errorResponse("Failed to fetch request");
+        return ResponseHandler.handleBadRequest("Failed to fetch request");
       }
 
       console.log(approvedAnimal);
@@ -794,12 +845,12 @@ export class AnimalsService {
 
       const createdAnimal = await this.animalModel.findById(animal._id);
       if (!createdAnimal) {
-        return ResponseDto.errorResponse("Failed to add animal to farm animals");
+        return ResponseHandler.handleBadRequest("Failed to add animal to farm animals");
       }
-      return ResponseDto.successResponse("Animal added to farm animals", createdAnimal);
+      return ResponseHandler.handleOk("Animal added to farm animals", createdAnimal);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to add animal to farm animals");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to add animal to farm animals");
     }
   }
 
@@ -809,12 +860,12 @@ export class AnimalsService {
         { new: true });
 
       if (!updatedRequest) {
-        return ResponseDto.errorResponse("Failed to update request");
+        return ResponseHandler.handleBadRequest("Failed to update request");
       }
-      return ResponseDto.successResponse("Request updated", updatedRequest);
+      return ResponseHandler.handleOk("Request updated", updatedRequest);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to update request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update request");
     }
   }
 
@@ -822,12 +873,12 @@ export class AnimalsService {
     try {
       const deletedRequest = await this.animalRequestModel.findByIdAndDelete(Id);
       if (!deletedRequest) {
-        return ResponseDto.errorResponse("Failed to delete request");
+        return ResponseHandler.handleBadRequest("Failed to delete request");
       }
-      return ResponseDto.successResponse("Request deleted", null);
+      return ResponseHandler.handleNoContent("Request deleted");
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, failed to delete request");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete request");
     }
   }
 
