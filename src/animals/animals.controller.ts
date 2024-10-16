@@ -64,7 +64,7 @@ export class AnimalsController {
     return this.animalsService.addAnimal(user.adminId, createAnimalDto);
   }
 
-  @Get(':Id')
+  @Get(':id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -79,11 +79,11 @@ export class AnimalsController {
       },
     },
   })
-  async getAnimal(@Param('Id') Id: string) {
+  async getAnimal(@Param('id') Id: string) {
     return this.animalsService.getAnimal(Id);
   }
 
-  @Get('all')
+  @Get('all/farm/animals')
   @Roles(Role.Admin, Role.FarmManager, Role.AnimalManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -98,12 +98,12 @@ export class AnimalsController {
       },
     },
   })
-  async getAllAnimals( @Request() req) {
+  async getAllAnimals(@Request() req) {
     const user = this.getUserFromRequest(req);
     return this.animalsService.getAllMyAnimals(user?.adminId);
   }
 
-  @Patch(':Id')
+  @Patch(':id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
@@ -118,11 +118,11 @@ export class AnimalsController {
       },
     },
   })
-  async updateAnimal(@Param('Id') Id: string, @Request() req, @Body() updateAnimalDto: UpdateAnimalDto) {
+  async updateAnimal(@Param('id') Id: string, @Request() req, @Body() updateAnimalDto: UpdateAnimalDto) {
     return this.animalsService.updateAnimal(Id, updateAnimalDto);
   }
 
-  @Delete(':Id')
+  @Delete(':id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
@@ -137,7 +137,7 @@ export class AnimalsController {
       },
     },
   })
-  async deleteAnimal(@Param('Id') Id: string) {
+  async deleteAnimal(@Param('id') Id: string) {
     return this.animalsService.deleteAnimal(Id);
   }
 
@@ -187,7 +187,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get specific single location for an animal',
-    description: 'Retrieves location for an animal by id mongoose id ,  locationId is also a mongoose id from location data',
+    description: 'Retrieves location for an animal by id mongoose id ,  locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2}, so location id is the _id from the location data object',
     responses: {
       200: {
         description: 'Location retrieved successfully',
@@ -198,15 +198,15 @@ export class AnimalsController {
     },
   })
   async getLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
-    return this.animalsService.getSpecificLocation(id,locationId );
+    return this.animalsService.getSpecificLocation(id, locationId);
   }
 
-  @Patch(':id/location/:locationId/delete')
+  @Delete(':id/location/:locationId/delete')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Delete location from an animal',
-    description: 'Deletes location from an animal by id mongoose id, locationId is also a mongoose id from location data',
+    description: 'Deletes location from an animal by id mongoose id, locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2} so location id is the _id from the location data object',
     responses: {
       200: {
         description: 'Location deleted successfully',
@@ -227,7 +227,7 @@ export class AnimalsController {
   @Permissions(Permission.Create)
   @ApiOperation({
     summary: 'Create new breeding information',
-    description: 'Creates new breeding information',
+    description: 'Creates new breeding information. NB: id is animal mongoose id which need a breeding record',
     responses: {
       201: {
         description: 'Breeding information created successfully',
@@ -237,16 +237,16 @@ export class AnimalsController {
       },
     },
   })
-  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Param('id') id: string ) {
+  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Param('id') id: string) {
     return this.animalsService.addBreedingInfo(id, createBreedingDto);
   }
 
-  @Get('breeding/:id')
+  @Get(':id/breeding')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get breeding information for an animal',
-    description: 'Retrieves breeding information for an animal using the animalId not mongoose_id or adminId. ANIMALID PLEASE',
+    description: 'Retrieves breeding information for an animal using its mongoose_id ',
     responses: {
       200: {
         description: 'Breeding information retrieved successfully',
@@ -260,7 +260,7 @@ export class AnimalsController {
     return this.animalsService.getAnimalBreedingInfo(Id);
   }
 
-  @Get('breeding/all/:adminId')
+  @Get('breeding/all/farm')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -276,11 +276,9 @@ export class AnimalsController {
       },
     },
   })
-  async getAllBreedingInfo(@Param('adminId') adminId: string, @Request() req) {
+  async getAllBreedingInfo(@Request() req) {
     const user = this.getUserFromRequest(req);
-    if (user?.adminId === adminId) {
-      return this.animalsService.getAllBreedingInfo(adminId);
-    }
+    return this.animalsService.getAllBreedingInfo(user?.adminId);
   }
 
   @Patch('breeding/:id')
@@ -288,7 +286,7 @@ export class AnimalsController {
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Update breeding information for an animal',
-    description: 'Updates breeding information for an animal using mongoose_id',
+    description: 'Updates breeding information for an animal using breeding mongoose_id',
     responses: {
       200: {
         description: 'Breeding information updated successfully',
@@ -302,12 +300,12 @@ export class AnimalsController {
     return this.animalsService.updateBreedingInfo(animalId, updateBreedingDto);
   }
 
-  @Delete('breeding/:animalId')
+  @Delete('breeding/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
     summary: 'Delete breeding information for an animal',
-    description: 'Deletes breeding information for an animal',
+    description: 'Deletes breeding information for an animal using the breeding mongoose _id',
     responses: {
       200: {
         description: 'Breeding information deleted successfully',
@@ -317,7 +315,7 @@ export class AnimalsController {
       },
     },
   })
-  async deleteBreeding(@Param('animalId') animalId: string) {
+  async deleteBreeding(@Param('id') animalId: string) {
     return this.animalsService.deleteBreedingInfo(animalId);
   }
 
@@ -328,7 +326,7 @@ export class AnimalsController {
   @Permissions(Permission.Create)
   @ApiOperation({
     summary: 'Create new feeding information',
-    description: 'Creates new feeding information',
+    description: 'Creates new feeding information. NB: id is the mongoose id for the animal that need a feed record',
     responses: {
       201: {
         description: 'Feeding information created successfully',
@@ -347,7 +345,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get feeding information for a feed',
-    description: 'Retrieves feeding information for a feed',
+    description: 'Retrieves feeding information for a feed using its mongoose id',
     responses: {
       200: {
         description: 'Feeding information retrieved successfully',
@@ -366,7 +364,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get feeding information for an animal',
-    description: 'Retrieves feeding information for an animal using animal mongoose _id',
+    description: 'Retrieves feeding information for an animal using animal its mongoose _id',
     responses: {
       200: {
         description: 'Feeding information retrieved successfully',
@@ -380,7 +378,7 @@ export class AnimalsController {
     return this.animalsService.getAnimalFeedingInfo(id);
   }
 
-  @Get('feeding/all/:adminId')
+  @Get('feeding/all/farm')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -395,14 +393,12 @@ export class AnimalsController {
       },
     },
   })
-  async getAllFeedingInfo(@Param('adminId') adminId: string, @Request() req) {
+  async getAllFeedingInfo(@Request() req) {
     const user = this.getUserFromRequest(req);
-    if (user?.adminId === adminId) {
-      return this.animalsService.getAllAnimalFeedingInfo(adminId);
-    }
+    return this.animalsService.getAllAnimalFeedingInfo(user?.adminId);
   }
 
-  @Patch('feeding/:Id')
+  @Patch('feeding/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
@@ -417,16 +413,16 @@ export class AnimalsController {
       },
     },
   })
-  async updateFeeding(@Param('Id') Id: string, @Body() updateFeedingDto: UpdateFeedDto) {
+  async updateFeeding(@Param('id') Id: string, @Body() updateFeedingDto: UpdateFeedDto) {
     return this.animalsService.updateFeed(Id, updateFeedingDto);
   }
 
-  @Delete('feeding/:Id')
+  @Delete('feeding/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
     summary: 'Delete feeding information for a feed',
-    description: 'Deletes feeding information for a feed',
+    description: 'Deletes feeding information for a feed using its feed mongoose id',
     responses: {
       200: {
         description: 'Feeding information deleted successfully',
@@ -436,7 +432,7 @@ export class AnimalsController {
       },
     },
   })
-  async deleteFeeding(@Param('Id') Id: string) {
+  async deleteFeeding(@Param('id') Id: string) {
     return this.animalsService.deleteFeed(Id);
   }
 
@@ -487,7 +483,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all vaccination information for an animal',
-    description: 'Retrieves all vaccination information for an animal by mongoose _id',
+    description: 'Retrieves all vaccination information for an animal by its mongoose _id',
     responses: {
       200: {
         description: 'Vaccination information retrieved successfully',
@@ -501,7 +497,7 @@ export class AnimalsController {
     return this.animalsService.getAllVaccinesPerAnimal(id);
   }
 
-  @Get('vaccination/:Id')
+  @Get('vaccination/:id')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -516,11 +512,11 @@ export class AnimalsController {
       },
     },
   })
-  async getSpecificVaccine(@Param('Id') Id: string) {
+  async getSpecificVaccine(@Param('id') Id: string) {
     return this.animalsService.getSpecificVaccine(Id);
   }
 
-  @Patch('vaccination/:Id')
+  @Patch('vaccination/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
@@ -535,11 +531,11 @@ export class AnimalsController {
       },
     },
   })
-  async updateVaccine(@Param('Id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto) {
+  async updateVaccine(@Param('id') Id: string, @Body() updateVaccinationDto: UpdateVaccinationDto) {
     return this.animalsService.updateVaccine(Id, updateVaccinationDto);
   }
 
-  @Delete('vaccination/:Id')
+  @Delete('vaccination/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
@@ -554,7 +550,7 @@ export class AnimalsController {
       },
     },
   })
-  async deleteVaccine(@Param('Id') Id: string) {
+  async deleteVaccine(@Param('id') Id: string) {
     return this.animalsService.deleteVaccine(Id);
   }
 
@@ -565,7 +561,7 @@ export class AnimalsController {
   @Permissions(Permission.Create)
   @ApiOperation({
     summary: 'Create new production information',
-    description: 'Creates new production information',
+    description: 'Creates new production information and id is the animal mongoose id',
     responses: {
       201: {
         description: 'Production information created successfully',
@@ -623,7 +619,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get specific production information',
-    description: 'Retrieves specific production information',
+    description: 'Retrieves specific production information using its mongoose id',
     responses: {
       200: {
         description: 'Production information retrieved successfully',
@@ -642,7 +638,7 @@ export class AnimalsController {
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Update production information',
-    description: 'Updates production information',
+    description: 'Updates production information its mongoose id for the production to be updated',
     responses: {
       200: {
         description: 'Production information updated successfully',
@@ -661,7 +657,7 @@ export class AnimalsController {
   @Permissions(Permission.Delete)
   @ApiOperation({
     summary: 'Delete production information',
-    description: 'Deletes production information',
+    description: 'Deletes production information  its mongoose id for the production to be deleted',
     responses: {
       200: {
         description: 'Production information deleted successfully',
@@ -718,12 +714,12 @@ export class AnimalsController {
     return this.animalsService.getAllAnimalRequests(user?.adminId);
   }
 
-  @Get('request/:Id')
+  @Get('request/:id')
   @Roles(Role.Admin, Role.AnimalManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get specific animal request',
-    description: 'Retrieves specific animal request',
+    description: 'Retrieves specific animal request using  its mongoose id',
     responses: {
       200: {
         description: 'Animal request retrieved successfully',
@@ -733,16 +729,16 @@ export class AnimalsController {
       },
     },
   })
-  async getSpecificAnimalRequest(@Param('Id') Id: string) {
+  async getSpecificAnimalRequest(@Param('id') Id: string) {
     return this.animalsService.getSpecificAnimalRequest(Id);
   }
 
-  @Patch('request/:Id')
+  @Patch('request/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Update animal request',
-    description: 'Updates animal request',
+    description: 'Updates animal request using the animal request mongoose id',
     responses: {
       200: {
         description: 'Animal request updated successfully',
@@ -752,16 +748,16 @@ export class AnimalsController {
       },
     },
   })
-  async updateAnimalRequest(@Param('Id') Id: string, @Body() updateAnimalRequestDto: UpdateAnimalRequestDto) {
+  async updateAnimalRequest(@Param('id') Id: string, @Body() updateAnimalRequestDto: UpdateAnimalRequestDto) {
     return this.animalsService.updateAnimalRequest(Id, updateAnimalRequestDto);
   }
 
-  @Delete('request/:Id')
+  @Delete('request/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Delete)
   @ApiOperation({
     summary: 'Delete animal request',
-    description: 'Deletes animal request',
+    description: 'Deletes animal request using  its mongoose id',
     responses: {
       200: {
         description: 'Animal request deleted successfully',
@@ -771,7 +767,7 @@ export class AnimalsController {
       },
     },
   })
-  async deleteAnimalRequest(@Param('Id') Id: string) {
+  async deleteAnimalRequest(@Param('id') Id: string) {
     return this.animalsService.deleteAnimalRequest(Id);
   }
 
@@ -780,7 +776,7 @@ export class AnimalsController {
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Reject animal request',
-    description: 'Rejects animal request',
+    description: 'Rejects animal request using its mongoose id',
     responses: {
       200: {
         description: 'Animal request rejected successfully',
@@ -799,7 +795,7 @@ export class AnimalsController {
   @Permissions(Permission.Update)
   @ApiOperation({
     summary: 'Approve animal request',
-    description: 'Approves animal request',
+    description: 'Approves animal request where id is the animal request mongoose_id',
     responses: {
       200: {
         description: 'Animal request approved successfully',
@@ -878,7 +874,7 @@ export class AnimalsController {
   @Permissions(Permission.Create)
   @ApiOperation({
     summary: 'Add animal to farm',
-    description: 'Adds animal to farm',
+    description: 'Adds animal to farm from the approved request using the request mongoose_id',
     responses: {
       201: {
         description: 'Animal added to farm successfully',

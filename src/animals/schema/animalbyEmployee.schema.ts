@@ -2,10 +2,7 @@ import * as mongoose from 'mongoose';
 
 export const AnimalRequestSchema = new mongoose.Schema({
   adminId: { type: String, required: true },
-  animal: { 
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Animals"
-  },
+  animalId: {type: String, required: true},
   addedBy: { type: String, required: true },
   date: { type: Date, default: Date.now() },
   animaltype: { type: String, required: true },

@@ -92,6 +92,7 @@ export class AnimalsService {
 
       return ResponseHandler.handleOk("Animal found", animalExists);
     } catch (error) {
+      console.log(error);
       return ResponseHandler.handleInternalServerError("Something went wrong while fetching the animal");
     }
   }
@@ -109,6 +110,7 @@ export class AnimalsService {
 
       return ResponseHandler.handleOk("Animals fetched successfully", animalExists);
     } catch (error) {
+      console.log(error);
       return ResponseDto.errorResponse("Something went wrong. Failed to fetch animal");
     }
   }
@@ -241,14 +243,12 @@ export class AnimalsService {
         return ResponseHandler.handleNotFound("Animal does not exist");
       }
 
-      if(animalExist.animalId !== breedingInfo.animalId){
-        return ResponseHandler.handleBadRequest("Invalid animal ID");
-      }
-
       const existingBreedingInfo = await this.breedingModel.findOne({
         ...breedingInfo,
         adminId: animalExist.adminId,
-        animal: animalExist._id
+        animal: animalExist._id,
+        animalType: animalExist.animalType,
+        animalId: animalExist.animalId
       });
 
       if (existingBreedingInfo) {
@@ -259,7 +259,8 @@ export class AnimalsService {
         ...breedingInfo,
         adminId: animalExist.adminId,
         animal: animalExist._id,
-        animalType: animalExist.animalType
+        animalType: animalExist.animalType,
+        animalId: animalExist.animalId
       })
 
       const createdBreed = await this.breedingModel.findById(breedingInstance._id)
@@ -312,9 +313,7 @@ export class AnimalsService {
 
   async updateBreedingInfo(animalId: string, breedingInfo: UpdateBreedingDto): Promise<ResponseDto> {
     try {
-      const updateInfo = { ...breedingInfo };
-      delete updateInfo.animalId;
-      const updatedBreeding = await this.breedingModel.findByIdAndUpdate(animalId, updateInfo, { new: true }).exec();
+      const updatedBreeding = await this.breedingModel.findByIdAndUpdate(animalId, breedingInfo, { new: true }).exec();
       if (!updatedBreeding) {
         return ResponseHandler.handleNotFound("Breeding information not found");
       }
@@ -347,15 +346,13 @@ export class AnimalsService {
         return ResponseDto.errorResponse("Animal does not exist");
       }
 
-      if(animalExist.animalId !== feedInfo.animalId){
-        return ResponseHandler.handleBadRequest("Invalid animal ID");
-      }
-
       // check feed is exist
       const feedExists = await this.feedingModel.findOne({
         ...feedInfo,
         adminId: animalExist.adminId,
-        animal: animalExist._id
+        animal: animalExist._id,
+        animalType: animalExist.animalType,
+        animalId: animalExist.animalId
       });
 
       if (feedExists) {
@@ -366,7 +363,8 @@ export class AnimalsService {
         ...feedInfo,
         adminId: animalExist.adminId,
         animal: animalExist._id,
-        animalType: animalExist.animalType
+        animalType: animalExist.animalType,
+        animalId: animalExist.animalId
       })
 
       const createdFeed = await this.feedingModel.findById(feedingInstance._id);
@@ -462,14 +460,12 @@ export class AnimalsService {
         return ResponseDto.errorResponse("Animal not found");
       }
 
-      if(animalExist.animalId !== createVaccinationDto.animalId){
-        return ResponseHandler.handleBadRequest("Invalid animal ID");
-      }
-
       const existingVaccine = await this.vaccinationModel.findOne({
         ...createVaccinationDto,
         adminId: animalExist.adminId,
-        animal: animalExist._id
+        animal: animalExist._id,
+        animalType: animalExist.animalId,
+        animalId: animalExist.animalId
       })
       if (existingVaccine) {
         return ResponseHandler.handleBadRequest("Vaccine already exist");
@@ -478,7 +474,8 @@ export class AnimalsService {
         ...createVaccinationDto,
         adminId: animalExist.adminId,
         animal: animalExist._id,
-        animalType: animalExist.animalType
+        animalType: animalExist.animalType,
+        animalId: animalExist.animalId
       });
 
       const createdVaccine = await this.vaccinationModel.findById(vaccination._id);
@@ -581,14 +578,13 @@ export class AnimalsService {
         return ResponseDto.errorResponse("Animal not found");
       }
 
-      if(animalExist.animalId !== createProductionDto.animalId){
-        return ResponseHandler.handleBadRequest("Invalid animal ID");
-      }
 
       const existingProduction = await this.productionModel.findOne({
         ...createProductionDto,
         adminId: animalExist.adminId,
+        animalType: animalExist.animalType,
         animal: animalExist._id,
+        animalId: animalExist.animalId,
         meatProduction: { $exists: true },
         milkProduction: { $exists: true },
         woolFurProduction: { $exists: true },
@@ -603,7 +599,8 @@ export class AnimalsService {
         ...createProductionDto,
         adminId: animalExist.adminId,
         animal: animalExist._id,
-        animalType: animalExist.animalType
+        animalType: animalExist.animalType,
+        animalId: animalExist.animalId
       });
 
       const createdProduction = await this.productionModel.findById(productionInstance._id)
@@ -830,14 +827,11 @@ export class AnimalsService {
       if (!approvedAnimal) {
         return ResponseHandler.handleBadRequest("Failed to fetch request");
       }
-
-      console.log(approvedAnimal);
-
-
+      
       const animal = await this.animalModel.create({
         animalId: approvedAnimal.animalId,
         addedBy: approvedAnimal.addedBy,
-        animaltype: approvedAnimal.animaltype,
+        animalType: approvedAnimal.animaltype,
         attr: approvedAnimal.attr,
         adminId: approvedAnimal.adminId
 

@@ -10,14 +10,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBreedingDto {
 
-  @ApiProperty({
-    description: 'Animal ID',
-    example: 'animal-123',
-    required: true
-  })
-  @IsString()
-  @IsNotEmpty()
-  animalId: string;
 
   @ApiProperty({
     description: 'Added by',
