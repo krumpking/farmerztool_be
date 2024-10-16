@@ -1,16 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EggRecord } from './interfaces/hatchery.interface';
-import { HATCHERY_MODEL, REMINDER_MODEL } from './constants/hatchery.constants';
+import { HATCHERY_MODEL } from './constants/hatchery.constants';
 import { Model, Types } from 'mongoose';
 import { CreateHatcheryDto } from './dto/create-hatchery.dto';
 import { ResponseDto } from 'src/common/response.dto';
 import { UpdateHatcheryDto } from './dto/update-hatchery.dto';
 import { FARM_MODEL } from 'src/admin/constants/admin.constants';
 import { Farm } from 'src/admin/interfaces/farm.interface';
-import { Reminder } from './interfaces/reminder.interface';
-import { CreateReminderDTO } from './dto/create-reminder.dto';
-import axios from 'axios';
-import { UpdateReminderDTO } from './dto/update-reminder.dto';
+
 
 
 @Injectable()
@@ -20,8 +17,6 @@ export class HatcheryService {
     private eggModel: Model<EggRecord>,
     @Inject(FARM_MODEL)
     private farmModel: Model<Farm>,
-    @Inject(REMINDER_MODEL)
-    private reminderModel: Model<Reminder>,
 
   ) { }
 
@@ -141,142 +136,6 @@ export class HatcheryService {
 
   }
 
-  /////////////////////REMINDER///////////////////////////
-
-  async createReminder(adminId: string, createReminderDTO: CreateReminderDTO): Promise<ResponseDto> {
-    try {
-
-      const now = new Date();
-      if (createReminderDTO.reminderDate <= now) {
-        return ResponseDto.errorResponse('Reminder date must be in the future')
-      }
-
-      const existingReminder = await this.reminderModel.findOne({
-        adminId,
-        ...createReminderDTO,
-      });
-
-      if (existingReminder) {
-        return ResponseDto.errorResponse("Reminder already exists");
-      }
-
-
-      const reminder = await this.reminderModel.create({
-        ...createReminderDTO,
-        adminId,
-      });
-
-      const createdReminder = await this.reminderModel.findById(reminder._id);
-
-      if (!createdReminder) {
-        return ResponseDto.errorResponse("Failed to create reminder");
-      }
-
-      // await this.sendAzurePushNotification(createReminderDTO)
-
-      return ResponseDto.successResponse("Reminder created", createdReminder);
-
-    } catch (error) {
-      console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, while creating reminder");
-    }
-  }
-
-  private async sendAzurePushNotification(reminderData: CreateReminderDTO): Promise<ResponseDto> {
-    const notificationPayload = {
-      data: {
-        message: `Reminder: ${reminderData.reminderTitle} is scheduled for ${reminderData.reminderDate.toISOString()} at ${reminderData.reminderTime}`,
-      },
-    };
-
-    try {
-      const token = "SharedAccessSignature sr=Farmerztool.servicebus.windows.net/&sig=yourSignature&se=1695587465&skn=DefaultFullSharedAccessSignature";
-      const response = await axios.post(
-        'https://Farmerztool.servicebus.windows.net/Farmerztool/messages/?api-version=2015-01',
-        notificationPayload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'ServiceBusNotification-Format': 'gcm', // or 'apple' for iOS
-          },
-        },
-      );
-      console.log('Notification sent successfully:', response.data);
-    } catch (error) {
-      console.error('Error sending notification:', error);
-      return ResponseDto.errorResponse('Failed to send notification');
-    }
-  }
-
-  async getReminderForCollection(adminId: string): Promise<ResponseDto> {
-    try {
-
-      const reminders = await this.reminderModel.find({ adminId }).exec();
-
-      if (!reminders || reminders.length === 0) {
-        return ResponseDto.errorResponse("No reminders found")
-      }
-
-      return ResponseDto.successResponse("Reminders found", reminders);
-
-    } catch (error) {
-      console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, while getting reminders")
-    }
-  }
-
-  async getReminderById(id: string): Promise<ResponseDto> {
-    try {
-
-      const reminder = await this.reminderModel.findById(id).exec();
-
-      if (!reminder) {
-        return ResponseDto.errorResponse("Reminder not found")
-      }
-
-      return ResponseDto.successResponse("Reminder found", reminder);
-
-    } catch (error) {
-      console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, while getting reminder")
-    }
-
-  }
-
-  async updateReminder(id: string, updateReminderDto: UpdateReminderDTO): Promise<ResponseDto> {
-    try {
-
-      const updatedReminder = await this.reminderModel.findByIdAndUpdate(id, updateReminderDto, { new: true }).exec();
-
-      if (!updatedReminder) {
-        return ResponseDto.errorResponse("Reminder not found")
-      }
-
-      return ResponseDto.successResponse("Reminder updated", updatedReminder);
-
-    } catch (error) {
-      console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, while updating reminder")
-    }
-  }
-
-  async deleteReminder(id: string): Promise<ResponseDto> {
-    try {
-
-      const deletedReminder = await this.reminderModel.findByIdAndDelete(id).exec();
-
-      if (!deletedReminder) {
-        return ResponseDto.errorResponse("Reminder not found")
-      }
-
-      return ResponseDto.successResponse("Reminder deleted", null);
-
-    } catch (error) {
-      console.log(error);
-      return ResponseDto.errorResponse("Something went wrong, while deleting reminder")
-    }
-  }
 
 
   /////////////////////////KPIs///////////////////////////////////////////

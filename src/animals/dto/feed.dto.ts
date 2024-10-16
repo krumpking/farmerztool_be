@@ -12,14 +12,6 @@ export class CreateFeedDto {
   addedBy: string;
 
   @ApiProperty({
-    description: 'The ID of the animal associated with the feed',
-    example: 'animal-123',
-  })
-  @IsString()
-  @IsNotEmpty()
-  animalId: string;
-
-  @ApiProperty({
     description: 'A brief description of the feed',
     example: 'High-quality dog food',
   })

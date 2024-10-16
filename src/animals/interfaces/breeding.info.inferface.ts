@@ -2,7 +2,9 @@ import { Document } from 'mongoose';
 
 export interface BreedingInfo extends Document {
   readonly adminId: string;
+  readonly animal: string;
   readonly animalId: string;
+  readonly animalType: string;
   readonly addedBy: string;
   readonly courtship: string;
   readonly mating: string;

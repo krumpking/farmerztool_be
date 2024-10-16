@@ -3,12 +3,6 @@ import { Type } from 'class-transformer';
 import { IsString, IsDate, IsBoolean, IsOptional, IsIn } from 'class-validator';
 
 export class CreateReminderDTO {
-  @IsString()
-  @ApiProperty({
-    description: 'Name of the collection (e.g., "Egg Hatchery")',
-    example: 'Egg Hatchery',
-  })
-  collectionName: string;
 
   @IsString()
   @ApiProperty({

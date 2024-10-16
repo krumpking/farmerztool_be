@@ -1,7 +1,7 @@
 import { Document } from "mongoose";
 
 
-  
+
 interface MeatProduction {
   readonly currentWeight: number; // in kg
   readonly estimatedSlaughterWeight: number; // in kg
@@ -29,13 +29,15 @@ interface SalesRecord {
   readonly date: Date;
 }
 
-export interface Production extends Document{
-    readonly adminId: string;
-    readonly addedBy: string;
-    readonly animalId: string;
-    readonly productionType: string;
-    readonly meatProduction?: Readonly<MeatProduction>;
-    readonly milkProduction?: Readonly<MilkProduction>;
-    readonly woolFurProduction?: Readonly<WoolFurProduction>;
-    readonly salesRecords: ReadonlyArray<Readonly<SalesRecord>>;
-  }
+export interface Production extends Document {
+  readonly adminId: string;
+  readonly addedBy: string;
+  readonly animal: string;
+  readonly animalId: string;
+  readonly animalType: string;
+  readonly productionType: string;
+  readonly meatProduction?: Readonly<MeatProduction>;
+  readonly milkProduction?: Readonly<MilkProduction>;
+  readonly woolFurProduction?: Readonly<WoolFurProduction>;
+  readonly salesRecords: ReadonlyArray<Readonly<SalesRecord>>;
+}

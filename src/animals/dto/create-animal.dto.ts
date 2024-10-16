@@ -19,7 +19,7 @@ export class CreateAnimalDto {
   @ApiProperty({ description: 'Type of animal', example: 'Cow' })
   @IsString()
   @IsNotEmpty()
-  animaltype: string;
+  animalType: string;
 
   @ApiProperty({ description: 'Additional attributes for the animal', example: { breed: 'HardMashona', age: 3 } })
   @IsObject()

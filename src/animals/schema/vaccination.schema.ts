@@ -2,7 +2,12 @@ import * as mongoose from 'mongoose';
 
 export const VaccinationSchema = new mongoose.Schema({
   adminId: { type: String, required: true },
+  animal: { 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Animals"
+  },
   animalId: { type: String, required: true },
+  animalType: {type: String, required: true},
   addedBy: { type: String, required: true },
   vaccineName: { type: String, required: true },
   manufacturer:{ type: String, required: true },

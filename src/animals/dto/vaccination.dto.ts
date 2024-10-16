@@ -6,14 +6,6 @@ export class CreateVaccinationDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
-    description: 'The ID of the animal that received the vaccination',
-    example: '002',
-  })
-  animalId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty({
     description: 'The name of the user who added the vaccination record',
     example: 'Ronnie Kakunguwo',
   })
