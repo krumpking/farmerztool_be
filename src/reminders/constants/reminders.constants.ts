@@ -1,0 +1,1 @@
+export const REMINDER_MODEL = "REMINDER_MODEL";

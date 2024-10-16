@@ -80,9 +80,6 @@ export class CreateProductionDto {
   @IsString()
   addedBy: string;
 
-  @ApiProperty({ description: 'Animal ID', example: 'animal-456' })
-  @IsString()
-  animalId: string;
 
   @ApiProperty({ description: 'Production type', example: 'Meat' })
   @IsString()

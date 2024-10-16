@@ -2,7 +2,12 @@ import * as mongoose from 'mongoose';
 
 export const BreedingInfoSchema = new mongoose.Schema({
   adminId: { type: String, required: true },
+  animal: { 
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Animals"
+  },
   animalId: { type: String, required: true },
+  animalType: {type: String, required: true},
   addedBy: { type: String, required: true },
   courtship: { type: String, required: true },
   mating: { type: String, required: true },

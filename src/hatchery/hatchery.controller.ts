@@ -7,9 +7,6 @@ import { Permissions, Roles } from 'src/roles/roles.decorators';
 import { Role } from 'src/roles/roles.enum';
 import { Permission } from 'src/roles/permissions.enum';
 import { UpdateHatcheryDto } from './dto/update-hatchery.dto';
-import { CreateReminderDTO } from './dto/create-reminder.dto';
-import { UpdateReminderDTO } from './dto/update-reminder.dto';
-
 
 
 @ApiTags("HATCHERY")
@@ -25,7 +22,7 @@ export class HatcheryController {
 
   /////////////////////////////////EGGS///////////////////////////////////////////////
 
-  @Post()
+  @Post('add')
   @Roles(Role.Admin, Role.EggsHatcheryManager)
   @Permissions(Permission.Create)
   @ApiOperation({
@@ -126,106 +123,6 @@ export class HatcheryController {
     return this.eggService.deleteEgg(id);
   }
 
-
-  //////////////////REMINDER/////////////////////////////
-
-  @Post('reminder/add')
-  @Roles(Role.Admin, Role.EggsHatcheryManager)
-  @Permissions(Permission.Create)
-  @ApiOperation({
-    summary: "Add reminder",
-    description: "Add reminder",
-    responses: {
-      201: {
-        description: 'Reminder created successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async addReminder(@Body() createReminderDto: CreateReminderDTO, @Request() req) {
-    const user = this.getUserFromRequest(req);
-    const adminId = user.adminId;
-    return this.eggService.createReminder(adminId, createReminderDto);
-  }
-
-  @Get('reminder/all')
-  @Roles(Role.Admin, Role.EggsHatcheryManager)
-  @Permissions(Permission.Read)
-  @ApiOperation({
-    summary: "Get all reminders",
-    description: "Get all reminders",
-    responses: {
-      200: {
-        description: 'Reminders fetched successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async getReminders(@Request() req) {
-    const user = this.getUserFromRequest(req)
-    return this.eggService.getReminderForCollection(user.adminId);
-  }
-
-  @Get('reminder/:id')
-  @Roles(Role.Admin, Role.EggsHatcheryManager)
-  @Permissions(Permission.Read)
-  @ApiOperation({
-    summary: "Get a single reminder",
-    description: "Get a single reminder",
-    responses: {
-      200: {
-        description: 'Reminder fetched successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async getReminder(@Param('id') id: string) {
-    return this.eggService.getReminderById(id);
-  }
-
-  @Patch('reminder/:id')
-  @Roles(Role.Admin, Role.EggsHatcheryManager)
-  @Permissions(Permission.Update)
-  @ApiOperation({
-    summary: "Update reminder",
-    description: "Update reminder",
-    responses: {
-      200: {
-        description: 'Reminder updated successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async updateReminder(@Param('id') id: string, @Body() updateReminderDto: UpdateReminderDTO) {
-    return this.eggService.updateReminder(id, updateReminderDto);
-  }
-
-  @Delete('reminder/:id')
-  @Roles(Role.Admin, Role.EggsHatcheryManager)
-  @Permissions(Permission.Delete)
-  @ApiOperation({
-    summary: "Delete reminder",
-    description: "Delete reminder",
-    responses: {
-      200: {
-        description: 'Reminder deleted successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async deleteReminder(@Param('id') id: string) {
-    return this.eggService.deleteReminder(id);
-  }
 
   //////////////////// KPIs///////////////////////////////
 

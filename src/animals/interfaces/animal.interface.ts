@@ -13,4 +13,8 @@ export interface Animal extends Document {
     readonly lat: number;
     readonly lng: number;
   }[];
+  readonly feedings: string[];
+  readonly productions: string[];
+  readonly vaccinations: string[];
+  readonly breedings: string[];
 }
