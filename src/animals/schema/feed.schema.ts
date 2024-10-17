@@ -13,6 +13,6 @@ export const FeedSchema = new mongoose.Schema({
   feedType: { type: String, required: true },
   source: { type: String, required: true },
   nutritionalValue: { type: String, required: true },
-  barcode: { type: [String], required: true },
+  barcode: [{ type: [String], required: true }],
 });
 
