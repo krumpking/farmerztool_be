@@ -6,6 +6,10 @@ export const IrrigationSchema = new mongoose.Schema({
     ref: "Crop",
     required: true
   },
+  cropType: {
+    type: String,
+    required: true
+  },
   irrigationType: {
     type: String,
     required: true

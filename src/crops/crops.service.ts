@@ -201,6 +201,7 @@ export class CropsService {
         ...createIrrigationDto,
         crop: id,
         adminId,
+        cropType: crop.cropType
       });
 
       const createdIrrigation = await this.irrigationModel
@@ -359,6 +360,7 @@ export class CropsService {
         ...createFertlizerPesticideDto,
         crop: id,
         adminId,
+        cropType: crop.cropType
       });
 
       const createdFertPest = await this.fertilizer_pesticideModel.findById(
@@ -513,6 +515,7 @@ export class CropsService {
         ...createFinancialDto,
         crop: id,
         adminId,
+        cropType: crop.cropType
       });
 
       const createdFinancial = await this.financialModel
@@ -681,6 +684,7 @@ export class CropsService {
         ...createActivityDto,
         crop: crop._id,
         adminId: adminId,
+        cropType: crop.cropType
       });
 
       const createdActivity = await this.activityModel
@@ -844,6 +848,7 @@ export class CropsService {
         ...createPestDiseaseIssueDto,
         crop: crop._id,
         adminId,
+        cropType: crop.cropType
       });
 
       const createPestDisease = await this.pestdiseaseModel.findById(
@@ -972,4 +977,215 @@ export class CropsService {
       );
     }
   }
+
+
+  ///////////////////////// MULTIPLE UPDATES ////////////////////////////
+
+  async getAllCropsTypesForAdmin(adminId: string): Promise<ResponseDto>{
+    try {
+      const crops = await this.cropModel.find({ adminId });
+  
+      if (!crops || crops.length === 0) {
+          return ResponseHandler.handleNotFound("No available crops");
+      }
+  
+      const cropTypes: string[] = [];
+      
+      crops.forEach(item => {
+          const cropType = item.cropType;
+          // Check if cropType is not null or undefined and not already in the cropTypes array
+          if (cropType !== null && cropType !== undefined && !cropTypes.includes(cropType)) {
+              cropTypes.push(cropType);
+          }
+      });
+  
+      return ResponseHandler.handleOk("CropTypes fetched", cropTypes);
+  } catch (error) {
+      console.error(error);
+      return ResponseHandler.handleInternalServerError("An error occurred while fetching crop types");
+  }
+  }
+
+  async updateActivityForAllCrops(adminId: string, cropType: string, updateActivityDto: UpdateActivityDto): Promise<ResponseDto> {
+    try {
+      const crops = await this.cropModel.find({ adminId, cropType });
+  
+      if (!crops || crops.length === 0) {
+        return ResponseHandler.handleNotFound("No crops found for the specified type and admin");
+      }
+  
+      const updatedActivites = [];
+  
+      // Loop through each crops and update the activity records
+      for (const crop of crops) {
+        const existingActivity = await this.activityModel.findOne({ 
+          adminId: crop.adminId, 
+          crop: crop._id 
+        });
+  
+        if (existingActivity) {
+          const updatedActivity = await this.activityModel.findByIdAndUpdate(
+            existingActivity._id,
+            updateActivityDto,
+            { new: true }
+          );
+  
+          if (updatedActivity) {
+            updatedActivites.push(updatedActivity);
+          } else {
+            console.log(`Failed to update feed for crop: ${crop.cropName}`);
+          }
+        } else {
+          console.log(`No existing activity record found for crop: ${crop.cropName}`);
+        }
+      }
+  
+      if (updatedActivites.length === 0) {
+        return ResponseHandler.handleBadRequest("No activity records were updated.");
+      }
+  
+      return ResponseHandler.handleOk("Activites records updated successfully for all crops", updatedActivites);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update activies for all crops");
+    }
+  }
+
+
+  async updateIrrigationForAllCrops(adminId: string, cropType: string, updateIrrigationDto: UpdateIrrigationDto): Promise<ResponseDto> {
+    try {
+      const crops = await this.cropModel.find({ adminId, cropType });
+  
+      if (!crops || crops.length === 0) {
+        return ResponseHandler.handleNotFound("No crops found for the specified type and admin");
+      }
+  
+      const updatedIrrigations = [];
+  
+      // Loop through each crop and update the irrigation records
+      for (const crop of crops) {
+        const existingIrigation = await this.irrigationModel.findOne({ 
+          adminId: crop.adminId, 
+          crop: crop._id 
+        });
+  
+        if (existingIrigation) {
+          const updatedIrrigation = await this.irrigationModel.findByIdAndUpdate(
+            existingIrigation._id,
+            updateIrrigationDto,
+            { new: true }
+          );
+  
+          if (updatedIrrigation) {
+            updatedIrrigations.push(updatedIrrigation);
+          } else {
+            console.log(`Failed to update irrigation for crop: ${crop.cropName}`);
+          }
+        } else {
+          console.log(`No existing irrigation record found for crop: ${crop.cropName}`);
+        }
+      }
+  
+      if (updatedIrrigations.length === 0) {
+        return ResponseHandler.handleBadRequest("No irrigation records were updated.");
+      }
+  
+      return ResponseHandler.handleOk("Irrigation records updated successfully for all crops", updatedIrrigations);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update irrigations for all crops");
+    }
+  }
+
+  async updateFinancialRecordsForAllCrops(adminId: string, cropType: string, updateFinancialDto: UpdateFinancialDto): Promise<ResponseDto> {
+    try {
+      const crops = await this.cropModel.find({ adminId, cropType });
+  
+      if (!crops || crops.length === 0) {
+        return ResponseHandler.handleNotFound("No crops found for the specified type and admin");
+      }
+  
+      const updatedFinancialRecords = [];
+  
+      // Loop through each crop and update the financial records
+      for (const crop of crops) {
+        const existingFinancialRecord = await this.financialModel.findOne({ 
+          adminId: crop.adminId, 
+          crop: crop._id 
+        });
+  
+        if (existingFinancialRecord) {
+          const updatedFinancialRecord = await this.financialModel.findByIdAndUpdate(
+            existingFinancialRecord._id,
+            updateFinancialDto,
+            { new: true }
+          );
+  
+          if (updatedFinancialRecord) {
+            updatedFinancialRecords.push(updatedFinancialRecord);
+          } else {
+            console.log(`Failed to update financial record for crop: ${crop.cropName}`);
+          }
+        } else {
+          console.log(`No existing financial record found for crop: ${crop.cropName}`);
+        }
+      }
+  
+      if (updatedFinancialRecords.length === 0) {
+        return ResponseHandler.handleBadRequest("No financial records were updated.");
+      }
+  
+      return ResponseHandler.handleOk("Financial records updated successfully for all crops", updatedFinancialRecords);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update financial records for all crops");
+    }
+  }
+
+  async updateFertilizerPesticideRecordsForAllCrops(adminId: string, cropType: string, updateFertPestDto: UpdateFertiliserPesticideDTO): Promise<ResponseDto> {
+    try {
+      const crops = await this.cropModel.find({ adminId, cropType });
+  
+      if (!crops || crops.length === 0) {
+        return ResponseHandler.handleNotFound("No crops found for the specified type and admin");
+      }
+  
+      const updatedFertPestRecords = [];
+  
+      // Loop through each crop and update the fertilizer/pesticide records
+      for (const crop of crops) {
+        const existingFertPestRecord = await this.fertilizer_pesticideModel.findOne({ 
+          adminId: crop.adminId, 
+          crop: crop._id 
+        });
+  
+        if (existingFertPestRecord) {
+          const updatedFertPestRecord = await this.fertilizer_pesticideModel.findByIdAndUpdate(
+            existingFertPestRecord._id,
+            updateFertPestDto,
+            { new: true }
+          );
+  
+          if (updatedFertPestRecord) {
+            updatedFertPestRecords.push(updatedFertPestRecord);
+          } else {
+            console.log(`Failed to update fertilizer/pesticide record for crop: ${crop.cropName}`);
+          }
+        } else {
+          console.log(`No existing fertilizer/pesticide record found for crop: ${crop.cropName}`);
+        }
+      }
+  
+      if (updatedFertPestRecords.length === 0) {
+        return ResponseHandler.handleBadRequest("No fertilizer/pesticide records were updated.");
+      }
+  
+      return ResponseHandler.handleOk("Fertilizer/Pesticide records updated successfully for all crops", updatedFertPestRecords);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update fertilizer/pesticide records for all crops");
+    }
+  }
+
+
 }
