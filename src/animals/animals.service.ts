@@ -1,4 +1,4 @@
-import {Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   ANIMAL_MODEL,
   ANIMAL_PRODUCTION_MODEL,
@@ -272,8 +272,9 @@ export class AnimalsService {
       await this.animalModel.findByIdAndUpdate(animalExist._id, {
         $push: {
           breedings: createdBreed._id
-        }},
-        {new: true}
+        }
+      },
+        { new: true }
       ).exec();
 
       return ResponseHandler.handleCreated("Breed created", createdBreed);
@@ -340,7 +341,7 @@ export class AnimalsService {
 
   async addFeed(id: string, feedInfo: CreateFeedDto): Promise<ResponseDto> {
     try {
-      
+
       const animalExist = await this.animalModel.findById(id);
       if (!animalExist) {
         return ResponseDto.errorResponse("Animal does not exist");
@@ -375,8 +376,8 @@ export class AnimalsService {
 
       await this.animalModel.findByIdAndUpdate(
         animalExist._id,
-        {$push: {feedings: createdFeed._id}},
-        {new: true}
+        { $push: { feedings: createdFeed._id } },
+        { new: true }
       ).exec();
       return ResponseHandler.handleCreated("Feed created", createdFeed);
 
@@ -401,7 +402,7 @@ export class AnimalsService {
 
   async getAnimalFeedingInfo(id: string): Promise<ResponseDto> {
     try {
-      const feed = await this.feedingModel.find({ animal: id});
+      const feed = await this.feedingModel.find({ animal: id });
       if (!feed || feed.length === 0) {
         return ResponseHandler.handleNotFound("No feeds found")
       }
@@ -438,6 +439,8 @@ export class AnimalsService {
     }
   }
 
+
+
   async deleteFeed(id: string): Promise<ResponseDto> {
     try {
       const feed = await this.feedingModel.findByIdAndDelete(id);
@@ -449,6 +452,8 @@ export class AnimalsService {
       return ResponseHandler.handleInternalServerError("Something went wrong. Failed to delete feed");
     }
   }
+
+
 
 
   ////////////////////VACINATION/////////////////////////////////////////////////////////
@@ -486,8 +491,8 @@ export class AnimalsService {
 
       await this.animalModel.findByIdAndUpdate(
         animalExist._id,
-        {$push: {vaccinations: createdVaccine._id}},
-        {new: true}
+        { $push: { vaccinations: createdVaccine._id } },
+        { new: true }
       ).exec();
 
       return ResponseHandler.handleCreated("Vaccine created", createdVaccine);
@@ -514,7 +519,7 @@ export class AnimalsService {
 
   async getAllVaccinesPerAnimal(id: string): Promise<ResponseDto> {
     try {
-      const vaccines = await this.vaccinationModel.find({ animal: id});
+      const vaccines = await this.vaccinationModel.find({ animal: id });
       if (!vaccines || vaccines.length === 0) {
         return ResponseHandler.handleNotFound("No available vaccine");
       }
@@ -611,8 +616,8 @@ export class AnimalsService {
 
       await this.animalModel.findByIdAndUpdate(
         animalExist._id,
-        {$push: {productions: createdProduction._id}},
-        {new: true}
+        { $push: { productions: createdProduction._id } },
+        { new: true }
       ).exec();
 
       return ResponseHandler.handleCreated("Production added", createdProduction);
@@ -638,7 +643,7 @@ export class AnimalsService {
 
   async getAllProductionsPerAnimal(id: string): Promise<ResponseDto> {
     try {
-      const productions = await this.productionModel.find({ animal: id});
+      const productions = await this.productionModel.find({ animal: id });
 
       if (!productions || productions.length === 0) {
         return ResponseHandler.handleNotFound("No available productions");
@@ -827,7 +832,7 @@ export class AnimalsService {
       if (!approvedAnimal) {
         return ResponseHandler.handleBadRequest("Failed to fetch request");
       }
-      
+
       const animal = await this.animalModel.create({
         animalId: approvedAnimal.animalId,
         addedBy: approvedAnimal.addedBy,
@@ -876,6 +881,124 @@ export class AnimalsService {
     }
   }
 
+
+
+  /////////////// MULTIPLE UPDATES /////////////////////////////
+
+  
+  async getAllAnimalsTypesForAdmin(adminId: string): Promise<ResponseDto>{
+    try {
+      const animals = await this.animalModel.find({ adminId });
+  
+      if (!animals || animals.length === 0) {
+          return ResponseHandler.handleNotFound("No available animals");
+      }
+  
+      const animalTypes: string[] = [];
+      
+      animals.forEach(item => {
+          const animalType = item.animalType;
+          // Check if animalType is not null or undefined and not already in the animalTypes array
+          if (animalType !== null && animalType !== undefined && !animalTypes.includes(animalType)) {
+              animalTypes.push(animalType);
+          }
+      });
+  
+      return ResponseHandler.handleOk("AnimalTypes fetched", animalTypes);
+  } catch (error) {
+      console.error(error);
+      return ResponseHandler.handleInternalServerError("An error occurred while fetching animal types");
+  }
+  }
+
+  async updateFeedForAllAnimals(adminId: string, animalType: string, updateFeedDto: UpdateFeedDto): Promise<ResponseDto> {
+    try {
+      const animals = await this.animalModel.find({ adminId, animalType });
+  
+      if (!animals || animals.length === 0) {
+        return ResponseHandler.handleNotFound("No animals found for the specified type and admin");
+      }
+  
+      const updatedFeeds = [];
+  
+      // Loop through each animal and update the feed records
+      for (const animal of animals) {
+        const existingFeed = await this.feedingModel.findOne({ 
+          adminId: animal.adminId, 
+          animal: animal._id 
+        });
+  
+        if (existingFeed) {
+          const updatedFeed = await this.feedingModel.findByIdAndUpdate(
+            existingFeed._id,
+            updateFeedDto,
+            { new: true }
+          );
+  
+          if (updatedFeed) {
+            updatedFeeds.push(updatedFeed);
+          } else {
+            console.log(`Failed to update feed for animal: ${animal.animalId}`);
+          }
+        } else {
+          console.log(`No existing feed record found for animal: ${animal.animalId}`);
+        }
+      }
+  
+      if (updatedFeeds.length === 0) {
+        return ResponseHandler.handleBadRequest("No feed records were updated.");
+      }
+  
+      return ResponseHandler.handleOk("Feed records updated successfully for all animals", updatedFeeds);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update feeds for all animals");
+    }
+  }
+
+  async updateVaccinationForAllAnimals(adminId: string, animalType: string, updateVaccinationDto: UpdateVaccinationDto): Promise<ResponseDto> {
+    try {
+        const animals = await this.animalModel.find({ adminId, animalType });
+
+        if (!animals || animals.length === 0) {
+            return ResponseHandler.handleNotFound("No animals found for the specified type and admin");
+        }
+
+        const updatedVaccinations = [];
+
+        for (const animal of animals) {
+            const existingVaccination = await this.vaccinationModel.findOne({ 
+                adminId: animal.adminId, 
+                animal: animal._id 
+            });
+
+            if (existingVaccination) {
+                const updatedVaccination = await this.vaccinationModel.findByIdAndUpdate(
+                    existingVaccination._id,
+                    updateVaccinationDto,
+                    { new: true }
+                );
+
+                if (updatedVaccination) {
+                    updatedVaccinations.push(updatedVaccination);
+                } else {
+                    console.log(`Failed to update vaccination for animal: ${animal.animalId}`);
+                }
+            } else {
+                console.log(`No existing vaccination record found for animal: ${animal.animalId}`);
+            }
+        }
+
+        if (updatedVaccinations.length === 0) {
+            return ResponseHandler.handleBadRequest("No vaccination records were updated.");
+        }
+
+        return ResponseHandler.handleOk("Vaccination records updated successfully for all animals", updatedVaccinations);
+    } catch (error) {
+        console.log(error);
+        return ResponseHandler.handleInternalServerError("Something went wrong, failed to update vaccinations for all animals");
+    }
+}
 
 
 
