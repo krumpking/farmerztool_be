@@ -5,10 +5,11 @@ import { DatabaseModule } from 'src/database/database.module';
 import { cropActivityProvider, cropProviders, fertilizerPesticideProvider, financialProvider, irrigationProviders, pestdieaseIssueProvider } from './crops.providers';
 import { userProviders } from 'src/auth/auth.providers';
 import { farmProviders } from 'src/admin/admin.providers';
+import { CropsUpdatesController } from './crops-update.controller';
 
 @Module({
   imports: [DatabaseModule],
-  controllers: [CropsController],
+  controllers: [CropsController, CropsUpdatesController],
   providers: [
     CropsService,
     ...cropProviders,

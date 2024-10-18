@@ -3,6 +3,7 @@ import { Schema, Document } from "mongoose";
 
 export interface CropActivity extends Document {
     activityType: string;
+    cropType: string;
     date: Date;
     amountQuantity: number;
     method: string;

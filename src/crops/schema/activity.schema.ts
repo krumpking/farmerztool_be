@@ -3,6 +3,10 @@ import { Schema} from 'mongoose';
 
 export const activitySchema = new Schema({
     activityType: { type: String, required: true },
+    cropType: {
+        type: String,
+        required: true
+      },
     date: { type: Date, required: true },
     amountQuantity: { type: Number, required: true },
     method: { type: String, required: true },

@@ -22,9 +22,6 @@ export class CostDTO {
 }
 
 export class CreateFinancialDto {
-  @ApiProperty({ description: 'Type of crop', example: 'Wheat' })
-  @IsString()
-  cropType: string;
 
   @ApiProperty({ description: 'Size of the area where the crop is grown', example: 100.00 })
   @IsNumber()

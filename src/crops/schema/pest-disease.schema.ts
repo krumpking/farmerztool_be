@@ -7,8 +7,8 @@ export const pestDiseaseIssueSchema: Schema = new Schema({
     ref: 'Crop',
     required: true
   },
-  cropId: {
-    type: Schema.Types.ObjectId,
+  cropType: {
+    type: String,
     required: true
   },
   adminId: {

@@ -11,10 +11,11 @@ import {
 } from './animal.providers';
 import { DatabaseModule } from 'src/database/database.module';
 import { userProviders } from 'src/auth/auth.providers';
+import { AnimalsUpdatesController } from './animal-updates.controller';
 
 @Module({
   imports: [DatabaseModule],
-  controllers: [AnimalsController],
+  controllers: [AnimalsController, AnimalsUpdatesController],
   providers: [
     AnimalsService,
     ...animalProviders,

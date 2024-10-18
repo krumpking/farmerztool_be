@@ -6,6 +6,10 @@ export const FertiliserPesticideSchema = new mongoose.Schema({
         ref: "Crop",
         required: true
     },
+    cropType: {
+        type: String,
+        required: true
+      },
     recordType: {
         type: String,
         enum: ["Fertilizer", "Pesticide"],
