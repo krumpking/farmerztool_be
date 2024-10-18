@@ -8,6 +8,7 @@ import { Permission } from "src/roles/permissions.enum";
 import { UpdateActivityDto } from "./dto/update-activity.dto";
 import { UpdateFinancialDto } from "./dto/update-financial.dto";
 import { UpdateFertiliserPesticideDTO } from "./dto/update-fert-pest.dto";
+import { UpdateIrrigationDto } from "./dto/update-irrigation.dto";
 
 @ApiTags('CROPS UPDATES')
 @ApiBearerAuth()
@@ -81,6 +82,24 @@ async updateFertilizerPesticideRecordsForAllCrops(
 ) {
   const user = this.getUserFromRequest(req);
   return this.cropsService.updateFertilizerPesticideRecordsForAllCrops(user?.adminId, cropType, updateFertPestDto);
+}
+
+
+
+@Patch('irrigation/update/all')
+@Roles(Role.Admin, Role.CropManager)
+@Permissions(Permission.Update)
+@ApiOperation({
+  summary: "Update irrigation records for all crops of a specific type",
+  description: "Updates the irrigation records for all crops of the specified crop type. NB: cropType from the getCropTypes to be used as a query like this ...irrigation/update/all?cropType={given crop type}"
+})
+async updateIrrigationRecordsForAllCrops(
+  @Request() req,
+  @Query('cropType') cropType: string,
+  @Body() updateIrrigationDto: UpdateIrrigationDto
+) {
+  const user = this.getUserFromRequest(req);
+  return this.cropsService.updateIrrigationForAllCrops(user?.adminId, cropType, updateIrrigationDto);
 }
 
 
