@@ -206,7 +206,7 @@ export class CropsService {
 
       const createdIrrigation = await this.irrigationModel
         .findById(irrigation._id)
-        .populate('crop');
+        .populate('crop')
 
       if (!createdIrrigation) {
         return ResponseDto.errorResponse('Failed to create irrigation record');
@@ -230,7 +230,7 @@ export class CropsService {
     try {
       const irrigation = await this.irrigationModel
         .findById(id)
-        .populate('crop');
+        .populate('crop')
       if (!irrigation) {
         return ResponseDto.errorResponse('Failed to fetch irrigation record');
       }
@@ -256,7 +256,7 @@ export class CropsService {
       }
       const irrigations = await this.irrigationModel
         .find({ crop: id })
-        .populate('crop');
+        .populate('crop')
 
       if (!irrigations || irrigations.length === 0) {
         return ResponseDto.errorResponse(
@@ -277,7 +277,7 @@ export class CropsService {
     try {
       const irrigations = await this.irrigationModel
         .find({ adminId })
-        .populate('crop');
+        .populate('crop')
 
       if (!irrigations || irrigations.length === 0) {
         return ResponseDto.errorResponse('No available irrigation records');
@@ -393,13 +393,13 @@ export class CropsService {
     adminId: string,
   ): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({ adminId })
-      .populate('crop');
+      const farm = await this.farmModel.findOne({ adminId });
+      
       if (!farm) {
         return ResponseDto.errorResponse('Invalid adminId');
       }
 
-      const fert_pest = await this.fertilizer_pesticideModel.find({ adminId });
+      const fert_pest = await this.fertilizer_pesticideModel.find({ adminId }).populate('crop');
       if (!fert_pest || fert_pest.length === 0) {
         return ResponseDto.errorResponse('No available records');
       }
@@ -520,7 +520,7 @@ export class CropsService {
 
       const createdFinancial = await this.financialModel
         .findById(financial._id)
-        .populate('crop');
+        .populate('crop')
 
       if (!createdFinancial) {
         return ResponseDto.errorResponse('Failed to create financial record');
@@ -544,13 +544,12 @@ export class CropsService {
 
   async getAllFinancialRecordsForFarm(adminId: string): Promise<ResponseDto> {
     try {
-      const farm = await this.farmModel.findOne({ adminId })
-      .populate('crop');
+      const farm = await this.farmModel.findOne({ adminId });
       if (!farm) {
         return ResponseDto.errorResponse('Invalid adminId');
       }
 
-      const financial = await this.financialModel.find({ adminId });
+      const financial = await this.financialModel.find({ adminId }).populate('crop');
       if (!financial) {
         return ResponseDto.errorResponse('No available records');
       }
@@ -689,7 +688,7 @@ export class CropsService {
 
       const createdActivity = await this.activityModel
         .findById(activity._id)
-        .populate('crop');
+        .populate('crop')
 
       if (!createdActivity) {
         return ResponseDto.errorResponse('Failed to create activity record');
@@ -716,12 +715,12 @@ export class CropsService {
   async getAllActivityRecordsForFarm(adminId: string): Promise<ResponseDto> {
     try {
       const farm = await this.farmModel.findOne({ adminId })
-      .populate('crop');
+
       if (!farm) {
         return ResponseDto.errorResponse('Invalid adminId');
       }
 
-      const activity = await this.activityModel.find({ adminId });
+      const activity = await this.activityModel.find({ adminId }).populate('crop');
       if (!activity || activity.length === 0) {
         return ResponseDto.errorResponse('No available records');
       }
@@ -878,11 +877,10 @@ export class CropsService {
   async getAllPestDiseaseIssueForFarm(adminId: string): Promise<ResponseDto> {
     try {
       const farm = await this.farmModel.findOne({ adminId })
-      .populate('crop');
       if (!farm) {
         return ResponseDto.errorResponse('Farm not found');
       }
-      const pestDisease = await this.pestdiseaseModel.find({ adminId });
+      const pestDisease = await this.pestdiseaseModel.find({ adminId }).populate('crop');
       if (!pestDisease || pestDisease.length === 0) {
         return ResponseDto.errorResponse('No available records');
       }
