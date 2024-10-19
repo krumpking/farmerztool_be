@@ -156,14 +156,15 @@ export class CropsController {
     return this.cropsService.getIrrigationsForCrop(id);
   }
 
-  @Get(':adminId/irrigations')
+  @Get('irrigations/all/farm')
   @Roles(Role.Admin, Role.CropManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all irrigation records in a farm',
     description: 'Get all irrigation records in a farm using adminId',
   })
-  async getAllFarmIrrigations(@Param('adminId') adminId: string) {
+  async getAllFarmIrrigations(@Request() req) {
+    const {adminId} = this.getUserFromRequest(req);
     return this.cropsService.getAllFarmIrrigations(adminId);
   }
 
@@ -218,7 +219,7 @@ export class CropsController {
     );
   }
 
-  @Get(':adminId/fertilizer-pestcide-applications/farm')
+  @Get('/fertilizer-pestcide-applications/all/farm')
   @Roles(Role.Admin, Role.CropManager, Role.FarmManager)
   @Permissions(Permission.Read)
   @ApiOperation({
@@ -226,7 +227,8 @@ export class CropsController {
     description:
       'Get all fertilizer-pestcide-applications records in a farm using adminId',
   })
-  async getAllFertPestApplicationsForFarm(@Param('adminId') adminId: string) {
+  async getAllFertPestApplicationsForFarm(@Request() req) {
+    const {adminId} = this.getUserFromRequest(req);
     return this.cropsService.getAllFertPestApplicationsForFarm(adminId);
   }
 
@@ -305,14 +307,15 @@ export class CropsController {
     );
   }
 
-  @Get(':adminId/financial')
+  @Get('/financials/all/farm')
   @Roles(Role.Admin, Role.CropManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all financial records for a farm',
     description: 'Get all financial records for a farm using adminId',
   })
-  async getAllFinancialForFarm(@Param('adminId') adminId: string) {
+  async getAllFinancialForFarm(@Request() req) {
+    const {adminId} = this.getUserFromRequest(req);
     return this.cropsService.getAllFinancialRecordsForFarm(adminId);
   }
 
@@ -388,14 +391,15 @@ export class CropsController {
     );
   }
 
-  @Get('activity/:adminId/all')
+  @Get('activity/all/farm')
   @Roles(Role.Admin, Role.CropManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all activity records for a farm',
     description: 'Get all activity records for a farm using adminId',
   })
-  async getAllActivityForFarm(@Param('adminId') adminId: string) {
+  async getAllActivityForFarm(@Request() req) {
+    const {adminId} = this.getUserFromRequest(req);
     return this.cropsService.getAllActivityRecordsForFarm(adminId);
   }
 
@@ -471,14 +475,15 @@ export class CropsController {
     );
   }
 
-  @Get('pest-disease-issue/:adminId/all')
+  @Get('pest-disease-issue/all/farm')
   @Roles(Role.Admin, Role.CropManager)
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all pest disease issues for a farm',
     description: 'Get all pest disease issues for a farm using adminId',
   })
-  async getAllPestDiseaseIssuesForFarm(@Param('adminId') adminId: string) {
+  async getAllPestDiseaseIssuesForFarm(@Request() req) {
+    const {adminId} = this.getUserFromRequest(req);
     return this.cropsService.getAllPestDiseaseIssueForFarm(adminId);
   }
 
