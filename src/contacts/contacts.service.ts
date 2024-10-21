@@ -1,10 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
-import { CONTACT_MODEL } from './constants/contacts.constant';
+import { CONTACT_FINANCES_MODEL, CONTACT_MODEL } from './constants/contacts.constant';
 import { Model, Types } from 'mongoose';
 import { Contacts } from './interfaces/contact.interface';
 import { ResponseDto, ResponseHandler } from 'src/common/response.dto';
+import { FinancialActivity } from './interfaces/contact-finances.interface';
+import { UpdateFinancialActivityDto } from './dto/update-contact-finances.dto';
 
 
 @Injectable()
@@ -12,6 +14,8 @@ export class ContactsService {
   constructor(
     @Inject(CONTACT_MODEL)
     private contactModel: Model<Contacts>,
+    @Inject(CONTACT_FINANCES_MODEL)
+    private financialActivityModel: Model<FinancialActivity>,
   ) {}
   
   async createContact(adminId: string, userId: string ,createContactDto: CreateContactDto): Promise<ResponseDto> {
@@ -138,5 +142,116 @@ export class ContactsService {
 
 
 
+  ////////////////////////////FinancialActivity///////////////////////////////////
+
+
+  async createFinancialActivity(id: string, adminId: string, userId: string, createFinancialActivityDto: any): Promise<ResponseDto> {
+    try {
+      const contact = await this.contactModel.findById(id);
+      if (!contact) {
+        return ResponseHandler.handleNotFound("Contact not found");
+      }
+
+      const existingFinancialRecord = await this.financialActivityModel.findOne({
+        ...createFinancialActivityDto,
+        addedBy: userId,
+        adminId: adminId,
+        contactId: id
+      });
+
+      if(existingFinancialRecord){
+        return ResponseHandler.handleBadRequest("Financial activity already exists");
+      }
+
+      const financialActivityInstance = await this.financialActivityModel.create({
+        ...createFinancialActivityDto,
+        addedBy: userId,
+        adminId: adminId,
+        contactId: id
+      });
+
+      const createdFinancialActivity = await this.financialActivityModel.findById(financialActivityInstance._id);
+
+      if (!createdFinancialActivity) {
+        return ResponseHandler.handleBadRequest("Failed to create financial activity");
+      }
+
+      return ResponseHandler.handleCreated("Financial activity created successfully", createdFinancialActivity);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while creating financial activity");
+    }
+  }
+
+  async getAllFinancialActivitiesPerContact(id: string, adminId: string): Promise<ResponseDto> {
+    try {
+      const contact = await this.contactModel.findById(id);
+      if (!contact) {
+        return ResponseHandler.handleNotFound("Contact not found");
+      }
+
+      const financialActivities = await this.financialActivityModel.find({ contactId: id, adminId });
+      if (!financialActivities || financialActivities.length === 0) {
+        return ResponseHandler.handleNotFound("No available financial activities");
+      }
+      return ResponseHandler.handleOk("Financial activities fetched", financialActivities);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching financial activities");
+    }
+  }
+
+  async getFinancialActivityForAdmin(adminId: string): Promise<ResponseDto>{
+    try {
+      const financialActivities = await this.financialActivityModel.find({ adminId });
+      if (!financialActivities || financialActivities.length === 0) {
+        return ResponseHandler.handleNotFound("No available financial activities");
+      }
+      return ResponseHandler.handleOk("Financial activities fetched", financialActivities);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching financial activities");
+    }
+  }
+
+  async getFinancialActivity(id: string): Promise<ResponseDto> {
+    try {
+      const financialActivity = await this.financialActivityModel.findById(id);
+      if (!financialActivity) {
+        return ResponseHandler.handleNotFound("Financial activity not found");
+      }
+      return ResponseHandler.handleOk("Financial activity fetched", financialActivity);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching financial activity");
+    }
+  }
+
+  async updateFinancialActivity(adminId: string, id: string, updateFinancialActivityDto: UpdateFinancialActivityDto): Promise<ResponseDto> {
+    try {
+      const financialActivity = await this.financialActivityModel.findOneAndUpdate({ _id: id, adminId }, updateFinancialActivityDto, { new: true });
+      if (!financialActivity) {
+        return ResponseHandler.handleNotFound("Financial activity not found");
+      }
+      return ResponseHandler.handleOk("Financial activity updated successfully", financialActivity);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while updating financial activity");
+    }
+  }
+
+  async deleteFinancialActivity(adminId: string, id: string): Promise<ResponseDto> {
+    try {
+      const financialActivity = await this.financialActivityModel.findOneAndDelete({ _id: id, adminId });
+      if (!financialActivity) {
+        return ResponseHandler.handleNotFound("Financial activity not found");
+      }
+      return ResponseHandler.handleNoContent("Financial activity deleted successfully");
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while deleting financial activity");
+    }
+  }
 
 }
+
