@@ -11,6 +11,7 @@ import { CropsModule } from './crops/crops.module';
 import { HatcheryModule } from './hatchery/hatchery.module';
 import { AssetsModule } from './assets/assets.module';
 import { RemindersModule } from './reminders/reminders.module';
+import { ContactsModule } from './contacts/contacts.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RemindersModule } from './reminders/reminders.module';
     HatcheryModule,
     AssetsModule,
     RemindersModule,
+    ContactsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
