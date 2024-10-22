@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
-import { CONTACT_FINANCES_MODEL, CONTACT_MODEL } from './constants/contacts.constant';
+import { CONTACT_ACTIVITY, CONTACT_FINANCES_MODEL, CONTACT_MODEL } from './constants/contacts.constant';
 import { Model, Types } from 'mongoose';
 import { Contacts } from './interfaces/contact.interface';
 import { ResponseDto, ResponseHandler } from 'src/common/response.dto';
 import { FinancialActivity } from './interfaces/contact-finances.interface';
 import { UpdateFinancialActivityDto } from './dto/update-contact-finances.dto';
+import { ContactActivity } from './interfaces/contact-activities.interface';
 
 
 @Injectable()
@@ -16,6 +17,8 @@ export class ContactsService {
     private contactModel: Model<Contacts>,
     @Inject(CONTACT_FINANCES_MODEL)
     private financialActivityModel: Model<FinancialActivity>,
+    @Inject(CONTACT_ACTIVITY)
+    private activityModel: Model<ContactActivity>,
   ) {}
   
   async createContact(adminId: string, userId: string ,createContactDto: CreateContactDto): Promise<ResponseDto> {
@@ -252,6 +255,52 @@ export class ContactsService {
       return ResponseHandler.handleInternalServerError("Something went wrong while deleting financial activity");
     }
   }
+
+  ////////////////////////////////////////Contact Activity //////////////////////////////////////////
+
+
+  async createContactActivity(id: string, adminId: string, userId: string, createContactActivityDto: any): Promise<ResponseDto> {
+    try {
+      const contact = await this.contactModel.findById(id);
+      if (!contact) {
+        return ResponseHandler.handleNotFound("Contact not found");
+      }
+
+      const existingContactActivity = await this.activityModel.findOne({
+        ...createContactActivityDto,
+        adminId: adminId,
+        addedBy: userId,
+        contactId: contact._id
+      });
+
+      if(existingContactActivity){
+        return ResponseHandler.handleBadRequest("Contact activity already exists");
+      }
+
+      const contactActivityInstance = await this.activityModel.create({
+        ...createContactActivityDto,
+        adminId: adminId,
+        addedBy: userId,
+        contactId: contact._id
+      });
+
+      const createdContactActivity = await this.activityModel.findById(contactActivityInstance._id);
+
+      if (!createdContactActivity) {
+        return ResponseHandler.handleBadRequest("Failed to create contact activity");
+      }
+
+      return ResponseHandler.handleCreated("Contact activity created successfully", createdContactActivity);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while creating contact activity");
+    }
+  }
+
+
+  
+
+
 
 }
 

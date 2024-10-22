@@ -16,7 +16,7 @@ export interface FinancialActivity extends Document {
   reason: string; 
   extraNotes?: string; 
   amount: number;
-  receipt: string;
+  documentId: string;
   createdAt: Date; 
   updatedAt: Date; 
 }

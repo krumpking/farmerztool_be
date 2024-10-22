@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ContactsService } from './contacts.service';
 import { ContactsController } from './contacts.controller';
-import { contactFinancialActivityProviders, contactsProviders } from './contacts.provider';
+import { contactActivityProviders, contactFinancialActivityProviders, contactsProviders } from './contacts.provider';
 import { DatabaseModule } from 'src/database/database.module';
 import { FinancialActivityController } from './controllers/financialActivity.controller';
 
@@ -13,6 +13,7 @@ import { FinancialActivityController } from './controllers/financialActivity.con
   providers: [ContactsService,
     ...contactsProviders,
     ...contactFinancialActivityProviders,
+    ...contactActivityProviders
   ],
 })
 export class ContactsModule {}

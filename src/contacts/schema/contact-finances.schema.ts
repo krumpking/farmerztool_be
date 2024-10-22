@@ -16,7 +16,7 @@ export const financialActivitySchema = new mongoose.Schema({
   type: String, required: true 
   },
   amount: { type: Number, required: true },
-  receipt: { type: String, required: true },
+  documentId: { type: String, required: true },
   reason: { type: String, required: true },
   extraNotes: { type: String, default: '' },
 }, {timestamps: true});

@@ -48,7 +48,7 @@ export class CreateFinancialActivityDto {
   @ApiProperty({ example: 'receipt12345', description: 'A reference number or code for the receipt of the transaction.' })
   @IsNotEmpty()
   @IsString()
-  receipt: string;
+  documentId: string;
 
   @ApiProperty({ example: 'Payment for apples', description: 'A brief explanation of why this transaction was made.' })
   @IsNotEmpty()
