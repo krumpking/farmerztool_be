@@ -104,7 +104,6 @@ export class ContactsService {
          }
         ]);
 
-        console.log(contacts);
         
 
       if (!contacts || contacts.length === 0) {
@@ -297,8 +296,84 @@ export class ContactsService {
     }
   }
 
+  async getAllContactActivitiesPerContact(id: string, adminId: string): Promise<ResponseDto> {
+    try {
+      
+      const contact = await this.contactModel.findById(id);
+
+      if (!contact) {
+        return ResponseHandler.handleNotFound("Contact not found");
+      }
+
+      const contactActivities = await this.activityModel.find({ contactId: id, adminId });
+      if (!contactActivities || contactActivities.length === 0) {
+        return ResponseHandler.handleNotFound("No available contact activities");
+      }
+      return ResponseHandler.handleOk("Contact activities fetched", contactActivities);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching contact activities");
+    }
+  }
+
+  async getContactActivity(id: string): Promise<ResponseDto> {
+    try {
+      const contactActivity = await this.activityModel.findById(id);
+      if (!contactActivity) {
+        return ResponseHandler.handleNotFound("Contact activity not found");
+      }
+      return ResponseHandler.handleOk("Contact activity fetched", contactActivity);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching contact activity");
+    }
+  }
+
+  async getContactActivitiesForAdmin(adminId: string): Promise<ResponseDto> {
+    try {
+      const contactActivities = await this.activityModel.find({ adminId });
+      if (!contactActivities || contactActivities.length === 0) {
+        return ResponseHandler.handleNotFound("No available contact activities");
+      }
+      return ResponseHandler.handleOk("Contact activities fetched", contactActivities);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching contact activities");
+    }
+  }
+
+  async updateContactActivity(adminId: string, id: string, updateContactActivityDto: any): Promise<ResponseDto> {
+    try {
+      const contactActivity = await this.activityModel.findOneAndUpdate({ _id: id, adminId }, updateContactActivityDto, { new: true });
+      if (!contactActivity) {
+        return ResponseHandler.handleNotFound("Contact activity not found");
+      }
+      return ResponseHandler.handleOk("Contact activity updated successfully", contactActivity);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while updating contact activity");
+    }
+  }
+
+  async deleteContactActivity(adminId: string, id: string): Promise<ResponseDto> {
+    try {
+      const contactActivity = await this.activityModel.findOneAndDelete({ _id: id, adminId });
+      if (!contactActivity) {
+        return ResponseHandler.handleNotFound("Contact activity not found");
+      }
+      return ResponseHandler.handleNoContent("Contact activity deleted successfully");
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while deleting contact activity");
+    }
+  }
+
+
 
   
+
+
+
 
 
 
