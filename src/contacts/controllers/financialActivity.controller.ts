@@ -8,6 +8,7 @@ import { Permission } from "src/roles/permissions.enum";
 import { CreateFinancialActivityDto } from "../dto/create-contact-finances.dto";
 import { UpdateFinancialActivityDto } from "../dto/update-contact-finances.dto";
 
+
 @ApiTags("CONTACTS FINANCIAL ACTIVITES")
 @ApiBearerAuth()
 @Controller('/api/v1/contacts')
@@ -107,5 +108,6 @@ export class FinancialActivityController {
         const user = this.getUserFromRequest(req);
         return this.contactsService.deleteFinancialActivity(user?.adminId, id);
     }
+
 
 }

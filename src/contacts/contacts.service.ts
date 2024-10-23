@@ -1,13 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
-import { CONTACT_ACTIVITY, CONTACT_FINANCES_MODEL, CONTACT_MODEL } from './constants/contacts.constant';
+import { CONTACT_ACTIVITY, CONTACT_DOCUMENT_MODEL, CONTACT_FINANCES_MODEL, CONTACT_MODEL } from './constants/contacts.constant';
 import { Model, Types } from 'mongoose';
 import { Contacts } from './interfaces/contact.interface';
 import { ResponseDto, ResponseHandler } from 'src/common/response.dto';
 import { FinancialActivity } from './interfaces/contact-finances.interface';
 import { UpdateFinancialActivityDto } from './dto/update-contact-finances.dto';
 import { ContactActivity } from './interfaces/contact-activities.interface';
+import { ContactDocument } from './interfaces/contact-document.interface';
+import { CreateContactDocumentDto } from './dto/create-contact-document.dto';
+import { UpdateContactDocumentDto } from './dto/update-contact-documents.dto';
 
 
 @Injectable()
@@ -19,9 +22,11 @@ export class ContactsService {
     private financialActivityModel: Model<FinancialActivity>,
     @Inject(CONTACT_ACTIVITY)
     private activityModel: Model<ContactActivity>,
-  ) {}
-  
-  async createContact(adminId: string, userId: string ,createContactDto: CreateContactDto): Promise<ResponseDto> {
+    @Inject(CONTACT_DOCUMENT_MODEL)
+    private documentModel: Model<ContactDocument>,
+  ) { }
+
+  async createContact(adminId: string, userId: string, createContactDto: CreateContactDto): Promise<ResponseDto> {
     try {
       const existingContact = await this.contactModel.findOne({
         ...createContactDto,
@@ -29,7 +34,7 @@ export class ContactsService {
         addedBy: userId,
       });
 
-      if(existingContact){
+      if (existingContact) {
         return ResponseHandler.handleBadRequest("Contact already exists");
       }
 
@@ -82,29 +87,29 @@ export class ContactsService {
     try {
       const contacts = await this.contactModel
         .aggregate([
-         {
-          $match: {
-            adminId: new Types.ObjectId(adminId)
-          }
-         },
-         {
-          $group: {
-            _id: "$contactType",
-            contacts: {
-              $push: "$$ROOT"
+          {
+            $match: {
+              adminId: new Types.ObjectId(adminId)
+            }
+          },
+          {
+            $group: {
+              _id: "$contactType",
+              contacts: {
+                $push: "$$ROOT"
+              }
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              contactType: "$_id",
+              contacts: 1
             }
           }
-         },
-         {
-          $project: {
-            _id: 0,
-            contactType: "$_id",
-            contacts: 1
-          }
-         }
         ]);
 
-        
+
 
       if (!contacts || contacts.length === 0) {
         return ResponseHandler.handleNotFound("No available contacts");
@@ -161,7 +166,7 @@ export class ContactsService {
         contactId: id
       });
 
-      if(existingFinancialRecord){
+      if (existingFinancialRecord) {
         return ResponseHandler.handleBadRequest("Financial activity already exists");
       }
 
@@ -203,7 +208,7 @@ export class ContactsService {
     }
   }
 
-  async getFinancialActivityForAdmin(adminId: string): Promise<ResponseDto>{
+  async getFinancialActivityForAdmin(adminId: string): Promise<ResponseDto> {
     try {
       const financialActivities = await this.financialActivityModel.find({ adminId });
       if (!financialActivities || financialActivities.length === 0) {
@@ -272,7 +277,7 @@ export class ContactsService {
         contactId: contact._id
       });
 
-      if(existingContactActivity){
+      if (existingContactActivity) {
         return ResponseHandler.handleBadRequest("Contact activity already exists");
       }
 
@@ -298,7 +303,7 @@ export class ContactsService {
 
   async getAllContactActivitiesPerContact(id: string, adminId: string): Promise<ResponseDto> {
     try {
-      
+
       const contact = await this.contactModel.findById(id);
 
       if (!contact) {
@@ -369,13 +374,128 @@ export class ContactsService {
   }
 
 
-
-  
-
+  ///////////////////////contact documents////////////////////////////////
 
 
+  async createContactDocument(id: string, adminId: string, userId: string, createContactDocumentDto: CreateContactDocumentDto, file: Express.Multer.File): Promise<ResponseDto> {
+    try {
+      let downloadLink: string = null;
+      const contact = await this.contactModel.findById(id);
 
+      if (!contact) {
+        return ResponseHandler.handleNoContent("Contact not found");
+      }
 
+      if(file){
+        downloadLink = this.getDownloadLink(file.filename);
+      }
+
+      const existingDocument = await this.documentModel.findOne({
+        ...createContactDocumentDto,
+        adminId: adminId,
+        addedBy: userId,
+        contactId: id,
+      });
+
+      if (existingDocument) {
+        return ResponseHandler.handleBadRequest("A document with exact information exists");
+      }
+
+      const documentInstance = await this.documentModel.create({
+        ...createContactDocumentDto,
+        addedBy: userId,
+        contactId: contact._id,
+        adminId: adminId,
+        documentLink: downloadLink
+      });
+
+      const createdDocument = await this.documentModel.findById(documentInstance._id);
+
+      if (!createdDocument) {
+        return ResponseHandler.handleBadRequest("Failed to create document");
+      }
+
+      return ResponseHandler.handleCreated("Document successfully created", createdDocument);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, while creating conatct document")
+    }
+  }
+
+  private getDownloadLink(fileName: string): string {
+    const baseUrl = 'http://localhost:3000/uploads';
+    return `${baseUrl}/${encodeURIComponent(fileName)}`;
+  }
+
+  async getAllContactDocumentsPerContact(id: string, adminId: string): Promise<ResponseDto> {
+    try {
+      const contact = await this.contactModel.findById(id);
+      if (!contact) {
+        return ResponseHandler.handleNotFound("Contact not found");
+      }
+
+      const documents = await this.documentModel.find({ contactId: id, adminId });
+      if (!documents || documents.length === 0) {
+        return ResponseHandler.handleNotFound("No available documents");
+      }
+      return ResponseHandler.handleOk("Documents fetched", documents);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching documents");
+    }
+  }
+
+  async getContactDocument(id: string): Promise<ResponseDto> {
+    try {
+      const document = await this.documentModel.findById(id);
+      if (!document) {
+        return ResponseHandler.handleNotFound("Document not found");
+      }
+      return ResponseHandler.handleOk("Document fetched", document);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching document");
+    }
+  }
+
+  async getContactDocumentsForAdmin(adminId: string): Promise<ResponseDto> {
+    try {
+      const documents = await this.documentModel.find({ adminId });
+      if (!documents || documents.length === 0) {
+        return ResponseHandler.handleNotFound("No available documents");
+      }
+      return ResponseHandler.handleOk("Documents fetched", documents);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching documents");
+    }
+  }
+
+  async updateContactDocument(adminId: string, id: string, updateContactDocumentDto: UpdateContactDocumentDto): Promise<ResponseDto> {
+    try {
+      const document = await this.documentModel.findOneAndUpdate({ _id: id, adminId }, updateContactDocumentDto, { new: true });
+      if (!document) {
+        return ResponseHandler.handleNotFound("Document not found");
+      }
+      return ResponseHandler.handleOk("Document updated successfully", document);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while updating document");
+    }
+  }
+
+  async deleteContactDocument(adminId: string, id: string): Promise<ResponseDto> {
+    try {
+      const document = await this.documentModel.findOneAndDelete({ _id: id, adminId });
+      if (!document) {
+        return ResponseHandler.handleNotFound("Document not found");
+      }
+      return ResponseHandler.handleNoContent("Document deleted successfully");
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong while deleting document");
+    }
+  }
 
 }
 
