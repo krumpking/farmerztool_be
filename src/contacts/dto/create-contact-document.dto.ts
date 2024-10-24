@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsUrl } from 'class-validator';
 
 
 enum SourceOfDocument {
@@ -39,6 +39,14 @@ export class CreateContactDocumentDto {
   @IsString()
   @IsNotEmpty()
   documentDetails: string;
+
+  @ApiProperty({
+    description: "The document download link",
+    example: "https://farmerztool.co.zw/downloads/file"
+  })
+  @IsUrl()
+  @IsString()
+  documentLink: string;
 
   @ApiProperty({
     description: 'The source of the document. NB: Enum taking [in-house, client]',

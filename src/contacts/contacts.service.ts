@@ -377,17 +377,12 @@ export class ContactsService {
   ///////////////////////contact documents////////////////////////////////
 
 
-  async createContactDocument(id: string, adminId: string, userId: string, createContactDocumentDto: CreateContactDocumentDto, file: Express.Multer.File): Promise<ResponseDto> {
+  async createContactDocument(id: string, adminId: string, userId: string, createContactDocumentDto: CreateContactDocumentDto): Promise<ResponseDto> {
     try {
-      let downloadLink: string = null;
       const contact = await this.contactModel.findById(id);
 
       if (!contact) {
         return ResponseHandler.handleNoContent("Contact not found");
-      }
-
-      if(file){
-        downloadLink = this.getDownloadLink(file.filename);
       }
 
       const existingDocument = await this.documentModel.findOne({
@@ -406,7 +401,6 @@ export class ContactsService {
         addedBy: userId,
         contactId: contact._id,
         adminId: adminId,
-        documentLink: downloadLink
       });
 
       const createdDocument = await this.documentModel.findById(documentInstance._id);
@@ -422,10 +416,6 @@ export class ContactsService {
     }
   }
 
-  private getDownloadLink(fileName: string): string {
-    const baseUrl = 'http://localhost:3000/uploads';
-    return `${baseUrl}/${encodeURIComponent(fileName)}`;
-  }
 
   async getAllContactDocumentsPerContact(id: string, adminId: string): Promise<ResponseDto> {
     try {

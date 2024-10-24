@@ -5,7 +5,7 @@ export const ContactDocumentSchema = new mongoose.Schema({
   addedBy: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
   contactId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Contact' },
   contactName: { type: String, required: true },
-  documentLink: { type: String, required: false },
+  documentLink: { type: String, required: true },
   documentType: { type: String, lowercase: true, required: true },
   documentTitle: { type: String, required: true },
   documentDetails: { type: String, required: true },

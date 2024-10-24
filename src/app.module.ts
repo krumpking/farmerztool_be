@@ -12,7 +12,6 @@ import { HatcheryModule } from './hatchery/hatchery.module';
 import { AssetsModule } from './assets/assets.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { ContactsModule } from './contacts/contacts.module';
-import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -30,7 +29,6 @@ import { FilesModule } from './files/files.module';
     AssetsModule,
     RemindersModule,
     ContactsModule,
-    FilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

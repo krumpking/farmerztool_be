@@ -1,13 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards, } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { RolesGuard } from "src/roles/roles.guard";
 import { ContactsService } from "../contacts.service";
 import { Permissions, Roles } from "src/roles/roles.decorators";
 import { Role } from "src/roles/roles.enum";
 import { Permission } from "src/roles/permissions.enum";
-import { FileInterceptor } from "@nestjs/platform-express";
 import { CreateContactDocumentDto } from "../dto/create-contact-document.dto";
-import { multerOptions } from "src/files/config/multer.config";
 import { UpdateContactDocumentDto } from "../dto/update-contact-documents.dto";
 
 @ApiTags("CONTACTS DOCUMENTS")
@@ -26,14 +24,13 @@ export class ContactDocumentsController {
     @Post(':id/documents/add')
     @Roles(Role.Admin, Role.Finance, Role.FarmManager)
     @Permissions(Permission.Create)
-    @UseInterceptors(FileInterceptor('file', multerOptions))
     @ApiOperation({
         summary: 'Add Document',
-        description: 'Uploads a document associated with the specified contact mongoose id. The uploaded file must be named "file" and its optional to add a file. NB: I am using multer for handling the uploads, so now l am disabling the multerOptions, l will write the logic the delete the file from the server after uoloading it to Supabase the cloud storage service we may use. So if you test a file if its not supported the error will be Unsupported file code - 401, then if its successfull for now the return document should have documentLink = undefined',
+        description: 'Uploads a document associated with the specified contact mongoose id',
     })
-    async createContactDocument(@Param('id') id: string, @Body() createDocumentDto: CreateContactDocumentDto, @UploadedFile() File: Express.Multer.File, @Request() req) {
+    async createContactDocument(@Param('id') id: string, @Body() createDocumentDto: CreateContactDocumentDto,  @Request() req) {
         const user = this.getUserFromRequest(req);
-        return this.contactsService.createContactDocument(id, user?.adminId, user?.id, createDocumentDto, File);
+        return this.contactsService.createContactDocument(id, user?.adminId, user?.id, createDocumentDto);
     }
 
 
