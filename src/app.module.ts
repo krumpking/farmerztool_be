@@ -12,6 +12,7 @@ import { HatcheryModule } from './hatchery/hatchery.module';
 import { AssetsModule } from './assets/assets.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { ContactsModule } from './contacts/contacts.module';
+import { IncomeExpensesModule } from './income-expenses/income-expenses.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ContactsModule } from './contacts/contacts.module';
     AssetsModule,
     RemindersModule,
     ContactsModule,
+    IncomeExpensesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
