@@ -919,51 +919,32 @@ export class AnimalsService {
         return ResponseHandler.handleNotFound("No animals found for the specified type and admin");
       }
 
-      const updatedFeeds = [];
+      const createdFeeds = [];
 
-      // Loop through each animal and update or create the feed records
+      // Loop through each animal and create new feed records
       for (const animal of animals) {
-        const animalExist = await this.feedingModel.findOne({
+        const newFeed = await this.feedingModel.create({
+          ...updateFeedDto,
           adminId: animal.adminId,
-          animal: animal._id
+          animal: animal._id,
+          animalType: animal.animalType,
+          animalId: animal.animalId
         });
 
-        if (animalExist) {
-          // Update the existing feed record
-          const updatedFeed = await this.feedingModel.findByIdAndUpdate(
-            animalExist._id,
-            updateFeedDto,
-            { new: true }
-          );
-
-          if (updatedFeed) {
-            updatedFeeds.push(updatedFeed);
-          }
-        } else {
-          // Create a new feed record if it doesn't exist
-          const newFeed = await this.feedingModel.create({
-            ...updateFeedDto,
-            adminId: animal.adminId,
-            animal: animal._id,
-            animalType: animal.animalType,
-            animalId: animal.animalId
-          });
-
-          const createdFeed = await this.feedingModel.findById(newFeed._id);
-          if (createdFeed) {
-            updatedFeeds.push(createdFeed);
-          }
+        const createdFeed = await this.feedingModel.findById(newFeed._id);
+        if (createdFeed) {
+          createdFeeds.push(createdFeed);
         }
       }
 
-      if (updatedFeeds.length === 0) {
-        return ResponseHandler.handleBadRequest("No feed records were updated or created.");
+      if (createdFeeds.length === 0) {
+        return ResponseHandler.handleBadRequest("No feed records were created.");
       }
 
-      return ResponseHandler.handleOk("Feed records updated or created successfully for all animals", updatedFeeds);
+      return ResponseHandler.handleOk("Feed records created successfully for all animals", createdFeeds);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update feeds for all animals");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to create feeds for all animals");
     }
   }
 
@@ -975,49 +956,32 @@ export class AnimalsService {
         return ResponseHandler.handleNotFound("No animals found for the specified type and admin");
       }
 
-      const updatedVaccines = [];
+      const createdVaccinations = [];
 
-      // Loop through each animal and update or create the vaccine records
+      // Loop through each animal and create new vaccination records
       for (const animal of animals) {
-        const vaccineExist = await this.vaccinationModel.findOne({
+        const newVaccination = await this.vaccinationModel.create({
+          ...updateVaccinationDto,
           adminId: animal.adminId,
-          animal: animal._id
+          animal: animal._id,
+          animalType: animal.animalType,
+          animalId: animal.animalId
         });
 
-        if (vaccineExist) {
-          // Update the existing vaccine record
-          const updatedVaccine = await this.vaccinationModel.findByIdAndUpdate(
-            vaccineExist._id,
-            updateVaccinationDto,
-            { new: true }
-          );
-
-          if (updatedVaccine) {
-            updatedVaccines.push(updatedVaccine);
-          }
-        } else {
-          // Create a new vaccine record if it doesn't exist
-          const newVaccine = new this.vaccinationModel({
-            ...updateVaccinationDto,
-            adminId: animal.adminId,
-            animal: animal._id,
-            animalType: animal.animalType,
-            animalId: animal.animalId
-          });
-
-          const createdVaccine = await newVaccine.save();
-          updatedVaccines.push(createdVaccine);
+        const createdVaccination = await this.vaccinationModel.findById(newVaccination._id);
+        if (createdVaccination) {
+          createdVaccinations.push(createdVaccination);
         }
       }
 
-      if (updatedVaccines.length === 0) {
-        return ResponseHandler.handleBadRequest("No vaccine records were updated or created.");
+      if (createdVaccinations.length === 0) {
+        return ResponseHandler.handleBadRequest("No vaccination records were created.");
       }
 
-      return ResponseHandler.handleOk("Vaccine records updated or created successfully for all animals", updatedVaccines);
+      return ResponseHandler.handleOk("Vaccination records created successfully for all animals", createdVaccinations);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update vaccines for all animals");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to create vaccinations for all animals");
     }
   }
 
