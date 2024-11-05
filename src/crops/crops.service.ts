@@ -45,7 +45,7 @@ export class CropsService {
     @Inject(ACTIVITY_MODEL) private activityModel: Model<CropActivity>,
     @Inject(PEST_DISEASE_MODEL)
     private pestdiseaseModel: Model<PestDiseaseIssue>,
-  ) {}
+  ) { }
 
   /////////////////////////// CROPS /////////////////////////////
 
@@ -90,7 +90,7 @@ export class CropsService {
       const addCropToFarm = await this.farmModel.findByIdAndUpdate(farm._id, {
         $push: { crops: createdCrop._id },
       });
-      
+
       if (!addCropToFarm) {
         await this.cropModel.findByIdAndDelete(crop._id);
         return ResponseDto.errorResponse('Failed to add Crop to farm');
@@ -212,7 +212,7 @@ export class CropsService {
         return ResponseDto.errorResponse('Failed to create irrigation record');
       }
 
-      await this.cropModel.findByIdAndUpdate(crop._id, {$push: {irrigations: createdIrrigation._id}});
+      await this.cropModel.findByIdAndUpdate(crop._id, { $push: { irrigations: createdIrrigation._id } });
 
       return ResponseDto.successResponse(
         'Irrigation record created',
@@ -373,7 +373,7 @@ export class CropsService {
         );
       }
 
-      await this.cropModel.findByIdAndUpdate(id, {$push: {fertPest: createdFertPest._id}});
+      await this.cropModel.findByIdAndUpdate(id, { $push: { fertPest: createdFertPest._id } });
 
       return ResponseDto.successResponse(
         `Created ${createFertlizerPesticideDto.recordType} record`,
@@ -383,8 +383,8 @@ export class CropsService {
       console.log(error);
       return ResponseDto.errorResponse(
         'Something went wrong, while creating ' +
-          createFertlizerPesticideDto.recordType +
-          ' record',
+        createFertlizerPesticideDto.recordType +
+        ' record',
       );
     }
   }
@@ -394,7 +394,7 @@ export class CropsService {
   ): Promise<ResponseDto> {
     try {
       const farm = await this.farmModel.findOne({ adminId });
-      
+
       if (!farm) {
         return ResponseDto.errorResponse('Invalid adminId');
       }
@@ -979,209 +979,185 @@ export class CropsService {
 
   ///////////////////////// MULTIPLE UPDATES ////////////////////////////
 
-  async getAllCropsTypesForAdmin(adminId: string): Promise<ResponseDto>{
+  async getAllCropsTypesForAdmin(adminId: string): Promise<ResponseDto> {
     try {
       const crops = await this.cropModel.find({ adminId });
-  
+
       if (!crops || crops.length === 0) {
-          return ResponseHandler.handleNotFound("No available crops");
+        return ResponseHandler.handleNotFound("No available crops");
       }
-  
+
       const cropTypes: string[] = [];
-      
+
       crops.forEach(item => {
-          const cropType = item.cropType;
-          // Check if cropType is not null or undefined and not already in the cropTypes array
-          if (cropType !== null && cropType !== undefined && !cropTypes.includes(cropType)) {
-              cropTypes.push(cropType);
-          }
+        const cropType = item.cropType;
+        // Check if cropType is not null or undefined and not already in the cropTypes array
+        if (cropType !== null && cropType !== undefined && !cropTypes.includes(cropType)) {
+          cropTypes.push(cropType);
+        }
       });
-  
+
       return ResponseHandler.handleOk("CropTypes fetched", cropTypes);
-  } catch (error) {
+    } catch (error) {
       console.error(error);
       return ResponseHandler.handleInternalServerError("An error occurred while fetching crop types");
-  }
+    }
   }
 
   async updateActivityForAllCrops(adminId: string, cropType: string, updateActivityDto: UpdateActivityDto): Promise<ResponseDto> {
     try {
       const crops = await this.cropModel.find({ adminId, cropType });
-  
+
       if (!crops || crops.length === 0) {
         return ResponseHandler.handleNotFound("No crops found for the specified type and admin");
       }
-  
-      const updatedActivites = [];
-  
-      // Loop through each crops and update the activity records
+
+      const createdActivities = [];
+
+      // Loop through each crop and create new activity records
       for (const crop of crops) {
-        const existingActivity = await this.activityModel.findOne({ 
-          adminId: crop.adminId, 
-          crop: crop._id 
+        const newActivity = new this.activityModel({
+          ...updateActivityDto,
+          adminId: crop.adminId,
+          crop: crop._id,
+          cropType: crop.cropType
         });
-  
-        if (existingActivity) {
-          const updatedActivity = await this.activityModel.findByIdAndUpdate(
-            existingActivity._id,
-            updateActivityDto,
-            { new: true }
-          );
-  
-          if (updatedActivity) {
-            updatedActivites.push(updatedActivity);
-          } else {
-            console.log(`Failed to update feed for crop: ${crop.cropName}`);
-          }
+
+        const createdRecord = await newActivity.save();
+
+        if (createdRecord) {
+          createdActivities.push(createdRecord);
         } else {
-          console.log(`No existing activity record found for crop: ${crop.cropName}`);
+          console.log(`Failed to create activity record for crop: ${crop.cropName}`);
         }
       }
-  
-      if (updatedActivites.length === 0) {
-        return ResponseHandler.handleBadRequest("No activity records were updated.");
+
+      if (createdActivities.length === 0) {
+        return ResponseHandler.handleBadRequest("No activity records were created.");
       }
-  
-      return ResponseHandler.handleOk("Activites records updated successfully for all crops", updatedActivites);
+
+      return ResponseHandler.handleOk("Activity records created successfully for all crops", createdActivities);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update activies for all crops");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to create activities for all crops");
     }
   }
-
 
   async updateIrrigationForAllCrops(adminId: string, cropType: string, updateIrrigationDto: UpdateIrrigationDto): Promise<ResponseDto> {
     try {
       const crops = await this.cropModel.find({ adminId, cropType });
-  
+
       if (!crops || crops.length === 0) {
         return ResponseHandler.handleNotFound("No crops found for the specified type and admin");
       }
-  
-      const updatedIrrigations = [];
-  
-      // Loop through each crop and update the irrigation records
+
+      const createdIrrigations = [];
+
+      // Loop through each crop and create new irrigation records
       for (const crop of crops) {
-        const existingIrigation = await this.irrigationModel.findOne({ 
-          adminId: crop.adminId, 
-          crop: crop._id 
+        const newIrrigation = new this.irrigationModel({
+          ...updateIrrigationDto,
+          adminId: crop.adminId,
+          crop: crop._id,
+          cropType: crop.cropType
         });
-  
-        if (existingIrigation) {
-          const updatedIrrigation = await this.irrigationModel.findByIdAndUpdate(
-            existingIrigation._id,
-            updateIrrigationDto,
-            { new: true }
-          );
-  
-          if (updatedIrrigation) {
-            updatedIrrigations.push(updatedIrrigation);
-          } else {
-            console.log(`Failed to update irrigation for crop: ${crop.cropName}`);
-          }
+
+        const createdRecord = await newIrrigation.save();
+
+        if (createdRecord) {
+          createdIrrigations.push(createdRecord);
         } else {
-          console.log(`No existing irrigation record found for crop: ${crop.cropName}`);
+          console.log(`Failed to create irrigation record for crop: ${crop.cropName}`);
         }
       }
-  
-      if (updatedIrrigations.length === 0) {
-        return ResponseHandler.handleBadRequest("No irrigation records were updated.");
+
+      if (createdIrrigations.length === 0) {
+        return ResponseHandler.handleBadRequest("No irrigation records were created.");
       }
-  
-      return ResponseHandler.handleOk("Irrigation records updated successfully for all crops", updatedIrrigations);
+
+      return ResponseHandler.handleOk("Irrigation records created successfully for all crops", createdIrrigations);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update irrigations for all crops");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to create irrigations for all crops");
     }
   }
+
 
   async updateFinancialRecordsForAllCrops(adminId: string, cropType: string, updateFinancialDto: UpdateFinancialDto): Promise<ResponseDto> {
     try {
       const crops = await this.cropModel.find({ adminId, cropType });
-  
+
       if (!crops || crops.length === 0) {
         return ResponseHandler.handleNotFound("No crops found for the specified type and admin");
       }
-  
-      const updatedFinancialRecords = [];
-  
-      // Loop through each crop and update the financial records
+
+      const createdFinancialRecords = [];
+
+      // Loop through each crop and create new financial records
       for (const crop of crops) {
-        const existingFinancialRecord = await this.financialModel.findOne({ 
-          adminId: crop.adminId, 
-          crop: crop._id 
+        const newFinancialRecord = new this.financialModel({
+          ...updateFinancialDto,
+          adminId: crop.adminId,
+          crop: crop._id,
+          cropType: crop.cropType
         });
-  
-        if (existingFinancialRecord) {
-          const updatedFinancialRecord = await this.financialModel.findByIdAndUpdate(
-            existingFinancialRecord._id,
-            updateFinancialDto,
-            { new: true }
-          );
-  
-          if (updatedFinancialRecord) {
-            updatedFinancialRecords.push(updatedFinancialRecord);
-          } else {
-            console.log(`Failed to update financial record for crop: ${crop.cropName}`);
-          }
+
+        const createdRecord = await newFinancialRecord.save();
+
+        if (createdRecord) {
+          createdFinancialRecords.push(createdRecord);
         } else {
-          console.log(`No existing financial record found for crop: ${crop.cropName}`);
+          console.log(`Failed to create financial record for crop: ${crop.cropName}`);
         }
       }
-  
-      if (updatedFinancialRecords.length === 0) {
-        return ResponseHandler.handleBadRequest("No financial records were updated.");
+
+      if (createdFinancialRecords.length === 0) {
+        return ResponseHandler.handleBadRequest("No financial records were created.");
       }
-  
-      return ResponseHandler.handleOk("Financial records updated successfully for all crops", updatedFinancialRecords);
+
+      return ResponseHandler.handleOk("Financial records created successfully for all crops", createdFinancialRecords);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update financial records for all crops");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to create financial records for all crops");
     }
   }
 
   async updateFertilizerPesticideRecordsForAllCrops(adminId: string, cropType: string, updateFertPestDto: UpdateFertiliserPesticideDTO): Promise<ResponseDto> {
     try {
       const crops = await this.cropModel.find({ adminId, cropType });
-  
+
       if (!crops || crops.length === 0) {
         return ResponseHandler.handleNotFound("No crops found for the specified type and admin");
       }
-  
-      const updatedFertPestRecords = [];
-  
-      // Loop through each crop and update the fertilizer/pesticide records
+
+      const createdFertPestRecords = [];
+
+      // Loop through each crop and create new fertilizer/pesticide records
       for (const crop of crops) {
-        const existingFertPestRecord = await this.fertilizer_pesticideModel.findOne({ 
-          adminId: crop.adminId, 
-          crop: crop._id 
+        const newFertPestRecord = new this.fertilizer_pesticideModel({
+          ...updateFertPestDto,
+          adminId: crop.adminId,
+          crop: crop._id,
+          cropType: crop.cropType
         });
-  
-        if (existingFertPestRecord) {
-          const updatedFertPestRecord = await this.fertilizer_pesticideModel.findByIdAndUpdate(
-            existingFertPestRecord._id,
-            updateFertPestDto,
-            { new: true }
-          );
-  
-          if (updatedFertPestRecord) {
-            updatedFertPestRecords.push(updatedFertPestRecord);
-          } else {
-            console.log(`Failed to update fertilizer/pesticide record for crop: ${crop.cropName}`);
-          }
+
+        const createdRecord = await newFertPestRecord.save();
+
+        if (createdRecord) {
+          createdFertPestRecords.push(createdRecord);
         } else {
-          console.log(`No existing fertilizer/pesticide record found for crop: ${crop.cropName}`);
+          console.log(`Failed to create fertilizer/pesticide record for crop: ${crop.cropName}`);
         }
       }
-  
-      if (updatedFertPestRecords.length === 0) {
-        return ResponseHandler.handleBadRequest("No fertilizer/pesticide records were updated.");
+
+      if (createdFertPestRecords.length === 0) {
+        return ResponseHandler.handleBadRequest("No fertilizer/pesticide records were created.");
       }
-  
-      return ResponseHandler.handleOk("Fertilizer/Pesticide records updated successfully for all crops", updatedFertPestRecords);
+
+      return ResponseHandler.handleOk("Fertilizer/Pesticide records created successfully for all crops", createdFertPestRecords);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update fertilizer/pesticide records for all crops");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to create fertilizer/pesticide records for all crops");
     }
   }
 

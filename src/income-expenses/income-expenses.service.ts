@@ -104,19 +104,6 @@ export class IncomeExpensesService {
             date: { $gte: new Date(startDate), $lte: new Date(endDate) },
             type: 'Income'
           }
-        },
-        {
-          $group: {
-            _id: "$category",
-            documents: { $push: "$$ROOT" }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            category: "$_id",
-            documents: 1
-          }
         }
       ]);
 
@@ -158,19 +145,6 @@ export class IncomeExpensesService {
             adminId: new Types.ObjectId(adminId),
             date: { $gte: new Date(startDate), $lte: new Date(endDate) },
             type: 'Expense'
-          }
-        },
-        {
-          $group: {
-            _id: "$category",
-            documents: { $push: "$$ROOT" }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            category: "$_id",
-            documents: 1
           }
         }
       ]);
@@ -214,19 +188,6 @@ export class IncomeExpensesService {
             date: { $gte: new Date(startDate), $lte: new Date(endDate) },
             type: 'Asset'
           }
-        },
-        {
-          $group: {
-            _id: "$category",
-            documents: { $push: "$$ROOT" }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            category: "$_id",
-            documents: 1
-          }
         }
       ]);
 
@@ -255,11 +216,11 @@ export class IncomeExpensesService {
 
   */
 
-  async generateReport(adminId: string, startDate?: Date, endDate?: Date): Promise<ResponseDto>{
+  async generateReport(adminId: string, startDate?: Date, endDate?: Date): Promise<ResponseDto> {
     try {
       const matchConditions = {
         adminId: new Types.ObjectId(adminId),
-        ...(startDate && endDate && {date: {$gte: new Date(startDate), $lte: new Date(endDate)}})
+        ...(startDate && endDate && { date: { $gte: new Date(startDate), $lte: new Date(endDate) } })
       };
 
       const incomeData = await this.transactionModel.aggregate([
@@ -272,7 +233,7 @@ export class IncomeExpensesService {
         {
           $group: {
             _id: "$category",
-            totalIncome: {$sum: '$amount'}
+            totalIncome: { $sum: '$amount' }
           }
         },
         {
@@ -294,7 +255,7 @@ export class IncomeExpensesService {
         {
           $group: {
             _id: "$category",
-            totalExpenses: {$sum: '$amount'}
+            totalExpenses: { $sum: '$amount' }
           }
         },
         {
@@ -307,7 +268,7 @@ export class IncomeExpensesService {
       ]);
 
       const totalIncome = incomeData.reduce((acc, item) => acc + item.totalIncome, 0);
-      const totalExpense =  expenseData.reduce((acc, item) => acc + item.totalExpenses, 0);
+      const totalExpense = expenseData.reduce((acc, item) => acc + item.totalExpenses, 0);
 
       const netIncome = totalExpense - totalExpense;
 
