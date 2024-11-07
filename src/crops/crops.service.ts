@@ -571,7 +571,7 @@ export class CropsService {
         return ResponseDto.errorResponse('Crop not found');
       }
 
-      const records = await this.financialModel.find({ crop: crop._id });
+      const records = await this.financialModel.find({ crop: crop._id }).populate('crop');
 
       if (!records || records.length === 0) {
         return ResponseDto.errorResponse('No available records');
@@ -591,7 +591,7 @@ export class CropsService {
 
   async getSpecificFinancialRecordById(id: string): Promise<ResponseDto> {
     try {
-      const financialRecord = await this.financialModel.findById(id);
+      const financialRecord = await this.financialModel.findById(id).populate('crop');
       if (!financialRecord) {
         return ResponseDto.errorResponse('Record not found');
       }
@@ -742,7 +742,7 @@ export class CropsService {
         return ResponseDto.errorResponse('Crop not found');
       }
 
-      const records = await this.activityModel.find({ crop: crop._id });
+      const records = await this.activityModel.find({ crop: crop._id }).populate('crop');
 
       if (!records || records.length === 0) {
         return ResponseDto.errorResponse('No available records');
@@ -762,7 +762,7 @@ export class CropsService {
 
   async getSpecificActivityRecordById(id: string): Promise<ResponseDto> {
     try {
-      const activityRecord = await this.activityModel.findById(id);
+      const activityRecord = await this.activityModel.findById(id).populate('crop');
       if (!activityRecord) {
         return ResponseDto.errorResponse('Record not found');
       }
@@ -901,7 +901,7 @@ export class CropsService {
         return ResponseDto.errorResponse('Crop not found');
       }
 
-      const pestDisease = await this.pestdiseaseModel.find({ crop: id });
+      const pestDisease = await this.pestdiseaseModel.find({ crop: id }).populate('crop');
 
       if (!pestDisease || pestDisease.length === 0) {
         return ResponseDto.errorResponse('No available records');
@@ -918,7 +918,7 @@ export class CropsService {
 
   async getPestDiseaseIssueById(id: string): Promise<ResponseDto> {
     try {
-      const pestDisease = await this.pestdiseaseModel.findById(id);
+      const pestDisease = await this.pestdiseaseModel.findById(id).populate('crop');
       if (!pestDisease) {
         return ResponseDto.errorResponse('Pest disease not found');
       }
