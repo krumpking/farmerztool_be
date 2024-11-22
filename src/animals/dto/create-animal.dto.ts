@@ -21,6 +21,15 @@ export class CreateAnimalDto {
   @IsNotEmpty()
   animalType: string;
 
+  @ApiProperty({
+    description: "Health stautus of the animal",
+    enum: ["Healthy", "Sick", "Under Treatment"],
+    example: 'Healthy'
+  })
+  @IsString()
+  @IsNotEmpty()
+  healthStatus: string;
+
   @ApiProperty({ description: 'Additional attributes for the animal', example: { breed: 'HardMashona', age: 3 } })
   @IsObject()
   attr: any;

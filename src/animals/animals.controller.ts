@@ -8,6 +8,7 @@ import {
   Request,
   Patch,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
@@ -88,7 +89,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all animals for a specific admin',
-    description: 'Retrieves all animals for a specific admin. NB: Every user has got an adminId property accessed like this user?.adminId',
+    description: 'Retrieves all animals for a specific admin. NB: Every user has got an adminId property accessed like this user?.adminId. NB: I added the page query, query name should be page and the example url is like this api/v1/animals/all/farm/animals?page=1. Our page starts at zero and the limit is 10 records per page, so in the FE you can implement a way for the user to go to the next page while increasing the page number and vise versa',
     responses: {
       200: {
         description: 'Animals retrieved successfully',
@@ -98,9 +99,10 @@ export class AnimalsController {
       },
     },
   })
-  async getAllAnimals(@Request() req) {
+  async getAllAnimals(@Request() req, @Query('page') page: number) {
     const user = this.getUserFromRequest(req);
-    return this.animalsService.getAllMyAnimals(user?.adminId);
+    const pageNumber = page || 0;
+    return this.animalsService.getAllMyAnimals(user?.adminId, pageNumber);
   }
 
   @Patch(':id')

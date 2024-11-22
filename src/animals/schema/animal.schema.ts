@@ -7,11 +7,17 @@ export const AnimalSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now() },
   animalType: { type: String, required: true },
   attr: { type: Object, required: true },
+  healthStatus: {
+    type: String,
+    enum: ['Healthy', 'Sick', 'Under Treatment'],
+    required: true
+  },
   locations: [{
     date: { type: Date, required: true },
     lat: { type: Number, required: true },
     lng: { type: Number, required: true }
   }],
+
 
   feeds: [{
     type: mongoose.Schema.ObjectId,
@@ -41,7 +47,7 @@ AnimalSchema.pre("findOneAndDelete", async function (next) {
     const animalId = this.getQuery()._id;
     const modelNames = ["Feed", "Production", "Vaccination", "Breeding"];
     const models = modelNames.map((modelName) => mongoose.model(modelName));
-    await Promise.all(models.map((model) => model.deleteMany({animal: animalId})));
+    await Promise.all(models.map((model) => model.deleteMany({ animal: animalId })));
   } catch (error) {
     next(error);
   }

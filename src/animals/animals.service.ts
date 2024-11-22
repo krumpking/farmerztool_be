@@ -97,15 +97,19 @@ export class AnimalsService {
     }
   }
 
-  async getAllMyAnimals(adminId: string): Promise<ResponseDto> {
+  async getAllMyAnimals(adminId: string, page: number): Promise<ResponseDto> {
     try {
-      // 
+
+      const limit = 10;
+      const offset = page * limit;
+
       const animalExists = await this.animalModel.find({
         adminId: adminId,
-      });
+      }).skip(offset).limit(limit);
+
 
       if (!animalExists || animalExists.length <= 0) {
-        return ResponseHandler.handleBadRequest("Failed to fetch animals");
+        return ResponseHandler.handleBadRequest("No animals available");
       }
 
       return ResponseHandler.handleOk("Animals fetched successfully", animalExists);

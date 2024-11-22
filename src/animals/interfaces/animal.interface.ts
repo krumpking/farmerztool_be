@@ -7,6 +7,7 @@ export interface Animal extends Document {
   readonly animalId: string;
   readonly animalType: string;
   readonly attr: any;
+  readonly healthStatus: "Healthy" | "Sick" | "Under Treatment";
   readonly locations: {
     readonly _id: string;
     readonly date: Date;
