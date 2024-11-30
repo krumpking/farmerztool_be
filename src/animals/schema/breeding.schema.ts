@@ -2,12 +2,12 @@ import * as mongoose from 'mongoose';
 
 export const BreedingInfoSchema = new mongoose.Schema({
   adminId: { type: String, required: true },
-  animal: { 
+  animal: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Animals"
   },
   animalId: { type: String, required: true },
-  animalType: {type: String, required: true},
+  animalType: { type: String, required: true },
   addedBy: { type: String, required: true },
   courtship: { type: String, required: true },
   mating: { type: String, required: true },
@@ -21,4 +21,11 @@ export const BreedingInfoSchema = new mongoose.Schema({
   anticipatedBirthDate: { type: String, required: true },
   checklistForBirth: { type: [String], required: true },
   anticipatedHeatDate: { type: String, required: true },
-}, {timestamps: true});
+
+  //new fields
+  sex: { type: String, required: true },
+  fertilityStatus: { type: String, required: true },
+  breedingCycleInfo: { type: String, required: true },
+  lastMatingDate: { type: String, required: true },
+  nextExpectedHeatMatingDate: { type: String, required: true },
+}, { timestamps: true });

@@ -13,9 +13,30 @@ export interface Animal extends Document {
     readonly date: Date;
     readonly lat: number;
     readonly lng: number;
+    readonly currentLocationName: string;
+    readonly numberOfAnimalsHoused: number;
+    readonly lastMoveDate: Date;
+    readonly timeInCurrentLocation: string;
   }[];
   readonly feedings: string[];
   readonly productions: string[];
   readonly vaccinations: string[];
   readonly breedings: string[];
+
+  // New fields
+  readonly animalName: string;
+  readonly species: string;
+  readonly gender: "Male" | "Female";
+  readonly dateOfBirth: Date;
+  readonly currentAge: number;
+  readonly uniqueId: string;
+  readonly color: string;
+  readonly photoUrl: string;
+  readonly purchasePrice: number;
+  readonly currentMarketValue: number;
+  readonly insurance: string;
+  readonly genetics: {
+    readonly trait: string;
+    readonly value: string;
+  }[];
 }

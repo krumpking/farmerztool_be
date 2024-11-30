@@ -1,10 +1,10 @@
-import { 
-  IsString, 
-  IsDateString, 
-  IsArray, 
-  IsIn, 
-  IsNotEmpty, 
-  IsDefined 
+import {
+  IsString,
+  IsDateString,
+  IsArray,
+  IsIn,
+  IsNotEmpty,
+  IsDefined
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -124,4 +124,48 @@ export class CreateBreedingDto {
   })
   @IsDateString()
   anticipatedHeatDate: string;
+
+  // New fields
+  @ApiProperty({
+    description: 'Sex of the animal',
+    example: 'Female',
+    required: true
+  })
+  @IsString()
+  @IsNotEmpty()
+  sex: string;
+
+  @ApiProperty({
+    description: 'Fertility Status of the animal',
+    example: 'Fertile',
+    required: true
+  })
+  @IsString()
+  @IsNotEmpty()
+  fertilityStatus: string;
+
+  @ApiProperty({
+    description: 'Breeding Cycle Information',
+    example: 'Cycle is regular, lasts 21 days',
+    required: true
+  })
+  @IsString()
+  @IsNotEmpty()
+  breedingCycleInfo: string;
+
+  @ApiProperty({
+    description: 'Last Mating Date',
+    example: '2022-01-15',
+    required: true
+  })
+  @IsDateString()
+  lastMatingDate: string;
+
+  @ApiProperty({
+    description: 'Next Expected Heat/Mating Date',
+    example: '2022-02-15',
+    required: true
+  })
+  @IsDateString()
+  nextExpectedHeatMatingDate: string;
 }

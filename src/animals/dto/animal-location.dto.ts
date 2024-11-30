@@ -1,4 +1,4 @@
-import { IsDate, IsLatitude, IsLongitude } from 'class-validator';
+import { IsDate, IsLatitude, IsLongitude, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
@@ -30,4 +30,39 @@ export class LocationDTO {
   })
   @IsLongitude()
   lng: number;
+
+  // New fields
+  @ApiProperty({
+    description: 'Current location name/number assigned',
+    example: 'Barn A',
+    required: true,
+  })
+  @IsString()
+  currentLocationName: string;
+
+  @ApiProperty({
+    description: 'Total number of animals housed in the current location',
+    example: 10,
+    required: true,
+  })
+  @IsNumber()
+  numberOfAnimalsHoused: number;
+
+  @ApiProperty({
+    description: 'Date of the last move',
+    example: '2023-10-01',
+    required: true,
+  })
+  @IsString()
+  @IsDate()
+  @Type(() => Date)
+  lastMoveDate: string;
+
+  @ApiProperty({
+    description: 'Time spent in the current location',
+    example: '2 days',
+    required: true,
+  })
+  @IsString()
+  timeInCurrentLocation: string;
 }

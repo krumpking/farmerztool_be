@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { AnimalsController } from './animals.controller';
 import {
+  animalGrowthProviders,
   animalProviders,
   animalRequestProviders,
   breedingProviders,
@@ -25,6 +26,7 @@ import { AnimalsUpdatesController } from './animal-updates.controller';
     ...userProviders,
     ...productionProviders,
     ...animalRequestProviders,
+    ...animalGrowthProviders
   ],
 })
-export class AnimalsModule {}
+export class AnimalsModule { }
