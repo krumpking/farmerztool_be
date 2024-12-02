@@ -53,10 +53,9 @@ export class LocationDTO {
     example: '2023-10-01',
     required: true,
   })
-  @IsString()
   @IsDate()
   @Type(() => Date)
-  lastMoveDate: string;
+  lastMoveDate: Date;
 
   @ApiProperty({
     description: 'Time spent in the current location',

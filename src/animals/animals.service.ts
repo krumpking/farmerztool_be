@@ -287,12 +287,14 @@ export class AnimalsService {
     }
   }
 
-  async getAnimalBreedingInfo(Id: string): Promise<ResponseDto> {
+  async getAnimalBreedingInfo(Id: string, page: number): Promise<ResponseDto> {
     try {
+      const limit = 10;
+      const offset = page * limit;
       // check animal brreding info
       const breeding = await this.breedingModel.find({
         animal: Id
-      });
+      }).skip(offset).limit(limit);
 
       if (!breeding || breeding.length === 0) {
         return ResponseHandler.handleNotFound("Breeding information not found");
@@ -304,9 +306,11 @@ export class AnimalsService {
     }
   }
 
-  async getAllBreedingInfo(adminId: string): Promise<ResponseDto> {
+  async getAllBreedingInfo(adminId: string, page: number): Promise<ResponseDto> {
     try {
-      const allBreedingInfo = await this.breedingModel.find({ adminId }).exec();
+      const limit = 10;
+      const offset = page * limit;
+      const allBreedingInfo = await this.breedingModel.find({ adminId }).skip(offset).limit(limit).exec();
       if (!allBreedingInfo || allBreedingInfo.length === 0) {
         return ResponseHandler.handleNotFound("No breeding information found");
       }
@@ -404,9 +408,11 @@ export class AnimalsService {
     }
   }
 
-  async getAnimalFeedingInfo(id: string): Promise<ResponseDto> {
+  async getAnimalFeedingInfo(id: string, page: number): Promise<ResponseDto> {
     try {
-      const feed = await this.feedingModel.find({ animal: id });
+      const limit = 10;
+      const offset = page * limit;
+      const feed = await this.feedingModel.find({ animal: id }).skip(offset).limit(limit);
       if (!feed || feed.length === 0) {
         return ResponseHandler.handleNotFound("No feeds found")
       }
@@ -416,10 +422,12 @@ export class AnimalsService {
     }
   }
 
-  async getAllAnimalFeedingInfo(adminId: string): Promise<any> {
+  async getAllAnimalFeedingInfo(adminId: string, page: number): Promise<any> {
     try {
+      const limit = 10;
+      const offset = page * limit;
 
-      const animalExists = await this.feedingModel.find({ adminId });
+      const animalExists = await this.feedingModel.find({ adminId }).skip(offset).limit(limit);
 
       if (!animalExists || animalExists.length === 0) {
         return ResponseHandler.handleNotFound("No feeding found")

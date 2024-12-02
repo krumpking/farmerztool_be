@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsString, IsNotEmpty, IsObject, IsArray, IsNumber, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsObject, IsArray, IsNumber, IsEnum, IsDate } from 'class-validator';
 
 export class CreateAnimalDto {
 
@@ -50,9 +50,9 @@ export class CreateAnimalDto {
   gender: string;
 
   @ApiProperty({ description: 'Date of birth of the animal', example: '2020-05-20' })
-  @IsString()
+  @IsDate()
   @Type(() => Date)
-  dateOfBirth: string;
+  dateOfBirth: Date;
 
   @ApiProperty({ description: 'Current age of the animal in years', example: 3 })
   @IsNumber()
