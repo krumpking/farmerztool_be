@@ -284,7 +284,7 @@ export class AnimalsService {
 
   ////////////////////////////////////// BREEDING //////////////////////////////////////////////
 
-  async addBreedingInfo(id: string, breedingInfo: CreateBreedingDto): Promise<ResponseDto> {
+  async addBreedingInfo(id: string, user: User, breedingInfo: CreateBreedingDto): Promise<ResponseDto> {
     try {
       const animalExist = await this.animalModel.findById(id);
       if (!animalExist) {
@@ -296,7 +296,9 @@ export class AnimalsService {
         adminId: animalExist.adminId,
         animal: animalExist._id,
         animalType: animalExist.animalType,
-        animalId: animalExist.animalId
+        animalId: animalExist.animalId,
+        addedBy: user.id,
+        addedByType: user.userType
       });
 
       if (existingBreedingInfo) {
@@ -308,7 +310,9 @@ export class AnimalsService {
         adminId: animalExist.adminId,
         animal: animalExist._id,
         animalType: animalExist.animalType,
-        animalId: animalExist.animalId
+        animalId: animalExist.animalId,
+        addedBy: user.id,
+        addedByType: user.userType
       })
 
       const createdBreed = await this.breedingModel.findById(breedingInstance._id)
@@ -331,6 +335,19 @@ export class AnimalsService {
     }
   }
 
+  async getBreedingRecord(id: string): Promise<ResponseDto> {
+    try {
+      const record = await this.breedingModel.findById(id).populate('animal').populate('addedBy');
+      if (!record) {
+        return ResponseHandler.handleNotFound("No record found");
+      }
+      return ResponseHandler.handleOk("Breeding record fetched", record)
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, while fetching breeding record");
+    }
+  }
+
   async getAnimalBreedingInfo(Id: string, page: number): Promise<ResponseDto> {
     try {
       const limit = 10;
@@ -338,7 +355,7 @@ export class AnimalsService {
       // check animal brreding info
       const breeding = await this.breedingModel.find({
         animal: Id
-      }).skip(offset).limit(limit);
+      }).skip(offset).limit(limit).populate('animal').populate('addedBy');
 
       if (!breeding || breeding.length === 0) {
         return ResponseHandler.handleNotFound("Breeding information not found");
@@ -354,7 +371,7 @@ export class AnimalsService {
     try {
       const limit = 10;
       const offset = page * limit;
-      const allBreedingInfo = await this.breedingModel.find({ adminId }).skip(offset).limit(limit).exec();
+      const allBreedingInfo = await this.breedingModel.find({ adminId }).skip(offset).limit(limit).populate('animal').populate('addedBy').exec();
       if (!allBreedingInfo || allBreedingInfo.length === 0) {
         return ResponseHandler.handleNotFound("No breeding information found");
       }

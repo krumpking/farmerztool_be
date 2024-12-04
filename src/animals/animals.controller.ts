@@ -262,9 +262,30 @@ export class AnimalsController {
       },
     },
   })
-  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Param('id') id: string) {
-    return this.animalsService.addBreedingInfo(id, createBreedingDto);
+  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Param('id') id: string, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.addBreedingInfo(id, user, createBreedingDto);
   }
+
+  @Get('breeding/:id')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get breeding information for a single breeding record',
+    description: 'Retrieves breeding information  its mongoose_id',
+    responses: {
+      200: {
+        description: 'Breeding information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getBreedingRecord(@Param('id') id: string) {
+    return this.animalsService.getBreedingRecord(id)
+  }
+
 
   @Get(':id/breeding')
   @Roles(Role.Admin, Role.AnimalManager)

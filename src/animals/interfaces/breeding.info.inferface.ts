@@ -6,6 +6,7 @@ export interface BreedingInfo extends Document {
   readonly animalId: string;
   readonly animalType: string;
   readonly addedBy: string;
+  addedByType: string;
   readonly courtship: string;
   readonly mating: string;
   readonly lineageMother: string;

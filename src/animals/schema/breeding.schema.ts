@@ -6,9 +6,18 @@ export const BreedingInfoSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Animals"
   },
+  addedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    refPath: 'addedByType'
+  },
+  addedByType: {
+    type: String,
+    enum: ['Users', 'Employees'],
+    required: true
+  },
   animalId: { type: String, required: true },
   animalType: { type: String, required: true },
-  addedBy: { type: String, required: true },
   courtship: { type: String, required: true },
   mating: { type: String, required: true },
   lineageMother: { type: String, required: true },
