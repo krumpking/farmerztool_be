@@ -12,11 +12,6 @@ export class CreateAnimalDto {
   @IsNotEmpty()
   animalId: string;
 
-  @ApiProperty({ description: 'User who added the animal', example: 'Ronnie Kakunguwo' })
-  @IsString()
-  @IsNotEmpty()
-  addedBy: string;
-
   @ApiProperty({ description: 'Type of animal', example: 'Cow' })
   @IsString()
   @IsNotEmpty()
@@ -57,10 +52,6 @@ export class CreateAnimalDto {
   @ApiProperty({ description: 'Current age of the animal in years', example: 3 })
   @IsNumber()
   currentAge: number;
-
-  @ApiProperty({ description: 'Unique ID (Microchip/Tag Number, QR Code, or Barcode)', example: 'MICRO-123456' })
-  @IsString()
-  uniqueId: string;
 
   @ApiProperty({ description: 'Color or markings of the animal', example: 'Black and White' })
   @IsString()

@@ -1,6 +1,27 @@
-import { IsDate, IsLatitude, IsLongitude, IsNumber, IsString } from 'class-validator';
+import { IsDate, IsLatitude, IsLongitude, IsNumber, IsString, IsArray, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+
+class TimeInCurrentLocationDTO {
+  @ApiProperty({
+    description: 'The name of the location',
+    type: String,
+    example: 'Previous Location',
+    required: true,
+  })
+  @IsString()
+  locationName: string;
+
+  @ApiProperty({
+    description: 'The date when the location was updated',
+    type: Date,
+    example: '2022-01-01T00:00:00.000Z',
+    required: true,
+  })
+  @IsDate()
+  @Type(() => Date)
+  dateUpdated: Date;
+}
 
 export class LocationDTO {
   @ApiProperty({
@@ -31,17 +52,11 @@ export class LocationDTO {
   @IsLongitude()
   lng: number;
 
-  // New fields
-  @ApiProperty({
-    description: 'Current location name/number assigned',
-    example: 'Barn A',
-    required: true,
-  })
-  @IsString()
-  currentLocationName: string;
+  // new fields
 
   @ApiProperty({
-    description: 'Total number of animals housed in the current location',
+    description: 'The total number of animals housed at the current location',
+    type: Number,
     example: 10,
     required: true,
   })
@@ -49,19 +64,22 @@ export class LocationDTO {
   numberOfAnimalsHoused: number;
 
   @ApiProperty({
-    description: 'Date of the last move',
-    example: '2023-10-01',
+    description: 'The date when the location was added',
+    type: Date,
+    example: '2022-01-01T00:00:00.000Z',
     required: true,
   })
   @IsDate()
   @Type(() => Date)
-  lastMoveDate: Date;
+  dateAdded: Date;
 
   @ApiProperty({
     description: 'Time spent in the current location',
-    example: '2 days',
+    type: [TimeInCurrentLocationDTO],
     required: true,
   })
-  @IsString()
-  timeInCurrentLocation: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TimeInCurrentLocationDTO)
+  timeInCurrentLocation: TimeInCurrentLocationDTO[];
 }

@@ -3,6 +3,7 @@ import { DATABASE_CONNECTION } from 'src/common/constants';
 import { AnimalSchema } from './schema/animal.schema';
 import {
   ANIMAL_GROWTH_MODEL,
+  ANIMAL_HEALTH_MODEL,
   ANIMAL_MODEL,
   ANIMAL_PRODUCTION_MODEL,
   ANIMAL_REQUEST_MODEL,
@@ -16,6 +17,7 @@ import { VaccinationSchema } from './schema/vaccination.schema';
 import { AnimalProductionSchema } from './schema/production.schema';
 import { AnimalRequestSchema } from './schema/animalbyEmployee.schema';
 import AnimalGrowthSchema from './schema/animalGrowth.schema';
+import { animalHealthSchema } from './schema/animalHealth.schema';
 
 
 export const animalProviders = [
@@ -83,3 +85,12 @@ export const animalGrowthProviders = [
     inject: [DATABASE_CONNECTION],
   },
 ];
+
+export const animalHealthProviders = [
+  {
+    provide: ANIMAL_HEALTH_MODEL,
+    useFactory: (connection: Connection) =>
+      connection.model('AnimalHealth', animalHealthSchema),
+    inject: [DATABASE_CONNECTION],
+  },
+]

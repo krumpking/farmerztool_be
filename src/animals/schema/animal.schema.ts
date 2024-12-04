@@ -3,7 +3,16 @@ import * as mongoose from 'mongoose';
 export const AnimalSchema = new mongoose.Schema({
   adminId: { type: String, required: true },
   animalId: { type: String, required: true },
-  addedBy: { type: String, required: true },
+  addedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    refPath: 'addedByType'
+  },
+  addedByType: {
+    type: String,
+    enum: ['Users', 'Employees'],
+    required: true
+  },
   date: { type: Date, default: Date.now() },
   animalType: { type: String, required: true },
   attr: { type: Object, required: true },
@@ -16,14 +25,14 @@ export const AnimalSchema = new mongoose.Schema({
     date: { type: Date, required: true },
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
-
     // new fields
-    currentLocationName: { type: String, required: true },
     numberOfAnimalsHoused: { type: Number, required: true },
-    lastMoveDate: { type: Date, required: true },
-    timeInCurrentLocation: { type: String, required: true },
+    dateAdded: { type: Date, required: true },
+    timeInCurrentLocation: [{
+      locationName: { type: String, required: true },
+      dateUpdated: { type: Date, required: true }
+    }]
   }],
-
   // new fields
 
 
@@ -42,9 +51,6 @@ export const AnimalSchema = new mongoose.Schema({
   },
   currentAge: {
     type: Number
-  },
-  uniqueId: {
-    type: String
   },
   color: {
     type: String
@@ -93,6 +99,12 @@ export const AnimalSchema = new mongoose.Schema({
   animalGrowth: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "AnimalGrowth"
+  }],
+
+  // New field to hold animal health records
+  animalHealth: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AnimalHealth"
   }],
 
 }, { timestamps: true });

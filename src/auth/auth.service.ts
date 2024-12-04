@@ -231,7 +231,8 @@ export class AuthService {
           phoneNumber: employeeExists.phoneNumber,
           adminId: employeeExists.adminId,
           permissions: employeeExists.perms,
-          role: employeeExists.role
+          role: employeeExists.role,
+          userType: 'Employee',
         };
 
         const userData = {
@@ -242,7 +243,8 @@ export class AuthService {
           phoneNumber: employeeExists.phoneNumber,
           adminId: employeeExists.adminId,
           permissions: employeeExists.perms,
-          role: employeeExists.role
+          role: employeeExists.role,
+          userType: 'Employee',
         };
 
         return ResponseDto.successResponse('Login successful', userData);
@@ -269,7 +271,8 @@ export class AuthService {
           farmArea: emailExists.farmArea,
           verified: emailExists.verified,
           otp: emailExists.otp,
-          otpCreatedAt: emailExists.otpCreatedAt
+          otpCreatedAt: emailExists.otpCreatedAt,
+          userType: 'Users',
         };
 
         const userData = {
@@ -285,7 +288,8 @@ export class AuthService {
           farmArea: emailExists.farmArea,
           verified: emailExists.verified,
           otp: emailExists.otp,
-          otpCreatedAt: emailExists.otpCreatedAt
+          otpCreatedAt: emailExists.otpCreatedAt,
+          userType: 'Users',
         };
 
         return ResponseDto.successResponse('Login successful', userData);

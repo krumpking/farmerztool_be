@@ -62,7 +62,7 @@ export class AnimalsController {
   })
   async create(@Body() createAnimalDto: CreateAnimalDto, @Request() req) {
     const user = this.getUserFromRequest(req);
-    return this.animalsService.addAnimal(user.adminId, createAnimalDto);
+    return this.animalsService.addAnimal(user.adminId, createAnimalDto, user);
   }
 
   @Get(':id')
@@ -201,6 +201,29 @@ export class AnimalsController {
   })
   async getLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
     return this.animalsService.getSpecificLocation(id, locationId);
+  }
+
+  @Patch(':animalId/locations/:locationId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Update location for an animal',
+    description: 'Updates location for an animal by id mongoose id, locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2} so location id is the _id from the location data object',
+    responses: {
+      200: {
+        description: 'Location updated successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      }
+    }
+  })
+  async updateLocation(
+    @Param('animalId') animalId: string,
+    @Param('locationId') locationId: string,
+    @Body() updatedLocation: LocationDTO
+  ) {
+    return this.animalsService.updateLocation(animalId, locationId, updatedLocation);
   }
 
   @Delete(':id/location/:locationId/delete')

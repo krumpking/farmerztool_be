@@ -31,6 +31,12 @@ import { CreateAnimalRequestDto } from './dto/animalByEmployeeRequest.dto';
 import { UpdateAnimalRequestDto } from './dto/update-animal-request.dto';
 import { LocationDTO } from './dto/animal-location.dto';
 
+
+interface User {
+  id: string;
+  userType: string;
+}
+
 @Injectable()
 export class AnimalsService {
   constructor(
@@ -52,9 +58,10 @@ export class AnimalsService {
 
 
   ////////////////////////// ANIMALS //////////////////////////////////////////////
-  async addAnimal(adminId: string, createAnimalDto: CreateAnimalDto): Promise<ResponseDto> {
+  async addAnimal(adminId: string, createAnimalDto: CreateAnimalDto, user: User): Promise<ResponseDto> {
     try {
       //check if animal exist
+
 
       const animalExists = await this.animalModel.findOne({ animalId: createAnimalDto.animalId });
 
@@ -64,7 +71,9 @@ export class AnimalsService {
       }
       const newAnimalInstance = await this.animalModel.create({
         ...createAnimalDto,
-        adminId: adminId
+        adminId: adminId,
+        addedBy: user.id,
+        addedByType: user.userType
       });
 
       const createdAnimal = await this.animalModel.findById(newAnimalInstance._id);
@@ -84,7 +93,7 @@ export class AnimalsService {
   async getAnimal(Id: string): Promise<ResponseDto> {
     try {
       //check if annimal exist
-      const animalExists = await this.animalModel.findById(Id)
+      const animalExists = await this.animalModel.findById(Id).populate('addedBy').exec();
 
       if (!animalExists) {
         return ResponseHandler.handleBadRequest("Failed to fetch animal");
@@ -105,7 +114,7 @@ export class AnimalsService {
 
       const animalExists = await this.animalModel.find({
         adminId: adminId,
-      }).skip(offset).limit(limit);
+      }).skip(offset).limit(limit).populate('addedBy').exec();
 
 
       if (!animalExists || animalExists.length <= 0) {
@@ -199,6 +208,41 @@ export class AnimalsService {
     } catch (error) {
       console.log(error);
       return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch location");
+    }
+  }
+
+
+  async updateLocation(animalId: string, locationId: string, updatedLocation: LocationDTO): Promise<ResponseDto> {
+    try {
+      const animal = await this.animalModel.findById(animalId);
+      if (!animal) {
+        return ResponseHandler.handleBadRequest("Animal not found");
+      }
+
+      const locationIndex = animal.locations.findIndex(({ _id }) => `${_id}` === `${locationId}`);
+      if (locationIndex === -1) {
+        return ResponseHandler.handleNotFound("Location not found");
+      }
+
+      // Update the location fields
+      animal.locations[locationIndex].date = updatedLocation.date;
+      animal.locations[locationIndex].lat = updatedLocation.lat;
+      animal.locations[locationIndex].lng = updatedLocation.lng;
+      animal.locations[locationIndex].numberOfAnimalsHoused = updatedLocation.numberOfAnimalsHoused;
+      animal.locations[locationIndex].dateAdded = updatedLocation.dateAdded;
+
+      // Push the new timeInCurrentLocation entry
+      animal.locations[locationIndex].timeInCurrentLocation.push({
+        locationName: updatedLocation.timeInCurrentLocation[0].locationName,
+        dateUpdated: updatedLocation.timeInCurrentLocation[0].dateUpdated
+      });
+
+      await animal.save(); // Save the updated animal document
+
+      return ResponseHandler.handleOk("Location updated successfully", animal.locations[locationIndex]);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update location");
     }
   }
 
