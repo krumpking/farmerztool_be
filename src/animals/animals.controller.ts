@@ -8,6 +8,7 @@ import {
   Request,
   Patch,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
@@ -61,7 +62,7 @@ export class AnimalsController {
   })
   async create(@Body() createAnimalDto: CreateAnimalDto, @Request() req) {
     const user = this.getUserFromRequest(req);
-    return this.animalsService.addAnimal(user.adminId, createAnimalDto);
+    return this.animalsService.addAnimal(user.adminId, createAnimalDto, user);
   }
 
   @Get(':id')
@@ -88,7 +89,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all animals for a specific admin',
-    description: 'Retrieves all animals for a specific admin. NB: Every user has got an adminId property accessed like this user?.adminId',
+    description: 'Retrieves all animals for a specific admin. NB: Every user has got an adminId property accessed like this user?.adminId. NB: I added the page query, query name should be page and the example url is like this api/v1/animals/all/farm/animals?page=1. Our page starts at zero and the limit is 10 records per page, so in the FE you can implement a way for the user to go to the next page while increasing the page number and vise versa',
     responses: {
       200: {
         description: 'Animals retrieved successfully',
@@ -98,9 +99,10 @@ export class AnimalsController {
       },
     },
   })
-  async getAllAnimals(@Request() req) {
+  async getAllAnimals(@Request() req, @Query('page') page: number) {
     const user = this.getUserFromRequest(req);
-    return this.animalsService.getAllMyAnimals(user?.adminId);
+    const pageNumber = page || 0;
+    return this.animalsService.getAllMyAnimals(user?.adminId, pageNumber);
   }
 
   @Patch(':id')
@@ -201,6 +203,29 @@ export class AnimalsController {
     return this.animalsService.getSpecificLocation(id, locationId);
   }
 
+  @Patch(':animalId/locations/:locationId')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Update)
+  @ApiOperation({
+    summary: 'Update location for an animal',
+    description: 'Updates location for an animal by id mongoose id, locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2} so location id is the _id from the location data object',
+    responses: {
+      200: {
+        description: 'Location updated successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      }
+    }
+  })
+  async updateLocation(
+    @Param('animalId') animalId: string,
+    @Param('locationId') locationId: string,
+    @Body() updatedLocation: LocationDTO
+  ) {
+    return this.animalsService.updateLocation(animalId, locationId, updatedLocation);
+  }
+
   @Delete(':id/location/:locationId/delete')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Update)
@@ -237,16 +262,17 @@ export class AnimalsController {
       },
     },
   })
-  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Param('id') id: string) {
-    return this.animalsService.addBreedingInfo(id, createBreedingDto);
+  async createBreeding(@Body() createBreedingDto: CreateBreedingDto, @Param('id') id: string, @Request() req) {
+    const user = this.getUserFromRequest(req);
+    return this.animalsService.addBreedingInfo(id, user, createBreedingDto);
   }
 
-  @Get(':id/breeding')
+  @Get('breeding/:id')
   @Roles(Role.Admin, Role.AnimalManager)
   @Permissions(Permission.Read)
   @ApiOperation({
-    summary: 'Get breeding information for an animal',
-    description: 'Retrieves breeding information for an animal using its mongoose_id ',
+    summary: 'Get breeding information for a single breeding record',
+    description: 'Retrieves breeding information  its mongoose_id',
     responses: {
       200: {
         description: 'Breeding information retrieved successfully',
@@ -256,8 +282,29 @@ export class AnimalsController {
       },
     },
   })
-  async getBreedingInfo(@Param('id') Id: string) {
-    return this.animalsService.getAnimalBreedingInfo(Id);
+  async getBreedingRecord(@Param('id') id: string) {
+    return this.animalsService.getBreedingRecord(id)
+  }
+
+
+  @Get(':id/breeding')
+  @Roles(Role.Admin, Role.AnimalManager)
+  @Permissions(Permission.Read)
+  @ApiOperation({
+    summary: 'Get breeding information for an animal',
+    description: 'Retrieves breeding information for an animal using its mongoose_id. NB: We have pagination here uisng query parameters and its page=value that is id/breeding?page=0 if the page number is 0 and by default page number is 0 and the limit of records fetched per page is 10',
+    responses: {
+      200: {
+        description: 'Breeding information retrieved successfully',
+      },
+      401: {
+        description: 'Unauthorized',
+      },
+    },
+  })
+  async getBreedingInfo(@Param('id') Id: string, @Query('page') page: number) {
+    const pageNumber = page || 0;
+    return this.animalsService.getAnimalBreedingInfo(Id, pageNumber);
   }
 
   @Get('breeding/all/farm')
@@ -265,7 +312,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all breeding information for an admin using adminID',
-    description: 'Retrieves all breeding information for an admin',
+    description: 'Retrieves all breeding information for an admin. NB: We have pagination here uisng query parameters and its page=value that is /breeding/all/farm?page=0 if the page number is 0 and by default page number is 0 and the limit of records fetched per page is 10',
     responses: {
 
       200: {
@@ -276,9 +323,10 @@ export class AnimalsController {
       },
     },
   })
-  async getAllBreedingInfo(@Request() req) {
+  async getAllBreedingInfo(@Request() req, @Query('page') page: number) {
     const user = this.getUserFromRequest(req);
-    return this.animalsService.getAllBreedingInfo(user?.adminId);
+    const pageNumber = page || 0
+    return this.animalsService.getAllBreedingInfo(user?.adminId, pageNumber);
   }
 
   @Patch('breeding/:id')
@@ -364,7 +412,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get feeding information for an animal',
-    description: 'Retrieves feeding information for an animal using animal its mongoose _id',
+    description: 'Retrieves feeding information for an animal using animal its mongoose _id. NB: We have pagination here uisng query parameters and its page=value that is /feeding/animal/id?page=0 if the page number is 0 and by default page number is 0 and the limit of records fetched per page is 10',
     responses: {
       200: {
         description: 'Feeding information retrieved successfully',
@@ -374,8 +422,9 @@ export class AnimalsController {
       },
     },
   })
-  async getFeedingInfoByAnimalId(@Param('id') id: string) {
-    return this.animalsService.getAnimalFeedingInfo(id);
+  async getFeedingInfoByAnimalId(@Param('id') id: string, @Query('page') page: number) {
+    const pageNumber = page || 0;
+    return this.animalsService.getAnimalFeedingInfo(id, pageNumber);
   }
 
   @Get('feeding/all/farm')
@@ -383,7 +432,7 @@ export class AnimalsController {
   @Permissions(Permission.Read)
   @ApiOperation({
     summary: 'Get all feeding information for an admin',
-    description: 'Retrieves all feeding information for an admin',
+    description: 'Retrieves all feeding information for an admin. NB: We have pagination here uisng query parameters and its page=value that is /feeding/all/farm?page=0 if the page number is 0 and by default page number is 0 and the limit of records fetched per page is 10',
     responses: {
       200: {
         description: 'Feeding information retrieved successfully',
@@ -393,9 +442,10 @@ export class AnimalsController {
       },
     },
   })
-  async getAllFeedingInfo(@Request() req) {
+  async getAllFeedingInfo(@Request() req, @Query('page') page: number) {
     const user = this.getUserFromRequest(req);
-    return this.animalsService.getAllAnimalFeedingInfo(user?.adminId);
+    const pageNumber = page || 0;
+    return this.animalsService.getAllAnimalFeedingInfo(user?.adminId, pageNumber);
   }
 
   @Patch('feeding/:id')

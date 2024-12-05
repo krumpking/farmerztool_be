@@ -1,20 +1,42 @@
 import { Document } from 'mongoose';
 
 export interface Animal extends Document {
-  readonly adminId: string;
-  readonly addedBy: string;
-  readonly date: Date;
-  readonly animalId: string;
-  readonly animalType: string;
-  readonly attr: any;
-  readonly locations: {
-    readonly _id: string;
-    readonly date: Date;
-    readonly lat: number;
-    readonly lng: number;
+  adminId: string;
+  addedBy: string;
+  date: Date;
+  animalId: string;
+  animalType: string;
+  addedByType: string;
+  attr: any;
+  healthStatus: "Healthy" | "Sick" | "Under Treatment";
+  locations: {
+    _id: string;
+    date: Date;
+    lat: number;
+    lng: number;
+    numberOfAnimalsHoused: number;
+    dateAdded: Date;
+    timeInCurrentLocation: {
+      locationName: string;
+      dateUpdated: Date;
+    }[];
   }[];
-  readonly feedings: string[];
-  readonly productions: string[];
-  readonly vaccinations: string[];
-  readonly breedings: string[];
+  feedings: string[];
+  productions: string[];
+  vaccinations: string[];
+  breedings: string[];
+  animalName: string;
+  species: string;
+  gender: "Male" | "Female";
+  dateOfBirth: Date;
+  currentAge: number;
+  color: string;
+  photoUrl: string;
+  purchasePrice: number;
+  currentMarketValue: number;
+  insurance: string;
+  genetics: {
+    trait: string;
+    value: string;
+  }[];
 }
