@@ -29,7 +29,8 @@ export class AnimalGrowthService {
                 adminId: user.adminId,
                 addedBy: user.id,
                 addedByType: user.userType,
-                animalId: animalId
+                animalId: animal.animalId,
+                animal: animalId
             });
 
             const createdGrowthRecord = await this.animalGrowthModel.findById(animalGrowthInstance._id);
@@ -72,7 +73,7 @@ export class AnimalGrowthService {
             if (!animal) {
                 return ResponseHandler.handleNotFound("Animal not found");
             }
-            const records = await this.animalGrowthModel.find({ animalId }).skip(offset).limit(limit).populate('animal').populate('addedBy').exec();
+            const records = await this.animalGrowthModel.find({ animal: animal._id }).skip(offset).limit(limit).populate('animal').populate('addedBy').exec();
             if (!records || records.length === 0) {
                 return ResponseHandler.handleNotFound("No record found");
             }

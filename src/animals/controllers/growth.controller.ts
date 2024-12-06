@@ -54,7 +54,7 @@ export class AnimalGrowthController {
         return await this.animalGrowthService.getGrowthRecordsForAnimal(id, pageNumber);
     }
 
-    @Get('/growth/all-farm')
+    @Get('/growth/all/farm')
     @Roles(Role.Admin, Role.AnimalManager, Role.Veterinarian, Role.FarmManager)
     @Permissions(Permission.Read)
     @ApiOperation({

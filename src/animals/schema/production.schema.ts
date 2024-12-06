@@ -30,12 +30,12 @@ const salesRecordSchema = new mongoose.Schema({
 export const AnimalProductionSchema = new mongoose.Schema({
   adminId: { type: String, required: true },
   addedBy: { type: String, required: true },
-  animal: { 
+  animal: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Animals"
+    ref: "Animal"
   },
-  animalId: { type: String, required: true }, 
-  animalType: {type: String, required: true},
+  animalId: { type: String, required: true },
+  animalType: { type: String, required: true },
   productionType: { type: String, required: true },
   meatProduction: { type: meatProductionSchema, required: false },
   milkProduction: { type: milkProductionSchema, required: false },

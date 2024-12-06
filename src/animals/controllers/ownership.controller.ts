@@ -55,7 +55,7 @@ export class AnimalOwnershipController {
         return await this.animalOwnershipService.getOwnershipRecordsForAnimal(id, pageNumber);
     }
 
-    @Get('/ownership/all-farm')
+    @Get('/ownership/all/farm')
     @Roles(Role.Admin, Role.AnimalManager, Role.Veterinarian, Role.FarmManager)
     @Permissions(Permission.Read)
     @ApiOperation({

@@ -19,11 +19,11 @@ const AnimalGrowthSchema = new Schema({
         required: true
     },
     weight: { type: Number, required: true },
-    lastWeightDate: { type: String, required: true },
+    lastWeightDate: { type: Date, required: true },
     height: { type: Number, required: true },
-    lastHeightDate: { type: String, required: true },
+    lastHeightDate: { type: Date, required: true },
     length: { type: Number, required: true },
-    lastLengthDate: { type: String, required: true },
+    lastLengthDate: { type: Date, required: true },
 }, {
     timestamps: true,
 });

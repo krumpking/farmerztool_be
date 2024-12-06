@@ -19,13 +19,14 @@ import { AnimalProductionSchema } from './schema/production.schema';
 import { AnimalRequestSchema } from './schema/animalbyEmployee.schema';
 import AnimalGrowthSchema from './schema/animalGrowth.schema';
 import { animalHealthSchema } from './schema/animalHealth.schema';
+import { AnimalOwnershipSchema } from './schema/animalOwnership.schema';
 
 
 export const animalProviders = [
   {
     provide: ANIMAL_MODEL,
     useFactory: (connection: Connection) =>
-      connection.model('Animals', AnimalSchema),
+      connection.model('Animal', AnimalSchema),
     inject: [DATABASE_CONNECTION],
   },
 ];
@@ -34,7 +35,7 @@ export const breedingProviders = [
   {
     provide: BREEDING_MODEL,
     useFactory: (connection: Connection) =>
-      connection.model('Breeding', BreedingInfoSchema),
+      connection.model('AnimalBreeding', BreedingInfoSchema),
     inject: [DATABASE_CONNECTION],
   },
 ];
@@ -43,7 +44,7 @@ export const feedProviders = [
   {
     provide: FEED_MODEL,
     useFactory: (connection: Connection) =>
-      connection.model('Feed', FeedSchema),
+      connection.model('AnimalFeed', FeedSchema),
     inject: [DATABASE_CONNECTION],
   },
 ]
@@ -52,7 +53,7 @@ export const vaccinationProviders = [
   {
     provide: VACCINATION_MODEL,
     useFactory: (connection: Connection) =>
-      connection.model('Vaccination', VaccinationSchema),
+      connection.model('AnimalVaccination', VaccinationSchema),
     inject: [DATABASE_CONNECTION],
   },
 
@@ -63,7 +64,7 @@ export const productionProviders = [
   {
     provide: ANIMAL_PRODUCTION_MODEL,
     useFactory: (connection: Connection) =>
-      connection.model('Production', AnimalProductionSchema),
+      connection.model('AnimalProduction', AnimalProductionSchema),
     inject: [DATABASE_CONNECTION]
   },
 ];
@@ -100,7 +101,7 @@ export const animalOwnershipProviders = [
   {
     provide: ANIMAL_OWNERSHIP_MODEL,
     useFactory: (connection: Connection) =>
-      connection.model('Animals', AnimalSchema),
+      connection.model('AnimalOwnership', AnimalOwnershipSchema),
     inject: [DATABASE_CONNECTION],
   },
 ];

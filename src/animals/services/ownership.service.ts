@@ -27,7 +27,8 @@ export class AnimalOwnershipService {
                 ...createAnimalOwnershipDto,
                 adminId: user.adminId,
                 addedBy: user.id,
-                animalId: animalId,
+                animalId: animal.animalId,
+                animal: animalId,
                 addedByType: user.userType,
             });
 
@@ -42,6 +43,8 @@ export class AnimalOwnershipService {
                     animalOwnership: createdOwnership._id
                 }
             })
+
+            return ResponseHandler.handleCreated("Onwership record created", createdOwnership)
         } catch (error) {
             console.log(error);
             return ResponseHandler.handleInternalServerError("Something went wrong, failed to add animal ownership");
@@ -50,10 +53,12 @@ export class AnimalOwnershipService {
 
     async getOwnershipRecord(id: string): Promise<ResponseDto> {
         try {
-            const ownershipRecord = (await this.animalOwnershipModel.findById(id)).populated('addedBy').populated('animal');
+            const ownershipRecord = await this.animalOwnershipModel.findById(id).populate('animal').populate('addedBy', '-password').exec();
             if (!ownershipRecord) {
                 return ResponseHandler.handleNotFound("Ownership record not found");
             }
+
+
             return ResponseHandler.handleOk("Ownership record fetched", ownershipRecord);
         } catch (error) {
             console.log(error);
@@ -69,7 +74,7 @@ export class AnimalOwnershipService {
             if (!animal) {
                 return ResponseHandler.handleNotFound("Animal not found");
             }
-            const records = await this.animalOwnershipModel.find({ animalId }).skip(offset).limit(limit).populate('animal').populate('addedBy').exec();
+            const records = await this.animalOwnershipModel.find({ animal: animal._id }).skip(offset).limit(limit).populate('animal').populate('addedBy').exec();
             if (!records || records.length === 0) {
                 return ResponseHandler.handleNotFound("No record found");
             }

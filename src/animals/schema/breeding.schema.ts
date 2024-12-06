@@ -4,7 +4,7 @@ export const BreedingInfoSchema = new mongoose.Schema({
   adminId: { type: String, required: true },
   animal: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Animals"
+    ref: "Animal"
   },
   addedBy: {
     type: mongoose.Schema.Types.ObjectId,
