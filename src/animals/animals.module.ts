@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { AnimalsController } from './animals.controller';
 import {
+  animalAssetProviders,
   animalGrowthProviders,
   animalHealthProviders,
   animalOwnershipProviders,
@@ -21,15 +22,18 @@ import { AnimalGrowthService } from './services/growth.service';
 import { AnimalGrowthController } from './controllers/growth.controller';
 import { AnimalOwnershipController } from './controllers/ownership.controller';
 import { AnimalOwnershipService } from './services/ownership.service';
+import { AnimalAssetController } from './controllers/assets.controller';
+import { AnimalAssetService } from './services/assets.service';
 
 @Module({
   imports: [DatabaseModule],
-  controllers: [AnimalsController, AnimalsUpdatesController, AnimalHealthController, AnimalGrowthController, AnimalOwnershipController],
+  controllers: [AnimalsController, AnimalsUpdatesController, AnimalHealthController, AnimalGrowthController, AnimalOwnershipController, AnimalAssetController],
   providers: [
     AnimalsService,
     AnimalHealthService,
     AnimalGrowthService,
     AnimalOwnershipService,
+    AnimalAssetService,
     ...animalProviders,
     ...breedingProviders,
     ...feedProviders,
@@ -39,7 +43,8 @@ import { AnimalOwnershipService } from './services/ownership.service';
     ...animalRequestProviders,
     ...animalGrowthProviders,
     ...animalHealthProviders,
-    ...animalOwnershipProviders
+    ...animalOwnershipProviders,
+    ...animalAssetProviders
   ],
 })
 export class AnimalsModule { }

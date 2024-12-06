@@ -2,6 +2,7 @@ import { Connection } from 'mongoose';
 import { DATABASE_CONNECTION } from 'src/common/constants';
 import { AnimalSchema } from './schema/animal.schema';
 import {
+  ANIMAL_ASSET_MODEL,
   ANIMAL_GROWTH_MODEL,
   ANIMAL_HEALTH_MODEL,
   ANIMAL_MODEL,
@@ -20,6 +21,7 @@ import { AnimalRequestSchema } from './schema/animalbyEmployee.schema';
 import AnimalGrowthSchema from './schema/animalGrowth.schema';
 import { animalHealthSchema } from './schema/animalHealth.schema';
 import { AnimalOwnershipSchema } from './schema/animalOwnership.schema';
+import { animalAssetSchema } from './schema/animalAsset.schema';
 
 
 export const animalProviders = [
@@ -102,6 +104,15 @@ export const animalOwnershipProviders = [
     provide: ANIMAL_OWNERSHIP_MODEL,
     useFactory: (connection: Connection) =>
       connection.model('AnimalOwnership', AnimalOwnershipSchema),
+    inject: [DATABASE_CONNECTION],
+  },
+];
+
+export const animalAssetProviders = [
+  {
+    provide: ANIMAL_ASSET_MODEL,
+    useFactory: (connection: Connection) =>
+      connection.model('AnimalAsset', animalAssetSchema),
     inject: [DATABASE_CONNECTION],
   },
 ];
