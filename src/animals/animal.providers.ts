@@ -5,6 +5,7 @@ import {
   ANIMAL_GROWTH_MODEL,
   ANIMAL_HEALTH_MODEL,
   ANIMAL_MODEL,
+  ANIMAL_OWNERSHIP_MODEL,
   ANIMAL_PRODUCTION_MODEL,
   ANIMAL_REQUEST_MODEL,
   BREEDING_MODEL,
@@ -94,3 +95,12 @@ export const animalHealthProviders = [
     inject: [DATABASE_CONNECTION],
   },
 ]
+
+export const animalOwnershipProviders = [
+  {
+    provide: ANIMAL_OWNERSHIP_MODEL,
+    useFactory: (connection: Connection) =>
+      connection.model('Animals', AnimalSchema),
+    inject: [DATABASE_CONNECTION],
+  },
+];

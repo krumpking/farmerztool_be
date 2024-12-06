@@ -4,6 +4,7 @@ import { AnimalsController } from './animals.controller';
 import {
   animalGrowthProviders,
   animalHealthProviders,
+  animalOwnershipProviders,
   animalProviders,
   animalRequestProviders,
   breedingProviders,
@@ -16,13 +17,19 @@ import { userProviders } from 'src/auth/auth.providers';
 import { AnimalsUpdatesController } from './animal-updates.controller';
 import { AnimalHealthService } from './services/health.service';
 import { AnimalHealthController } from './controllers/health.controller';
+import { AnimalGrowthService } from './services/growth.service';
+import { AnimalGrowthController } from './controllers/growth.controller';
+import { AnimalOwnershipController } from './controllers/ownership.controller';
+import { AnimalOwnershipService } from './services/ownership.service';
 
 @Module({
   imports: [DatabaseModule],
-  controllers: [AnimalsController, AnimalsUpdatesController, AnimalHealthController],
+  controllers: [AnimalsController, AnimalsUpdatesController, AnimalHealthController, AnimalGrowthController, AnimalOwnershipController],
   providers: [
     AnimalsService,
     AnimalHealthService,
+    AnimalGrowthService,
+    AnimalOwnershipService,
     ...animalProviders,
     ...breedingProviders,
     ...feedProviders,
@@ -32,6 +39,7 @@ import { AnimalHealthController } from './controllers/health.controller';
     ...animalRequestProviders,
     ...animalGrowthProviders,
     ...animalHealthProviders,
+    ...animalOwnershipProviders
   ],
 })
 export class AnimalsModule { }

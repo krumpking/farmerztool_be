@@ -107,6 +107,12 @@ export const AnimalSchema = new mongoose.Schema({
     ref: "AnimalHealth"
   }],
 
+  // New field to hold animal ownership records
+  animalOwnership: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AnimalOwnership"
+  }],
+
 }, { timestamps: true });
 
 

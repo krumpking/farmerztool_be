@@ -1,13 +1,17 @@
-
-import { Document } from "mongoose";
+import mongoose, { Document } from 'mongoose';
 
 export interface AnimalGrowth extends Document {
-    animalId: string; // ID of the animal
-    addedBy: string; // ID of the user who added the growth record
-    weight: number; // Current weight in kgs
-    lastWeightDate: Date; // Last weigh-in date (string)
-    height: number; // Current height in metres
-    lastHeightDate: Date; // Last height measurement date (string)
-    length: number; // Current length in metres
-    lastLengthDate: Date; // Last length measurement date (string)
+    adminId: mongoose.Types.ObjectId; // Optional, as it may not be required
+    animal: mongoose.Types.ObjectId; // Required
+    animalId: string; // Required
+    addedBy: mongoose.Types.ObjectId; // Required
+    addedByType: 'Users' | 'Employees'; // Required
+    weight: number; // Required
+    lastWeightDate: string; // Required
+    height: number; // Required
+    lastHeightDate: string; // Required
+    length: number; // Required
+    lastLengthDate: string; // Required
+    createdAt?: Date; // Optional, added by timestamps
+    updatedAt?: Date; // Optional, added by timestamps
 }

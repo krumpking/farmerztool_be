@@ -1,8 +1,23 @@
-import { Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const AnimalGrowthSchema = new Schema({
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
+    animal: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Animal",
+        required: true
+    },
     animalId: { type: String, required: true },
-    addedBy: { type: String, required: true },
+    addedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: 'addedByType'
+    },
+    addedByType: {
+        type: String,
+        enum: ['Users', 'Employees'],
+        required: true
+    },
     weight: { type: Number, required: true },
     lastWeightDate: { type: String, required: true },
     height: { type: Number, required: true },

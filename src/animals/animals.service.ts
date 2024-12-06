@@ -32,9 +32,10 @@ import { UpdateAnimalRequestDto } from './dto/update-animal-request.dto';
 import { LocationDTO } from './dto/animal-location.dto';
 
 
-interface User {
+export interface User {
   id: string;
   userType: string;
+  adminId: string;
 }
 
 @Injectable()
