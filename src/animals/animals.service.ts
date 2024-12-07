@@ -31,6 +31,13 @@ import { CreateAnimalRequestDto } from './dto/animalByEmployeeRequest.dto';
 import { UpdateAnimalRequestDto } from './dto/update-animal-request.dto';
 import { LocationDTO } from './dto/animal-location.dto';
 
+
+export interface User {
+  id: string;
+  userType: string;
+  adminId: string;
+}
+
 @Injectable()
 export class AnimalsService {
   constructor(
@@ -52,9 +59,10 @@ export class AnimalsService {
 
 
   ////////////////////////// ANIMALS //////////////////////////////////////////////
-  async addAnimal(adminId: string, createAnimalDto: CreateAnimalDto): Promise<ResponseDto> {
+  async addAnimal(adminId: string, createAnimalDto: CreateAnimalDto, user: User): Promise<ResponseDto> {
     try {
       //check if animal exist
+
 
       const animalExists = await this.animalModel.findOne({ animalId: createAnimalDto.animalId });
 
@@ -64,7 +72,9 @@ export class AnimalsService {
       }
       const newAnimalInstance = await this.animalModel.create({
         ...createAnimalDto,
-        adminId: adminId
+        adminId: adminId,
+        addedBy: user.id,
+        addedByType: user.userType
       });
 
       const createdAnimal = await this.animalModel.findById(newAnimalInstance._id);
@@ -84,7 +94,7 @@ export class AnimalsService {
   async getAnimal(Id: string): Promise<ResponseDto> {
     try {
       //check if annimal exist
-      const animalExists = await this.animalModel.findById(Id)
+      const animalExists = await this.animalModel.findById(Id).populate('addedBy').exec();
 
       if (!animalExists) {
         return ResponseHandler.handleBadRequest("Failed to fetch animal");
@@ -97,15 +107,19 @@ export class AnimalsService {
     }
   }
 
-  async getAllMyAnimals(adminId: string): Promise<ResponseDto> {
+  async getAllMyAnimals(adminId: string, page: number): Promise<ResponseDto> {
     try {
-      // 
+
+      const limit = 10;
+      const offset = page * limit;
+
       const animalExists = await this.animalModel.find({
         adminId: adminId,
-      });
+      }).skip(offset).limit(limit).populate('addedBy').exec();
+
 
       if (!animalExists || animalExists.length <= 0) {
-        return ResponseHandler.handleBadRequest("Failed to fetch animals");
+        return ResponseHandler.handleBadRequest("No animals available");
       }
 
       return ResponseHandler.handleOk("Animals fetched successfully", animalExists);
@@ -198,6 +212,41 @@ export class AnimalsService {
     }
   }
 
+
+  async updateLocation(animalId: string, locationId: string, updatedLocation: LocationDTO): Promise<ResponseDto> {
+    try {
+      const animal = await this.animalModel.findById(animalId);
+      if (!animal) {
+        return ResponseHandler.handleBadRequest("Animal not found");
+      }
+
+      const locationIndex = animal.locations.findIndex(({ _id }) => `${_id}` === `${locationId}`);
+      if (locationIndex === -1) {
+        return ResponseHandler.handleNotFound("Location not found");
+      }
+
+      // Update the location fields
+      animal.locations[locationIndex].date = updatedLocation.date;
+      animal.locations[locationIndex].lat = updatedLocation.lat;
+      animal.locations[locationIndex].lng = updatedLocation.lng;
+      animal.locations[locationIndex].numberOfAnimalsHoused = updatedLocation.numberOfAnimalsHoused;
+      animal.locations[locationIndex].dateAdded = updatedLocation.dateAdded;
+
+      // Push the new timeInCurrentLocation entry
+      animal.locations[locationIndex].timeInCurrentLocation.push({
+        locationName: updatedLocation.timeInCurrentLocation[0].locationName,
+        dateUpdated: updatedLocation.timeInCurrentLocation[0].dateUpdated
+      });
+
+      await animal.save(); // Save the updated animal document
+
+      return ResponseHandler.handleOk("Location updated successfully", animal.locations[locationIndex]);
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update location");
+    }
+  }
+
   async deleteLocation(animalId: string, locationId: string): Promise<ResponseDto> {
     try {
       const animal = await this.animalModel.findById(animalId);
@@ -236,7 +285,7 @@ export class AnimalsService {
 
   ////////////////////////////////////// BREEDING //////////////////////////////////////////////
 
-  async addBreedingInfo(id: string, breedingInfo: CreateBreedingDto): Promise<ResponseDto> {
+  async addBreedingInfo(id: string, user: User, breedingInfo: CreateBreedingDto): Promise<ResponseDto> {
     try {
       const animalExist = await this.animalModel.findById(id);
       if (!animalExist) {
@@ -248,7 +297,9 @@ export class AnimalsService {
         adminId: animalExist.adminId,
         animal: animalExist._id,
         animalType: animalExist.animalType,
-        animalId: animalExist.animalId
+        animalId: animalExist.animalId,
+        addedBy: user.id,
+        addedByType: user.userType
       });
 
       if (existingBreedingInfo) {
@@ -260,7 +311,9 @@ export class AnimalsService {
         adminId: animalExist.adminId,
         animal: animalExist._id,
         animalType: animalExist.animalType,
-        animalId: animalExist.animalId
+        animalId: animalExist.animalId,
+        addedBy: user.id,
+        addedByType: user.userType
       })
 
       const createdBreed = await this.breedingModel.findById(breedingInstance._id)
@@ -283,12 +336,27 @@ export class AnimalsService {
     }
   }
 
-  async getAnimalBreedingInfo(Id: string): Promise<ResponseDto> {
+  async getBreedingRecord(id: string): Promise<ResponseDto> {
     try {
+      const record = await this.breedingModel.findById(id).populate('animal').populate('addedBy');
+      if (!record) {
+        return ResponseHandler.handleNotFound("No record found");
+      }
+      return ResponseHandler.handleOk("Breeding record fetched", record)
+    } catch (error) {
+      console.log(error);
+      return ResponseHandler.handleInternalServerError("Something went wrong, while fetching breeding record");
+    }
+  }
+
+  async getAnimalBreedingInfo(Id: string, page: number): Promise<ResponseDto> {
+    try {
+      const limit = 10;
+      const offset = page * limit;
       // check animal brreding info
       const breeding = await this.breedingModel.find({
         animal: Id
-      });
+      }).skip(offset).limit(limit).populate('animal').populate('addedBy');
 
       if (!breeding || breeding.length === 0) {
         return ResponseHandler.handleNotFound("Breeding information not found");
@@ -300,9 +368,11 @@ export class AnimalsService {
     }
   }
 
-  async getAllBreedingInfo(adminId: string): Promise<ResponseDto> {
+  async getAllBreedingInfo(adminId: string, page: number): Promise<ResponseDto> {
     try {
-      const allBreedingInfo = await this.breedingModel.find({ adminId }).exec();
+      const limit = 10;
+      const offset = page * limit;
+      const allBreedingInfo = await this.breedingModel.find({ adminId }).skip(offset).limit(limit).populate('animal').populate('addedBy').exec();
       if (!allBreedingInfo || allBreedingInfo.length === 0) {
         return ResponseHandler.handleNotFound("No breeding information found");
       }
@@ -400,9 +470,11 @@ export class AnimalsService {
     }
   }
 
-  async getAnimalFeedingInfo(id: string): Promise<ResponseDto> {
+  async getAnimalFeedingInfo(id: string, page: number): Promise<ResponseDto> {
     try {
-      const feed = await this.feedingModel.find({ animal: id });
+      const limit = 10;
+      const offset = page * limit;
+      const feed = await this.feedingModel.find({ animal: id }).skip(offset).limit(limit);
       if (!feed || feed.length === 0) {
         return ResponseHandler.handleNotFound("No feeds found")
       }
@@ -412,10 +484,12 @@ export class AnimalsService {
     }
   }
 
-  async getAllAnimalFeedingInfo(adminId: string): Promise<any> {
+  async getAllAnimalFeedingInfo(adminId: string, page: number): Promise<any> {
     try {
+      const limit = 10;
+      const offset = page * limit;
 
-      const animalExists = await this.feedingModel.find({ adminId });
+      const animalExists = await this.feedingModel.find({ adminId }).skip(offset).limit(limit);
 
       if (!animalExists || animalExists.length === 0) {
         return ResponseHandler.handleNotFound("No feeding found")
