@@ -92,6 +92,7 @@ export class AnimalHealthService {
 
             return ResponseHandler.handleOk('Health records fetched', healthRecords)
         } catch (error) {
+            console.log(error);
             return ResponseHandler.handleInternalServerError("Something went wrong, while fetching animal health records")
         }
     }

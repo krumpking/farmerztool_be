@@ -77,22 +77,22 @@ export const AnimalSchema = new mongoose.Schema({
 
   feeds: [{
     type: mongoose.Schema.ObjectId,
-    ref: "Feed"
+    ref: "AnimalFeed"
   }],
 
   breedings: [{
     type: mongoose.Schema.ObjectId,
-    ref: "Breeding"
+    ref: "AnimalBreeding"
   }],
 
   productions: [{
     type: mongoose.Schema.ObjectId,
-    ref: "Production"
+    ref: "AnimalProduction"
   }],
 
   vaccinations: [{
     type: mongoose.Schema.ObjectId,
-    ref: "Vaccination"
+    ref: "AnimalVaccination"
   }],
 
   // New field to hold animal growth records
@@ -107,13 +107,25 @@ export const AnimalSchema = new mongoose.Schema({
     ref: "AnimalHealth"
   }],
 
+  // New field to hold animal ownership records
+  animalOwnership: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AnimalOwnership"
+  }],
+
+  // New field to hold animal assets
+  animalAssets: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "AnimalAsset"
+  }]
+
 }, { timestamps: true });
 
 
 AnimalSchema.pre("findOneAndDelete", async function (next) {
   try {
     const animalId = this.getQuery()._id;
-    const modelNames = ["Feed", "Production", "Vaccination", "Breeding"];
+    const modelNames = ["AnimalFeed", "AnimalProduction", "AnimalVaccination", "AnimalBreeding", "AnimalGrowth", "AnimalOwnership", "AnimalHealth", "AnimalAsset"];
     const models = modelNames.map((modelName) => mongoose.model(modelName));
     await Promise.all(models.map((model) => model.deleteMany({ animal: animalId })));
   } catch (error) {

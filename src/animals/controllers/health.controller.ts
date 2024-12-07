@@ -57,7 +57,7 @@ export class AnimalHealthController {
     }
 
 
-    @Get('/health/all-farm')
+    @Get('/health/all/farm')
     @Roles(Role.Admin, Role.AnimalManager, Role.Veterinarian, Role.FarmManager)
     @Permissions(Permission.Read)
     @ApiOperation({
@@ -67,7 +67,7 @@ export class AnimalHealthController {
     async getAnimalHealthRecordsForAdmin(@Query('page') page: number, @Request() req) {
         const user = this.getUserFromRequest(req);
         const pageNumber = page || 0;
-        return this.animalHealthService.getAllHealthRecordsForAnimal(user?.adminId, pageNumber);
+        return this.animalHealthService.getAllHealthRecordsForAdmin(user?.adminId, pageNumber);
     }
 
     @Patch('/health/:id/update')

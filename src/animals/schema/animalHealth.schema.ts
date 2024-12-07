@@ -12,7 +12,7 @@ export const animalHealthSchema = new Schema({
         enum: ['Users', 'Employee'],
         required: true
     },
-    animal: { type: Schema.Types.ObjectId, required: true, ref: 'Animals' },
+    animal: { type: Schema.Types.ObjectId, required: true, ref: 'Animal' },
 
     // New fields added below
     treatmentName: { type: String },
