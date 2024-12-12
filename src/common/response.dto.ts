@@ -16,6 +16,7 @@ class ResponseHandler {
   }
 
   static handleCreated(message: string = 'Created', data: any = null): ResponseDto {
+    console.log(data);
     return ResponseDto.successResponse(message, data, 201);
   }
 
