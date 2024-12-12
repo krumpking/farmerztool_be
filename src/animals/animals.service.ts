@@ -77,13 +77,13 @@ export class AnimalsService {
         addedByType: user.userType
       });
 
-      const createdAnimal = await this.animalModel.findById(newAnimalInstance._id);
 
-      if (!createdAnimal) {
+
+      if (!newAnimalInstance) {
         return ResponseHandler.handleBadRequest("Failed to create animal record");
       }
 
-      return ResponseHandler.handleCreated("Animal record created successfully", createdAnimal);
+      return ResponseHandler.handleCreated("Animal record created successfully", newAnimalInstance);
 
     } catch (error) {
       console.log(error);
