@@ -63,6 +63,7 @@ export class AnimalsService {
     try {
       //check if animal exist
 
+
       const animalExists = await this.animalModel.findOne({ animalId: createAnimalDto.animalId });
 
 
@@ -76,12 +77,13 @@ export class AnimalsService {
         addedByType: user.userType
       });
 
+      const createdAnimal = await this.animalModel.findById(newAnimalInstance._id);
 
-      if (!newAnimalInstance) {
+      if (!createdAnimal) {
         return ResponseHandler.handleBadRequest("Failed to create animal record");
       }
 
-      return ResponseHandler.handleCreated("Animal record created successfully", newAnimalInstance);
+      return ResponseHandler.handleCreated("Animal record created successfully", createdAnimal);
 
     } catch (error) {
       console.log(error);
