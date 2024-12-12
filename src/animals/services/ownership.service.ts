@@ -32,22 +32,21 @@ export class AnimalOwnershipService {
                 addedByType: user.userType,
             });
 
-            const createdOwnership = await this.animalOwnershipModel.findById(animalOwnershipInstance._id);
 
-            if (!createdOwnership) {
+            if (!animalOwnershipInstance) {
                 return ResponseHandler.handleBadRequest("Animal Ownership not created");
             }
 
             await this.animalModel.findByIdAndUpdate(animalId, {
                 $push: {
-                    animalOwnership: createdOwnership._id
+                    animalOwnership: animalOwnershipInstance._id
                 }
             })
 
-            return ResponseHandler.handleCreated("Onwership record created", createdOwnership)
+            return ResponseHandler.handleCreated("Onwership record created", animalOwnershipInstance)
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to add animal ownership");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to add animal ownership: " + error);
         }
     }
 
@@ -62,7 +61,7 @@ export class AnimalOwnershipService {
             return ResponseHandler.handleOk("Ownership record fetched", ownershipRecord);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to get ownership record");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to get ownership record: " + error);
         }
     }
 
@@ -81,7 +80,7 @@ export class AnimalOwnershipService {
             return ResponseHandler.handleOk("Ownership records fetched", records);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to get ownership records");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to get ownership records: " + error);
         }
     }
 
@@ -96,7 +95,7 @@ export class AnimalOwnershipService {
             return ResponseHandler.handleOk("Ownership records fetched", records);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to get ownership records");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to get ownership records: " + error);
         }
     }
 
@@ -110,7 +109,7 @@ export class AnimalOwnershipService {
             return ResponseHandler.handleOk("Ownership record updated", updatedOwnershipRecord);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to update ownership record");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to update ownership record: " + error);
         }
     }
 
@@ -123,7 +122,7 @@ export class AnimalOwnershipService {
             return ResponseHandler.handleNoContent("Ownership record deleted");
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete ownership record");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete ownership record: " + error);
         }
     }
 

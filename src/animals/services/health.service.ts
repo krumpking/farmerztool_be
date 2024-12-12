@@ -37,22 +37,20 @@ export class AnimalHealthService {
                 animal: animalId
             });
 
-            const createdHealthRecord = await this.animalHealthModel.findById(animalHealthInstance._id)
-
-            if (!createdHealthRecord) {
+            if (!animalHealthInstance) {
                 return ResponseHandler.handleBadRequest("Failed to add animal health record");
             }
 
             await this.animaModel.findByIdAndUpdate(animal._id, {
                 $push: {
-                    animalHealth: createdHealthRecord._id
+                    animalHealth: animalHealthInstance._id
                 }
             }, { new: true }).exec();
 
-            return ResponseHandler.handleCreated("Animal health record added", createdHealthRecord);
+            return ResponseHandler.handleCreated("Animal health record added", animalHealthInstance);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to add health record");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to add health record: " + error);
         }
     }
 
@@ -67,7 +65,7 @@ export class AnimalHealthService {
             return ResponseHandler.handleOk("Health record fetched", healthRecord);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to get health record");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to get health record: " + error);
         }
     }
 
@@ -93,7 +91,7 @@ export class AnimalHealthService {
             return ResponseHandler.handleOk('Health records fetched', healthRecords)
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, while fetching animal health records")
+            return ResponseHandler.handleInternalServerError("Something went wrong, while fetching animal health records: " + error)
         }
     }
 
@@ -113,7 +111,7 @@ export class AnimalHealthService {
 
             return ResponseHandler.handleOk('Health records fetched', healthRecords)
         } catch (error) {
-            return ResponseHandler.handleInternalServerError("Something went wrong, while fetching animal health records")
+            return ResponseHandler.handleInternalServerError("Something went wrong, while fetching animal health records: " + error)
         }
     }
 
@@ -129,7 +127,7 @@ export class AnimalHealthService {
             return ResponseHandler.handleOk("Record updated", update)
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, while updating record")
+            return ResponseHandler.handleInternalServerError("Something went wrong, while updating record: " + error)
         }
     }
     async deleteHealthRecord(id: string): Promise<ResponseDto> {
@@ -143,7 +141,7 @@ export class AnimalHealthService {
             return ResponseHandler.handleNoContent("Record deleted")
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, while deleting record")
+            return ResponseHandler.handleInternalServerError("Something went wrong, while deleting record: " + error)
         }
     }
 
