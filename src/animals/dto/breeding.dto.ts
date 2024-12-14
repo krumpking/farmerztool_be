@@ -16,7 +16,6 @@ export class CreateBreedingDto {
     required: true
   })
   @IsString()
-  @IsIn(['Successful', 'Unsuccessful'])
   courtship: string;
 
   @ApiProperty({
@@ -128,10 +127,9 @@ export class CreateBreedingDto {
   @ApiProperty({
     description: 'Fertility Status of the animal',
     example: 'Fertile',
-    required: true
+    required: false
   })
   @IsString()
-  @IsNotEmpty()
   fertilityStatus: string;
 
   @ApiProperty({

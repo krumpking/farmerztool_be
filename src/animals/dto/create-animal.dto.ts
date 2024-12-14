@@ -23,6 +23,7 @@ export class CreateAnimalDto {
     example: 'Healthy'
   })
   @IsString()
+  @IsEnum(["Healthy", "Sick", "Under Treatment"])
   @IsNotEmpty()
   healthStatus: string;
 

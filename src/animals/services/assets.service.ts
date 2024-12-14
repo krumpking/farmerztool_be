@@ -32,22 +32,22 @@ export class AnimalAssetService {
                 addedByType: user.userType
             })
 
-            const createdAsset = await this.animalAssetModel.findById(animalAssetInstance._id);
 
-            if (!createdAsset) {
+
+            if (!animalAssetInstance) {
                 return ResponseHandler.handleBadRequest('Asset not created');
             }
 
             await this.animalModel.findByIdAndUpdate(animalId, {
                 $push: {
-                    animalAssets: createdAsset._id
+                    animalAssets: animalAssetInstance._id
                 }
             })
 
-            return ResponseHandler.handleCreated('Asset created successfully', createdAsset);
+            return ResponseHandler.handleCreated('Asset created successfully', animalAssetInstance);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to add asset");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to add asset: " + error);
         }
 
     }
@@ -62,7 +62,7 @@ export class AnimalAssetService {
             return ResponseHandler.handleOk('Asset fetched successfully', asset);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch asset");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch asset: " + error);
         }
     }
 
@@ -77,7 +77,7 @@ export class AnimalAssetService {
             return ResponseHandler.handleOk(`${assets.length} assets records fetched`, assets);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, while fetching all assets records");
+            return ResponseHandler.handleInternalServerError("Something went wrong, while fetching all assets records: " + error);
         }
     }
 
@@ -92,7 +92,7 @@ export class AnimalAssetService {
             return ResponseHandler.handleOk(`${assets.length} assets records fetched`, assets);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, while fetching all assets records");
+            return ResponseHandler.handleInternalServerError("Something went wrong, while fetching all assets records: " + error);
         }
     }
 
@@ -105,7 +105,7 @@ export class AnimalAssetService {
             return ResponseHandler.handleOk('Asset updated successfully', asset);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to update asset");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to update asset: " + error);
         }
     }
 
@@ -118,7 +118,7 @@ export class AnimalAssetService {
             return ResponseHandler.handleNoContent('Asset deleted successfully');
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete asset");
+            return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete asset: " + error);
         }
     }
 
