@@ -33,7 +33,7 @@ export const BreedingInfoSchema = new mongoose.Schema({
 
   //new fields
   sex: { type: String, required: true },
-  fertilityStatus: { type: String, required: true },
+  fertilityStatus: { type: String, required: false },
   breedingCycleInfo: { type: String, required: true },
   lastMatingDate: { type: String, required: true },
   nextExpectedHeatMatingDate: { type: String, required: true },

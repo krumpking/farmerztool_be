@@ -22,7 +22,7 @@ export const AnimalOwnershipSchema = new mongoose.Schema({
     transferSaleHistory: [
         {
             previousOwner: { type: String, required: true },
-            date: { type: Date, required: true }
+            date: { type: String, required: true }
         }
     ],
     dateOfAcquisition: { type: String, required: true },

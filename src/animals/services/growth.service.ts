@@ -33,22 +33,22 @@ export class AnimalGrowthService {
                 animal: animalId
             });
 
-            const createdGrowthRecord = await this.animalGrowthModel.findById(animalGrowthInstance._id);
 
-            if (!createdGrowthRecord) {
+
+            if (!animalGrowthInstance) {
                 return ResponseHandler.handleBadRequest('Growth record not created');
             }
 
             await this.animalModel.findByIdAndUpdate(animal._id, {
                 $push: {
-                    animalGrowth: createdGrowthRecord._id
+                    animalGrowth: animalGrowthInstance._id
                 }
             });
 
-            return ResponseHandler.handleCreated('Growth record added', createdGrowthRecord);
+            return ResponseHandler.handleCreated('Growth record added', animalGrowthInstance);
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError('Something went wrong, while adding growth record');
+            return ResponseHandler.handleInternalServerError('Something went wrong, while adding growth record: ' + error);
         }
     }
 
@@ -61,7 +61,7 @@ export class AnimalGrowthService {
             return ResponseHandler.handleOk("Growth record fetched", record)
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError('Something went wrong, while fetching growth record');
+            return ResponseHandler.handleInternalServerError('Something went wrong, while fetching growth record: ' + error);
         }
     }
 
@@ -80,7 +80,7 @@ export class AnimalGrowthService {
             return ResponseHandler.handleOk("Growth records fetched", records)
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError('Something went wrong, while fetching growth records');
+            return ResponseHandler.handleInternalServerError('Something went wrong, while fetching growth records: ' + error);
         }
     }
 
@@ -95,7 +95,7 @@ export class AnimalGrowthService {
             return ResponseHandler.handleOk("Growth records fetched", records)
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError('Something went wrong, while fetching growth records');
+            return ResponseHandler.handleInternalServerError('Something went wrong, while fetching growth records: ' + error);
         }
     }
 
@@ -108,7 +108,7 @@ export class AnimalGrowthService {
             return ResponseHandler.handleOk("Growth record updated", record)
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError('Something went wrong, while updating growth record');
+            return ResponseHandler.handleInternalServerError('Something went wrong, while updating growth record: ' + error);
         }
     }
 
@@ -121,7 +121,7 @@ export class AnimalGrowthService {
             return ResponseHandler.handleNoContent("Growth record deleted");
         } catch (error) {
             console.log(error);
-            return ResponseHandler.handleInternalServerError('Something went wrong, while deleting growth record');
+            return ResponseHandler.handleInternalServerError('Something went wrong, while deleting growth record: ' + error);
         }
     }
 }

@@ -62,6 +62,8 @@ export class AnimalsService {
   async addAnimal(adminId: string, createAnimalDto: CreateAnimalDto, user: User): Promise<ResponseDto> {
     try {
       //check if animal exist
+
+
       const animalExists = await this.animalModel.findOne({ animalId: createAnimalDto.animalId });
 
 
@@ -75,14 +77,17 @@ export class AnimalsService {
         addedByType: user.userType
       });
 
-      if(newAnimalInstance == null){
-          return ResponseHandler.handleBadRequest("Error creating animal");
+
+
+      if (!newAnimalInstance) {
+        return ResponseHandler.handleBadRequest("Failed to create animal record");
       }
+
       return ResponseHandler.handleCreated("Animal record created successfully", newAnimalInstance);
 
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Somethinng went wrong. Failed to create animal record");
+      return ResponseHandler.handleInternalServerError("Somethinng went wrong. Failed to create animal record: " + error);
     }
   }
 
@@ -98,7 +103,7 @@ export class AnimalsService {
       return ResponseHandler.handleOk("Animal found", animalExists);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong while fetching the animal");
+      return ResponseHandler.handleInternalServerError("Something went wrong while fetching the animal" + error);
     }
   }
 
@@ -120,7 +125,7 @@ export class AnimalsService {
       return ResponseHandler.handleOk("Animals fetched successfully", animalExists);
     } catch (error) {
       console.log(error);
-      return ResponseDto.errorResponse("Something went wrong. Failed to fetch animal");
+      return ResponseDto.errorResponse("Something went wrong. Failed to fetch animal: " + error);
     }
   }
 
@@ -135,7 +140,7 @@ export class AnimalsService {
       return ResponseHandler.handleOk("Animal updated successfully", animalExist);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError('Something went wrong updating animal')
+      return ResponseHandler.handleInternalServerError('Something went wrong updating animal: ' + error)
     }
   }
 
@@ -147,7 +152,7 @@ export class AnimalsService {
       }
       return ResponseHandler.handleNoContent("Animal deteted successfully")
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong deleting animal")
+      return ResponseHandler.handleInternalServerError("Something went wrong deleting animal: " + error)
     }
   }
 
@@ -165,7 +170,7 @@ export class AnimalsService {
       return ResponseHandler.handleCreated("Location added", animal);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to add location");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to add location: " + error);
     }
   }
 
@@ -182,7 +187,7 @@ export class AnimalsService {
       return ResponseHandler.handleOk("Locations fetched", animal.locations);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch locations");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch locations : " + error);
     }
   }
 
@@ -203,7 +208,7 @@ export class AnimalsService {
       return ResponseHandler.handleOk("Location fetched", location);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch location");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch location: " + error);
     }
   }
 
@@ -238,7 +243,7 @@ export class AnimalsService {
       return ResponseHandler.handleOk("Location updated successfully", animal.locations[locationIndex]);
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update location");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update location: " + error);
     }
   }
 
@@ -273,7 +278,7 @@ export class AnimalsService {
       return ResponseHandler.handleNoContent("Location deleted");
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete location");
+      return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete location: " + error);
     }
   }
 
@@ -311,23 +316,23 @@ export class AnimalsService {
         addedByType: user.userType
       })
 
-      const createdBreed = await this.breedingModel.findById(breedingInstance._id)
 
-      if (!createdBreed) {
+
+      if (!breedingInstance) {
         return ResponseHandler.handleBadRequest("Failed to add breed")
       }
 
       await this.animalModel.findByIdAndUpdate(animalExist._id, {
         $push: {
-          breedings: createdBreed._id
+          breedings: breedingInstance._id
         }
       },
         { new: true }
       ).exec();
 
-      return ResponseHandler.handleCreated("Breed created", createdBreed);
+      return ResponseHandler.handleCreated("Breed created", breedingInstance);
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to add breeding")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to add breeding: " + error)
     }
   }
 
@@ -340,7 +345,7 @@ export class AnimalsService {
       return ResponseHandler.handleOk("Breeding record fetched", record)
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, while fetching breeding record");
+      return ResponseHandler.handleInternalServerError("Something went wrong, while fetching breeding record: " + error);
     }
   }
 
@@ -359,7 +364,7 @@ export class AnimalsService {
 
       return ResponseHandler.handleOk("Breeding information fetched", breeding)
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Breeding information not found");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Breeding information not found: " + error);
     }
   }
 
@@ -373,7 +378,7 @@ export class AnimalsService {
       }
       return ResponseHandler.handleOk("All breeding information fetched", allBreedingInfo);
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch all breeding information");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch all breeding information: " + error);
     }
   }
 
@@ -385,7 +390,7 @@ export class AnimalsService {
       }
       return ResponseHandler.handleOk("Breeding information updated", updatedBreeding);
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to update breeding information");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to update breeding information: " + error);
     }
   }
 
@@ -397,7 +402,7 @@ export class AnimalsService {
       }
       return ResponseHandler.handleNoContent("Breeding information deleted");
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to delete breeding information");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to delete breeding information: " + error);
     }
   }
 
@@ -433,22 +438,21 @@ export class AnimalsService {
         animalId: animalExist.animalId
       })
 
-      const createdFeed = await this.feedingModel.findById(feedingInstance._id);
 
-      if (!createdFeed) {
+      if (!feedingInstance) {
         return ResponseHandler.handleBadRequest("Failed to create feed")
       }
 
       await this.animalModel.findByIdAndUpdate(
         animalExist._id,
-        { $push: { feedings: createdFeed._id } },
+        { $push: { feedings: feedingInstance._id } },
         { new: true }
       ).exec();
-      return ResponseHandler.handleCreated("Feed created", createdFeed);
+      return ResponseHandler.handleCreated("Feed created", feedingInstance);
 
     } catch (error) {
       console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to create feed")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to create feed: " + error)
     }
   }
 
@@ -461,7 +465,7 @@ export class AnimalsService {
 
       return ResponseHandler.handleOk("Feed fetched", feed);
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feed")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feed: " + error)
     }
   }
 
@@ -475,7 +479,7 @@ export class AnimalsService {
       }
       return ResponseHandler.handleOk("Feeds fetched", feed);
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feeds")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feeds: " + error)
     }
   }
 
@@ -492,7 +496,7 @@ export class AnimalsService {
 
       return ResponseHandler.handleOk("Feeding fetched", animalExists);
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feeds")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to fetch feeds: " + error)
     }
   }
 
@@ -504,7 +508,7 @@ export class AnimalsService {
       }
       return ResponseHandler.handleOk("Feed Updated", updateFeed);
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to update feed")
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to update feed: " + error)
     }
   }
 
@@ -518,7 +522,7 @@ export class AnimalsService {
       }
       return ResponseHandler.handleNoContent("Feed deleted successfully");
     } catch (error) {
-      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to delete feed");
+      return ResponseHandler.handleInternalServerError("Something went wrong. Failed to delete feed: " + error);
     }
   }
 
