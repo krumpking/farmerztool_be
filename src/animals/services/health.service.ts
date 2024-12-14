@@ -116,20 +116,29 @@ export class AnimalHealthService {
     }
 
     async updateHealthRecord(id: string, updateHealthRecordDto: UpdateAnimalHealthDto): Promise<ResponseDto> {
-        try {
-            const update = await this.animalHealthModel.findByIdAndUpdate(id, {
-                ...updateHealthRecordDto
-            }, { new: true }).exec();
+    try {
 
-            if (!update) {
-                return ResponseHandler.handleBadRequest("Failed to update record")
-            }
-            return ResponseHandler.handleOk("Record updated", update)
-        } catch (error) {
-            console.log(error);
-            return ResponseHandler.handleInternalServerError("Something went wrong, while updating record: " + error)
+        console.log(id);
+        const update = await this.animalHealthModel.findByIdAndUpdate(
+            id,
+            updateHealthRecordDto,
+            { new: true }
+        ).exec();
+        console.log(update);
+        if (!update) {
+            return ResponseHandler.handleBadRequest("Record not found");
         }
+
+        return ResponseHandler.handleOk("Record updated successfully", update);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return ResponseHandler.handleInternalServerError(`Failed to update record: ${errorMessage}`);
     }
+}
+
+
+
+
     async deleteHealthRecord(id: string): Promise<ResponseDto> {
         try {
             const deletedRecord = await this.animalHealthModel.findByIdAndDelete(id).exec();

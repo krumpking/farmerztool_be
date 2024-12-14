@@ -15,9 +15,9 @@ class TransferSaleHistory {
         description: 'The date of ownership transfer.',
         example: '2023-01-15',
     })
-    @IsDate()
-    @Type(() => Date)
-    date: Date; // Consider using a date type if you want to enforce date format
+    @IsString()
+    @Type(() => String)
+    date: String; // Consider using a date type if you want to enforce date format
 }
 
 export class AnimalOwnershipDTO {

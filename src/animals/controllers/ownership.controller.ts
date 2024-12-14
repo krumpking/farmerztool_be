@@ -40,6 +40,7 @@ export class AnimalOwnershipController {
         description: "Get ownership record. NB: id is the mongoose id of the ownership record"
     })
     async getOwnershipRecord(@Param('id') id: string) {
+        console.log(id);
         return await this.animalOwnershipService.getOwnershipRecord(id);
     }
 

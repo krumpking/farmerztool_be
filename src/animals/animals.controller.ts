@@ -162,6 +162,7 @@ export class AnimalsController {
     },
   })
   async addLocation(@Param('id') id: string, @Body() location: LocationDTO) {
+    console.log(location);
     return this.animalsService.addLocation(id, location);
   }
 

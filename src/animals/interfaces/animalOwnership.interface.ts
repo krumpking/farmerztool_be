@@ -9,7 +9,7 @@ export interface AnimalOwnership extends Document {
     currentOwner: string;
     transferSaleHistory: {
         previousOwner: string;
-        date: Date;
+        date: string;
     }[];
     dateOfAcquisition: string;
     transferOwnershipDocumentation: string;
