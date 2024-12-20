@@ -161,14 +161,14 @@ export class CreateAnimalDto {
 
   @ApiProperty({
     description: 'Date of birth range [0] initial date [1] final date',
-    example: '2020-01-01 to 2020-12-31',
+    example: ['2020-01-01 to 2020-12-31'],
   })
   @IsArray()
   dobRange: [];
 
   @ApiProperty({
     description: 'Gender counts [0] male [1] female',
-    example: '[5,7] meaning 5 male and 7 female',
+    example: [5, 7],
   })
   @IsArray()
   genderCounts: [];

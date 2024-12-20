@@ -94,7 +94,7 @@ export class AnimalsService {
   async getAnimal(Id: string): Promise<ResponseDto> {
     try {
       //check if annimal exist
-      const animalExists = await this.animalModel.findById(Id).populate('addedBy').exec();
+      const animalExists = await this.animalModel.findById(Id).populate('addedBy', '-password').exec();
 
       if (!animalExists) {
         return ResponseHandler.handleBadRequest("Failed to fetch animal");
@@ -115,7 +115,7 @@ export class AnimalsService {
 
       const animalExists = await this.animalModel.find({
         adminId: adminId,
-      }).skip(offset).limit(limit).populate('addedBy').exec();
+      }).skip(offset).limit(limit).populate('addedBy', '-password').exec();
 
 
       if (!animalExists || animalExists.length <= 0) {
