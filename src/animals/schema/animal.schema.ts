@@ -1,134 +1,118 @@
 import * as mongoose from 'mongoose';
 
-export const AnimalSchema = new mongoose.Schema({
-  adminId: { type: String, required: true },
-  animalId: { type: String, required: true },
-  addedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    refPath: 'addedByType'
+export const AnimalSchema = new mongoose.Schema(
+  {
+    adminId: { type: String, required: true },
+    numberOfAnimals: { type: Number, required: true },
+    animalId: { type: String, required: true },
+    addedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: 'addedByType',
+    },
+    addedByType: {
+      type: String,
+      enum: ['Users', 'Employees'],
+      required: true,
+    },
+    date: { type: Date, default: Date.now() },
+    animalType: { type: String, required: true },
+    attr: { type: Object },
+    healthStatus: {
+      type: String,
+      enum: ['Healthy', 'Sick', 'Under Treatment'],
+    },
+    species: { type: String, required: true },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female'],
+      required: true,
+    },
+    dateOfBirth: { type: Date, required: true },
+    color: { type: String },
+    photoUrl: { type: String },
+    purchasePrice: { type: String },
+    currentWeight: { type: String },
+    genetics: [{ type: String }],
+    assignLocation: { type: String },
+    ownershipTags: [{ type: String }],
+    dateOfAcquisition: { type: Date },
+    assignAssetTags: [{ type: String }],
+    source: [{ type: String }],
+    purpose: { type: String },
+    dobRange: [{ type: String }],
+    genderCounts: [{ type: Number }],
+
+    feeds: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'AnimalFeed',
+      },
+    ],
+    breedings: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'AnimalBreeding',
+      },
+    ],
+    productions: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'AnimalProduction',
+      },
+    ],
+    vaccinations: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'AnimalVaccination',
+      },
+    ],
+    animalGrowth: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AnimalGrowth',
+      },
+    ],
+    animalHealth: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AnimalHealth',
+      },
+    ],
+    animalOwnership: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AnimalOwnership',
+      },
+    ],
+    animalAssets: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'AnimalAsset',
+      },
+    ],
   },
-  addedByType: {
-    type: String,
-    enum: ['Users', 'Employees'],
-    required: true
-  },
-  date: { type: Date, default: Date.now() },
-  animalType: { type: String, required: true },
-  attr: { type: Object, required: true },
-  healthStatus: {
-    type: String,
-    enum: ['Healthy', 'Sick', 'Under Treatment'],
-    required: true
-  },
-  locations: [{
-    date: { type: Date, required: true },
-    lat: { type: Number, required: true },
-    lng: { type: Number, required: true },
-    // new fields
-    numberOfAnimalsHoused: { type: Number, required: true },
-    dateAdded: { type: Date, required: true },
-    timeInCurrentLocation: [{
-      locationName: { type: String, required: true },
-      dateUpdated: { type: Date, required: true }
-    }]
-  }],
-  // new fields
+  { timestamps: true },
+);
 
-
-  animalName: {
-    type: String
-  },
-  species: {
-    type: String
-  },
-  gender: {
-    type: String,
-    enum: ["Male", "Female"]
-  },
-  dateOfBirth: {
-    type: Date
-  },
-  currentAge: {
-    type: Number
-  },
-  color: {
-    type: String
-  },
-  photoUrl: {
-    type: String
-  },
-  purchasePrice: {
-    type: Number
-  },
-  currentMarketValue: {
-    type: Number
-  },
-  insurance: {
-    type: String
-  },
-  genetics: [{
-    trait: { type: String, required: true },
-    value: { type: String, required: true }
-  }],
-
-  // new fields end
-
-
-  feeds: [{
-    type: mongoose.Schema.ObjectId,
-    ref: "AnimalFeed"
-  }],
-
-  breedings: [{
-    type: mongoose.Schema.ObjectId,
-    ref: "AnimalBreeding"
-  }],
-
-  productions: [{
-    type: mongoose.Schema.ObjectId,
-    ref: "AnimalProduction"
-  }],
-
-  vaccinations: [{
-    type: mongoose.Schema.ObjectId,
-    ref: "AnimalVaccination"
-  }],
-
-  // New field to hold animal growth records
-  animalGrowth: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "AnimalGrowth"
-  }],
-
-  // New field to hold animal health records
-  animalHealth: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "AnimalHealth"
-  }],
-
-  // New field to hold animal ownership records
-  animalOwnership: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "AnimalOwnership"
-  }],
-
-  // New field to hold animal assets
-  animalAssets: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "AnimalAsset"
-  }]
-
-}, { timestamps: true });
-
-
-AnimalSchema.pre("findOneAndDelete", async function (next) {
+AnimalSchema.pre('findOneAndDelete', async function (next) {
   try {
     const animalId = this.getQuery()._id;
-    const modelNames = ["AnimalFeed", "AnimalProduction", "AnimalVaccination", "AnimalBreeding", "AnimalGrowth", "AnimalOwnership", "AnimalHealth", "AnimalAsset"];
+    const modelNames = [
+      'AnimalFeed',
+      'AnimalProduction',
+      'AnimalVaccination',
+      'AnimalBreeding',
+      'AnimalGrowth',
+      'AnimalOwnership',
+      'AnimalHealth',
+      'AnimalAsset',
+    ];
     const models = modelNames.map((modelName) => mongoose.model(modelName));
-    await Promise.all(models.map((model) => model.deleteMany({ animal: animalId })));
+    await Promise.all(
+      models.map((model) => model.deleteMany({ animal: animalId })),
+    );
   } catch (error) {
     next(error);
   }
-})
+});

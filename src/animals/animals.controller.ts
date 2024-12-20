@@ -146,105 +146,105 @@ export class AnimalsController {
 
   ///////////////////////ANIMAL LOCATIONS//////////////////
 
-  @Patch(':id/location/add')
-  @Roles(Role.Admin, Role.AnimalManager)
-  @Permissions(Permission.Update)
-  @ApiOperation({
-    summary: 'Add location to an animal',
-    description: 'Adds location to an animal by id mongoose id',
-    responses: {
-      200: {
-        description: 'Location added successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async addLocation(@Param('id') id: string, @Body() location: LocationDTO) {
-    console.log(location);
-    return this.animalsService.addLocation(id, location);
-  }
+  // @Patch(':id/location/add')
+  // @Roles(Role.Admin, Role.AnimalManager)
+  // @Permissions(Permission.Update)
+  // @ApiOperation({
+  //   summary: 'Add location to an animal',
+  //   description: 'Adds location to an animal by id mongoose id',
+  //   responses: {
+  //     200: {
+  //       description: 'Location added successfully',
+  //     },
+  //     401: {
+  //       description: 'Unauthorized',
+  //     },
+  //   },
+  // })
+  // async addLocation(@Param('id') id: string, @Body() location: LocationDTO) {
+  //   console.log(location);
+  //   return this.animalsService.addLocation(id, location);
+  // }
 
-  @Get(':id/locations')
-  @Roles(Role.Admin, Role.AnimalManager)
-  @Permissions(Permission.Read)
-  @ApiOperation({
-    summary: 'Get all locations for an animal',
-    description: 'Retrieves all locations for an animal by id mongoose id',
-    responses: {
-      200: {
-        description: 'Location retrieved successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async getLocations(@Param('id') id: string) {
-    return this.animalsService.getAllLocations(id);
-  }
+  // @Get(':id/locations')
+  // @Roles(Role.Admin, Role.AnimalManager)
+  // @Permissions(Permission.Read)
+  // @ApiOperation({
+  //   summary: 'Get all locations for an animal',
+  //   description: 'Retrieves all locations for an animal by id mongoose id',
+  //   responses: {
+  //     200: {
+  //       description: 'Location retrieved successfully',
+  //     },
+  //     401: {
+  //       description: 'Unauthorized',
+  //     },
+  //   },
+  // })
+  // async getLocations(@Param('id') id: string) {
+  //   return this.animalsService.getAllLocations(id);
+  // }
 
-  @Get(':id/location/:locationId')
-  @Roles(Role.Admin, Role.AnimalManager)
-  @Permissions(Permission.Read)
-  @ApiOperation({
-    summary: 'Get specific single location for an animal',
-    description: 'Retrieves location for an animal by id mongoose id ,  locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2}, so location id is the _id from the location data object',
-    responses: {
-      200: {
-        description: 'Location retrieved successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async getLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
-    return this.animalsService.getSpecificLocation(id, locationId);
-  }
+  // @Get(':id/location/:locationId')
+  // @Roles(Role.Admin, Role.AnimalManager)
+  // @Permissions(Permission.Read)
+  // @ApiOperation({
+  //   summary: 'Get specific single location for an animal',
+  //   description: 'Retrieves location for an animal by id mongoose id ,  locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2}, so location id is the _id from the location data object',
+  //   responses: {
+  //     200: {
+  //       description: 'Location retrieved successfully',
+  //     },
+  //     401: {
+  //       description: 'Unauthorized',
+  //     },
+  //   },
+  // })
+  // async getLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
+  //   return this.animalsService.getSpecificLocation(id, locationId);
+  // }
 
-  @Patch(':animalId/locations/:locationId')
-  @Roles(Role.Admin, Role.AnimalManager)
-  @Permissions(Permission.Update)
-  @ApiOperation({
-    summary: 'Update location for an animal',
-    description: 'Updates location for an animal by id mongoose id, locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2} so location id is the _id from the location data object',
-    responses: {
-      200: {
-        description: 'Location updated successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      }
-    }
-  })
-  async updateLocation(
-    @Param('animalId') animalId: string,
-    @Param('locationId') locationId: string,
-    @Body() updatedLocation: LocationDTO
-  ) {
-    return this.animalsService.updateLocation(animalId, locationId, updatedLocation);
-  }
+  // @Patch(':animalId/locations/:locationId')
+  // @Roles(Role.Admin, Role.AnimalManager)
+  // @Permissions(Permission.Update)
+  // @ApiOperation({
+  //   summary: 'Update location for an animal',
+  //   description: 'Updates location for an animal by id mongoose id, locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2} so location id is the _id from the location data object',
+  //   responses: {
+  //     200: {
+  //       description: 'Location updated successfully',
+  //     },
+  //     401: {
+  //       description: 'Unauthorized',
+  //     }
+  //   }
+  // })
+  // async updateLocation(
+  //   @Param('animalId') animalId: string,
+  //   @Param('locationId') locationId: string,
+  //   @Body() updatedLocation: LocationDTO
+  // ) {
+  //   return this.animalsService.updateLocation(animalId, locationId, updatedLocation);
+  // }
 
-  @Delete(':id/location/:locationId/delete')
-  @Roles(Role.Admin, Role.AnimalManager)
-  @Permissions(Permission.Update)
-  @ApiOperation({
-    summary: 'Delete location from an animal',
-    description: 'Deletes location from an animal by id mongoose id, locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2} so location id is the _id from the location data object',
-    responses: {
-      200: {
-        description: 'Location deleted successfully',
-      },
-      401: {
-        description: 'Unauthorized',
-      },
-    },
-  })
-  async deleteLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
-    return this.animalsService.deleteLocation(id, locationId);
-  }
+  // @Delete(':id/location/:locationId/delete')
+  // @Roles(Role.Admin, Role.AnimalManager)
+  // @Permissions(Permission.Update)
+  // @ApiOperation({
+  //   summary: 'Delete location from an animal',
+  //   description: 'Deletes location from an animal by id mongoose id, locationId is also a mongoose id from location data which is this example object {date: 2022-01-01T00:00:00.000Z, lat: 37.7749, lng: -122.4194,_id: "670f163bdd489764dff3a7a2} so location id is the _id from the location data object',
+  //   responses: {
+  //     200: {
+  //       description: 'Location deleted successfully',
+  //     },
+  //     401: {
+  //       description: 'Unauthorized',
+  //     },
+  //   },
+  // })
+  // async deleteLocation(@Param('id') id: string, @Param('locationId') locationId: string) {
+  //   return this.animalsService.deleteLocation(id, locationId);
+  // }
 
   ////////////////////////// BREEDING //////////////////////////////////////////////
 

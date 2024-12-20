@@ -1,16 +1,30 @@
-import { Document } from 'mongoose';
-
 export interface Animal extends Document {
   adminId: string;
-  addedBy: string;
-  date: Date;
+  numberOfAnimals: number;
   animalId: string;
+  addedBy: string;
+  addedByType: 'Users' | 'Employees';
+  date: Date;
   animalType: string;
-  addedByType: string;
   attr: any;
-  healthStatus: "Healthy" | "Sick" | "Under Treatment";
+  healthStatus: 'Healthy' | 'Sick' | 'Under Treatment';
+  species: string;
+  gender: 'Male' | 'Female';
+  dateOfBirth: Date;
+  color: string;
+  photoUrl: string;
+  purchasePrice: string;
+  currentWeight: string;
+  genetics: string[];
+  assignLocation: string;
+  ownershipTags: string[];
+  dateOfAcquisition: Date;
+  assignAssetTags: string[];
+  source: string[];
+  purpose: string;
+  dobRange: string[];
+  genderCounts: number[];
   locations: {
-    _id: string;
     date: Date;
     lat: number;
     lng: number;
@@ -21,22 +35,12 @@ export interface Animal extends Document {
       dateUpdated: Date;
     }[];
   }[];
-  feedings: string[];
+  feeds: string[];
+  breedings: string[];
   productions: string[];
   vaccinations: string[];
-  breedings: string[];
-  animalName: string;
-  species: string;
-  gender: "Male" | "Female";
-  dateOfBirth: Date;
-  currentAge: number;
-  color: string;
-  photoUrl: string;
-  purchasePrice: number;
-  currentMarketValue: number;
-  insurance: string;
-  genetics: {
-    trait: string;
-    value: string;
-  }[];
+  animalGrowth: string[];
+  animalHealth: string[];
+  animalOwnership: string[];
+  animalAssets: string[];
 }
