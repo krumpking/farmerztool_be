@@ -1,3 +1,5 @@
+import { Document } from 'mongoose';
+
 export interface Animal extends Document {
   adminId: string;
   numberOfAnimals: number;
@@ -6,11 +8,15 @@ export interface Animal extends Document {
   addedByType: 'Users' | 'Employees';
   date: Date;
   animalType: string;
-  attr: any;
+  attr: Record<string, any>;
   healthStatus: 'Healthy' | 'Sick' | 'Under Treatment';
   species: string;
   gender: 'Male' | 'Female';
   dateOfBirth: Date;
+  fertilityStatus: string;
+  breedingStatus: string;
+  breedingCycle: string;
+  previousMatingDate: Date;
   color: string;
   photoUrl: string;
   purchasePrice: string;
@@ -24,17 +30,8 @@ export interface Animal extends Document {
   purpose: string;
   dobRange: string[];
   genderCounts: number[];
-  locations: {
-    date: Date;
-    lat: number;
-    lng: number;
-    numberOfAnimalsHoused: number;
-    dateAdded: Date;
-    timeInCurrentLocation: {
-      locationName: string;
-      dateUpdated: Date;
-    }[];
-  }[];
+
+  // Referenced collections
   feeds: string[];
   breedings: string[];
   productions: string[];

@@ -65,7 +65,7 @@ export class AnimalsService {
 
 
       const animalExists = await this.animalModel.findOne({ animalId: createAnimalDto.animalId });
-
+      console.log(createAnimalDto);
 
       if (animalExists) {
         return ResponseHandler.handleBadRequest("Animal already exists");
@@ -76,6 +76,8 @@ export class AnimalsService {
         addedBy: user.id,
         addedByType: user.userType
       });
+
+      console.log(newAnimalInstance);
 
 
 
@@ -174,22 +176,22 @@ export class AnimalsService {
     }
   }
 
-  async getAllLocations(animalId: string): Promise<ResponseDto> {
-    try {
-      const animal = await this.animalModel.findById(animalId);
-      if (!animal) {
-        return ResponseHandler.handleBadRequest("Failed to fetch locations");
-      }
+  // async getAllLocations(animalId: string): Promise<ResponseDto> {
+  //   try {
+  //     const animal = await this.animalModel.findById(animalId);
+  //     if (!animal) {
+  //       return ResponseHandler.handleBadRequest("Failed to fetch locations");
+  //     }
 
-      if (!animal.locations || animal.locations.length === 0) {
-        return ResponseHandler.handleBadRequest("No available locations");
-      }
-      return ResponseHandler.handleOk("Locations fetched", animal.locations);
-    } catch (error) {
-      console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch locations : " + error);
-    }
-  }
+  //     if (!animal.locations || animal.locations.length === 0) {
+  //       return ResponseHandler.handleBadRequest("No available locations");
+  //     }
+  //     return ResponseHandler.handleOk("Locations fetched", animal.locations);
+  //   } catch (error) {
+  //     console.log(error);
+  //     return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch locations : " + error);
+  //   }
+  // }
 
   // async getSpecificLocation(animalId: string, locationId: string): Promise<ResponseDto> {
   //   try {

@@ -6,11 +6,15 @@ export class Animal {
   addedByType: 'Users' | 'Employees';
   date: Date;
   animalType: string;
-  attr: any;
+  attr: Record<string, any>;
   healthStatus: 'Healthy' | 'Sick' | 'Under Treatment';
   species: string;
   gender: 'Male' | 'Female';
   dateOfBirth: Date;
+  fertilityStatus: string;
+  breedingStatus: string;
+  breedingCycle: string;
+  previousMatingDate: Date;
   color: string;
   photoUrl: string;
   purchasePrice: string;
