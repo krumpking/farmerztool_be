@@ -1,84 +1,142 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsString, IsNotEmpty, IsObject, IsArray, IsNumber, IsEnum, IsDate } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsObject,
+  IsArray,
+  IsNumber,
+  IsEnum,
+  IsDate,
+} from 'class-validator';
 
 export class CreateAnimalDto {
+  @ApiProperty({ description: 'Admin ID', example: '507f1f77bcf86cd799439011' })
+  @IsString()
+  @IsNotEmpty()
+  adminId: string;
 
-  @ApiProperty({
-    description: 'Unique identifier for the animal added by farmer',
-    example: 'ANML-12345'
-  })
+  @ApiProperty({ description: 'Number of animals', example: 1 })
+  @IsNumber()
+  @IsNotEmpty()
+  numberOfAnimals: number;
+
+  @ApiProperty({ description: 'Animal ID', example: 'ANML-12345' })
   @IsString()
   @IsNotEmpty()
   animalId: string;
+
+  @ApiProperty({ description: 'Added by user/employee ID' })
+  @IsNotEmpty()
+  addedBy: string;
+
+  @ApiProperty({
+    description: 'Type of user who added',
+    enum: ['Users', 'Employees'],
+  })
+ 
+  @IsNotEmpty()
+  addedByType: string;
 
   @ApiProperty({ description: 'Type of animal', example: 'Cow' })
   @IsString()
   @IsNotEmpty()
   animalType: string;
 
+  @ApiProperty({ description: 'Additional attributes' })
+  @IsObject()
+  attr: Record<string, any>;
+
   @ApiProperty({
-    description: "Health stautus of the animal",
-    enum: ["Healthy", "Sick", "Under Treatment"],
-    example: 'Healthy'
+    description: 'Health status',
+    enum: ['Healthy', 'Sick', 'Under Treatment'],
   })
-  @IsString()
-  @IsEnum(["Healthy", "Sick", "Under Treatment"])
-  @IsNotEmpty()
+  @IsEnum(['Healthy', 'Sick', 'Under Treatment'])
   healthStatus: string;
 
-  @ApiProperty({ description: 'Additional attributes for the animal', example: { breed: 'HardMashona', age: 3 } })
-  @IsObject()
-  attr: any;
-
-  // New fields
-  @ApiProperty({ description: 'Name of the animal', example: 'Bessie' })
+  @ApiProperty({ description: 'Species', example: 'Holstein' })
   @IsString()
-  animalName: string;
-
-  @ApiProperty({ description: 'Species or breed of the animal', example: 'Holstein' })
-  @IsString()
+  @IsNotEmpty()
   species: string;
 
-  @ApiProperty({ description: 'Gender of the animal', enum: ["Male", "Female"], example: 'Female' })
-  @IsString()
-  @IsEnum(["Male", "Female"])
+  @ApiProperty({ description: 'Gender', enum: ['Male', 'Female'] })
+  @IsEnum(['Male', 'Female'])
+  @IsNotEmpty()
   gender: string;
 
-  @ApiProperty({ description: 'Date of birth of the animal', example: '2020-05-20' })
+  @ApiProperty({ description: 'Date of birth' })
   @IsDate()
   @Type(() => Date)
+  @IsNotEmpty()
   dateOfBirth: Date;
 
-  @ApiProperty({ description: 'Current age of the animal in years', example: 3 })
-  @IsNumber()
-  currentAge: number;
+  @ApiProperty({ description: 'Fertility status' })
+  @IsString()
+  fertilityStatus: string;
 
-  @ApiProperty({ description: 'Color or markings of the animal', example: 'Black and White' })
+  @ApiProperty({ description: 'Breeding status' })
+  @IsString()
+  breedingStatus: string;
+
+  @ApiProperty({ description: 'Breeding cycle' })
+  @IsString()
+  breedingCycle: string;
+
+  @ApiProperty({ description: 'Previous mating date' })
+  @IsDate()
+  @Type(() => Date)
+  previousMatingDate: Date;
+
+  @ApiProperty({ description: 'Color' })
   @IsString()
   color: string;
 
-  @ApiProperty({ description: 'Photo URL of the animal', example: 'https://example.com/photo.jpg' })
+  @ApiProperty({ description: 'Photo URL' })
   @IsString()
   photoUrl: string;
 
-  @ApiProperty({ description: 'Purchase price of the animal in dollars', example: 1500.00 })
-  @IsNumber()
-  purchasePrice: number;
-
-  @ApiProperty({ description: 'Current market value of the animal in dollars', example: 1800.00 })
-  @IsNumber()
-  currentMarketValue: number;
-
-  @ApiProperty({ description: 'Insurance details if applicable', example: 'Farmers Insurance' })
+  @ApiProperty({ description: 'Purchase price' })
   @IsString()
-  insurance: string;
+  purchasePrice: string;
 
-  @ApiProperty({
-    description: 'List of known genetics (disease resistance, milk production, etc.)',
-    example: [{ trait: 'Disease Resistance', value: 'High' }, { trait: 'Milk Production', value: 'Medium' }]
-  })
+  @ApiProperty({ description: 'Current weight' })
+  @IsString()
+  currentWeight: string;
+
+  @ApiProperty({ description: 'Genetics' })
   @IsArray()
-  @IsObject({ each: true })
-  genetics: { trait: string; value: string }[];
+  genetics: string[];
+
+  @ApiProperty({ description: 'Assigned location' })
+  @IsString()
+  assignLocation: string;
+
+  @ApiProperty({ description: 'Ownership tags' })
+  @IsArray()
+  ownershipTags: string[];
+
+  @ApiProperty({ description: 'Date of acquisition' })
+  @IsDate()
+  @Type(() => Date)
+  dateOfAcquisition: Date;
+
+  @ApiProperty({ description: 'Asset tags' })
+  @IsArray()
+  assignAssetTags: string[];
+
+  @ApiProperty({ description: 'Source' })
+  @IsArray()
+  source: string[];
+
+  @ApiProperty({ description: 'Purpose' })
+  @IsString()
+  purpose: string;
+
+  @ApiProperty({ description: 'Date of birth range' })
+  @IsArray()
+  dobRange: string[];
+
+  @ApiProperty({ description: 'Gender counts' })
+  @IsArray()
+  genderCounts: number[];
 }

@@ -65,7 +65,7 @@ export class AnimalsService {
 
 
       const animalExists = await this.animalModel.findOne({ animalId: createAnimalDto.animalId });
-
+      console.log(createAnimalDto);
 
       if (animalExists) {
         return ResponseHandler.handleBadRequest("Animal already exists");
@@ -76,6 +76,8 @@ export class AnimalsService {
         addedBy: user.id,
         addedByType: user.userType
       });
+
+      console.log(newAnimalInstance);
 
 
 
@@ -94,7 +96,7 @@ export class AnimalsService {
   async getAnimal(Id: string): Promise<ResponseDto> {
     try {
       //check if annimal exist
-      const animalExists = await this.animalModel.findById(Id).populate('addedBy').exec();
+      const animalExists = await this.animalModel.findById(Id).populate('addedBy', '-password').exec();
 
       if (!animalExists) {
         return ResponseHandler.handleBadRequest("Failed to fetch animal");
@@ -115,7 +117,7 @@ export class AnimalsService {
 
       const animalExists = await this.animalModel.find({
         adminId: adminId,
-      }).skip(offset).limit(limit).populate('addedBy').exec();
+      }).skip(offset).limit(limit).populate('addedBy', '-password').exec();
 
 
       if (!animalExists || animalExists.length <= 0) {
@@ -174,113 +176,113 @@ export class AnimalsService {
     }
   }
 
-  async getAllLocations(animalId: string): Promise<ResponseDto> {
-    try {
-      const animal = await this.animalModel.findById(animalId);
-      if (!animal) {
-        return ResponseHandler.handleBadRequest("Failed to fetch locations");
-      }
+  // async getAllLocations(animalId: string): Promise<ResponseDto> {
+  //   try {
+  //     const animal = await this.animalModel.findById(animalId);
+  //     if (!animal) {
+  //       return ResponseHandler.handleBadRequest("Failed to fetch locations");
+  //     }
 
-      if (!animal.locations || animal.locations.length === 0) {
-        return ResponseHandler.handleBadRequest("No available locations");
-      }
-      return ResponseHandler.handleOk("Locations fetched", animal.locations);
-    } catch (error) {
-      console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch locations : " + error);
-    }
-  }
+  //     if (!animal.locations || animal.locations.length === 0) {
+  //       return ResponseHandler.handleBadRequest("No available locations");
+  //     }
+  //     return ResponseHandler.handleOk("Locations fetched", animal.locations);
+  //   } catch (error) {
+  //     console.log(error);
+  //     return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch locations : " + error);
+  //   }
+  // }
 
-  async getSpecificLocation(animalId: string, locationId: string): Promise<ResponseDto> {
-    try {
-      const animal = await this.animalModel.findById(animalId);
-      if (!animal) {
-        return ResponseHandler.handleBadRequest("Failed to fetch locations");
-      }
+  // async getSpecificLocation(animalId: string, locationId: string): Promise<ResponseDto> {
+  //   try {
+  //     const animal = await this.animalModel.findById(animalId);
+  //     if (!animal) {
+  //       return ResponseHandler.handleBadRequest("Failed to fetch locations");
+  //     }
 
-      const location = animal.locations.find(({ _id }) => `${_id}` === `${locationId}`);
-
-
-      if (!location) {
-        return ResponseHandler.handleBadRequest("Location not found");
-      }
-
-      return ResponseHandler.handleOk("Location fetched", location);
-    } catch (error) {
-      console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch location: " + error);
-    }
-  }
+  //     const location = animal.locations.find(({ _id }) => `${_id}` === `${locationId}`);
 
 
-  async updateLocation(animalId: string, locationId: string, updatedLocation: LocationDTO): Promise<ResponseDto> {
-    try {
-      const animal = await this.animalModel.findById(animalId);
-      if (!animal) {
-        return ResponseHandler.handleBadRequest("Animal not found");
-      }
+  //     if (!location) {
+  //       return ResponseHandler.handleBadRequest("Location not found");
+  //     }
 
-      const locationIndex = animal.locations.findIndex(({ _id }) => `${_id}` === `${locationId}`);
-      if (locationIndex === -1) {
-        return ResponseHandler.handleNotFound("Location not found");
-      }
-
-      // Update the location fields
-      animal.locations[locationIndex].date = updatedLocation.date;
-      animal.locations[locationIndex].lat = updatedLocation.lat;
-      animal.locations[locationIndex].lng = updatedLocation.lng;
-      animal.locations[locationIndex].numberOfAnimalsHoused = updatedLocation.numberOfAnimalsHoused;
-      animal.locations[locationIndex].dateAdded = updatedLocation.dateAdded;
-
-      // Push the new timeInCurrentLocation entry
-      animal.locations[locationIndex].timeInCurrentLocation.push({
-        locationName: updatedLocation.timeInCurrentLocation[0].locationName,
-        dateUpdated: updatedLocation.timeInCurrentLocation[0].dateUpdated
-      });
-
-      await animal.save(); // Save the updated animal document
-
-      return ResponseHandler.handleOk("Location updated successfully", animal.locations[locationIndex]);
-    } catch (error) {
-      console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to update location: " + error);
-    }
-  }
-
-  async deleteLocation(animalId: string, locationId: string): Promise<ResponseDto> {
-    try {
-      const animal = await this.animalModel.findById(animalId);
-      if (!animal) {
-        return ResponseHandler.handleBadRequest("Failed to get locations");
-      }
-
-      const location = animal.locations.find(({ _id }) => `${_id}` === `${locationId}`);
+  //     return ResponseHandler.handleOk("Location fetched", location);
+  //   } catch (error) {
+  //     console.log(error);
+  //     return ResponseHandler.handleInternalServerError("Something went wrong, failed to fetch location: " + error);
+  //   }
+  // }
 
 
-      if (!location) {
-        return ResponseHandler.handleNotFound("Location not found");
-      }
+  // async updateLocation(animalId: string, locationId: string, updatedLocation: LocationDTO): Promise<ResponseDto> {
+  //   try {
+  //     const animal = await this.animalModel.findById(animalId);
+  //     if (!animal) {
+  //       return ResponseHandler.handleBadRequest("Animal not found");
+  //     }
 
-      const locationPayload = {
-        date: location.date,
-        lat: location.lat,
-        lng: location.lng
-      }
+  //     const locationIndex = animal.locations.findIndex(({ _id }) => `${_id}` === `${locationId}`);
+  //     if (locationIndex === -1) {
+  //       return ResponseHandler.handleNotFound("Location not found");
+  //     }
 
-      const updatedAnimal = await this.animalModel.findByIdAndUpdate(animalId, {
-        $pull: { locations: locationPayload }
-      }, { new: true });
+  //     // Update the location fields
+  //     animal.locations[locationIndex].date = updatedLocation.date;
+  //     animal.locations[locationIndex].lat = updatedLocation.lat;
+  //     animal.locations[locationIndex].lng = updatedLocation.lng;
+  //     animal.locations[locationIndex].numberOfAnimalsHoused = updatedLocation.numberOfAnimalsHoused;
+  //     animal.locations[locationIndex].dateAdded = updatedLocation.dateAdded;
 
-      if (!updatedAnimal) {
-        return ResponseHandler.handleBadRequest("Failed to delete location");
-      }
+  //     // Push the new timeInCurrentLocation entry
+  //     animal.locations[locationIndex].timeInCurrentLocation.push({
+  //       locationName: updatedLocation.timeInCurrentLocation[0].locationName,
+  //       dateUpdated: updatedLocation.timeInCurrentLocation[0].dateUpdated
+  //     });
 
-      return ResponseHandler.handleNoContent("Location deleted");
-    } catch (error) {
-      console.log(error);
-      return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete location: " + error);
-    }
-  }
+  //     await animal.save(); // Save the updated animal document
+
+  //     return ResponseHandler.handleOk("Location updated successfully", animal.locations[locationIndex]);
+  //   } catch (error) {
+  //     console.log(error);
+  //     return ResponseHandler.handleInternalServerError("Something went wrong, failed to update location: " + error);
+  //   }
+  // }
+
+  // async deleteLocation(animalId: string, locationId: string): Promise<ResponseDto> {
+  //   try {
+  //     const animal = await this.animalModel.findById(animalId);
+  //     if (!animal) {
+  //       return ResponseHandler.handleBadRequest("Failed to get locations");
+  //     }
+
+  //     const location = animal.locations.find(({ _id }) => `${_id}` === `${locationId}`);
+
+
+  //     if (!location) {
+  //       return ResponseHandler.handleNotFound("Location not found");
+  //     }
+
+  //     const locationPayload = {
+  //       date: location.date,
+  //       lat: location.lat,
+  //       lng: location.lng
+  //     }
+
+  //     const updatedAnimal = await this.animalModel.findByIdAndUpdate(animalId, {
+  //       $pull: { locations: locationPayload }
+  //     }, { new: true });
+
+  //     if (!updatedAnimal) {
+  //       return ResponseHandler.handleBadRequest("Failed to delete location");
+  //     }
+
+  //     return ResponseHandler.handleNoContent("Location deleted");
+  //   } catch (error) {
+  //     console.log(error);
+  //     return ResponseHandler.handleInternalServerError("Something went wrong, failed to delete location: " + error);
+  //   }
+  // }
 
 
   ////////////////////////////////////// BREEDING //////////////////////////////////////////////
