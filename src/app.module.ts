@@ -13,6 +13,7 @@ import { AssetsModule } from './assets/assets.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { ContactsModule } from './contacts/contacts.module';
 import { IncomeExpensesModule } from './income-expenses/income-expenses.module';
+import { EmailsModule } from './emails/emails.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { IncomeExpensesModule } from './income-expenses/income-expenses.module';
     RemindersModule,
     ContactsModule,
     IncomeExpensesModule,
+    EmailsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
