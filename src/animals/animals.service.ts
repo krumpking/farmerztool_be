@@ -64,12 +64,7 @@ export class AnimalsService {
       //check if animal exist
 
 
-      const animalExists = await this.animalModel.findOne({ animalId: createAnimalDto.animalId });
-      console.log(createAnimalDto);
-
-      if (animalExists) {
-        return ResponseHandler.handleBadRequest("Animal already exists");
-      }
+     
       const newAnimalInstance = await this.animalModel.create({
         ...createAnimalDto,
         adminId: adminId,
