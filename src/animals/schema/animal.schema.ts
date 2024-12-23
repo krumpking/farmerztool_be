@@ -7,13 +7,13 @@ export const AnimalSchema = new mongoose.Schema(
     animalId: { type: String, required: true },
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      // required: true,
       refPath: 'addedByType',
     },
     addedByType: {
       type: String,
       // enum: ['User', 'Employees'],
-      required: true,
+      // required: true,
     },
     date: { type: Date, default: Date.now() },
     animalType: { type: String, required: true },
