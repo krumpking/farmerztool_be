@@ -13,7 +13,6 @@ import {
 export class CreateAnimalDto {
   @ApiProperty({ description: 'Admin ID', example: '507f1f77bcf86cd799439011' })
   @IsString()
-  @IsNotEmpty()
   adminId: string;
 
   @ApiProperty({ description: 'Number of animals', example: 1 })
@@ -27,15 +26,12 @@ export class CreateAnimalDto {
   animalId: string;
 
   @ApiProperty({ description: 'Added by user/employee ID' })
-  @IsNotEmpty()
   addedBy: string;
 
   @ApiProperty({
     description: 'Type of user who added',
     enum: ['Users', 'Employees'],
   })
- 
-  @IsNotEmpty()
   addedByType: string;
 
   @ApiProperty({ description: 'Type of animal', example: 'Cow' })
@@ -44,7 +40,7 @@ export class CreateAnimalDto {
   animalType: string;
 
   @ApiProperty({ description: 'Additional attributes' })
-  @IsObject()
+  // @IsObject()
   attr: Record<string, any>;
 
   @ApiProperty({
